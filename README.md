@@ -1,206 +1,131 @@
-# Digital Ocean Kubernetes Installation Guide
+<div align="center">
+  <h3>
+    <b>
+      Hoppscotch Charts
+    </b>
+  </h3>
+  <b>
+    Scalable Kubernetes Deployments for Hoppscotch
+  </b>
+  <p>
 
-This comprehensive guide will help you install and configure the application on your Digital Ocean Kubernetes cluster.
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?logo=github)](CODE_OF_CONDUCT.md) [![Website](https://img.shields.io/website?url=https%3A%2F%2Fhoppscotch.io&logo=hoppscotch)](https://hoppscotch.io) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fhoppscotch.io%2F)](https://twitter.com/share?text=%F0%9F%91%BD%20Hoppscotch%20%E2%80%A2%20Open%20source%20API%20development%20ecosystem%20-%20Helps%20you%20create%20requests%20faster,%20saving%20precious%20time%20on%20development.&url=https://hoppscotch.io&hashtags=hoppscotch&via=hoppscotch_io)
 
-## Table of Contents
+  </p>
+  <p>
+    <sub>
+      Built with ❤︎ by
+      <a href="https://github.com/hoppscotch/helm-charts/graphs/contributors">
+        contributors
+      </a>
+    </sub>
+  </p>
+</div>
 
-1. [Prerequisites](#prerequisites)
-2. [Cluster Setup](#cluster-setup)
-3. [Installation Steps](#installation-steps)
-4. [Configuration](#configuration)
-5. [Verification](#verification)
-6. [Troubleshooting](#troubleshooting)
-7. [Maintenance](#maintenance)
+#### **Support**
+
+[![Chat on Discord](https://img.shields.io/badge/chat-Discord-7289DA?logo=discord)](https://hoppscotch.io/discord) [![Chat on Telegram](https://img.shields.io/badge/chat-Telegram-2CA5E0?logo=telegram)](https://hoppscotch.io/telegram) [![Discuss on GitHub](https://img.shields.io/badge/discussions-GitHub-333333?logo=github)](https://github.com/hoppscotch/hoppscotch/discussions)
+
+### **Features**
+
+❤️ **Enterprise Ready:** Built for large-scale deployments with security in mind.
+
+⚡️ **High Performance:** Optimized for speed and resource efficiency.
+
+🔒 **Security First:** Built-in security features and compliance controls.
+
+🌐 **Multi-Cloud:** Deploy anywhere with our cloud-agnostic architecture.
+
+🚀 **Scalable:** Automatically scales based on your workload.
+
+🔄 **High Availability:** Built-in redundancy and failover capabilities.
+
+### **Installation Guides**
+
+<details>
+<summary><b>Digital Ocean Installation</b></summary>
 
 ## Prerequisites
-
 - Digital Ocean account with administrative access
-- kubectl CLI tool installed locally
+- kubectl CLI tool
 - Helm 3.x installed
-- Digital Ocean CLI (doctl) installed
-- Valid kubeconfig file from Digital Ocean
+- doctl installed
 
-## Cluster Setup
-
-### 1. Configure Cluster Access
-
-Download and configure your kubeconfig file (this file is provided by Digital Ocean):
-
+## Quick Install
 ```bash
-export KUBECONFIG=path/to/k8s-xxxx-xxxx-kubeconfig.yaml
-kubectl get nodes    # Verify connectivity
-```
+# Configure access
+export KUBECONFIG=path/to/k8s-config.yaml
 
-### 2. Install NGINX Ingress Controller
-
-This is required for first-time cluster setup:
-
-*Note:* If ingress controller already exists you can skip this step.
-
-```bash
+# Install NGINX Ingress
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/do/deploy.yaml
+
+# Deploy application
+helm install my-release ./helm-charts/app -f [path-to-values-file]
 ```
 
-Verify NGINX installation:
+[View Detailed Digital Ocean Guide](./docs/installation/digitalocean.md)
+</details>
 
+<details>
+<summary><b>GCP Installation</b></summary>
+
+## Prerequisites
+- Google Cloud account with GKE access
+- gcloud CLI configured
+- kubectl CLI tool
+- Helm 3.x installed
+
+## Quick Install
 ```bash
-kubectl wait --namespace ingress-nginx \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
-  --timeout=120s
+# Configure cluster access
+gcloud container clusters get-credentials cluster-name --zone zone --project project-id
+
+# Install NGINX Ingress Controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+
+# Deploy application
+helm install my-release ./helm-charts/app -f [path-to-values-file]
 ```
 
-## Installation Steps
+[View Detailed GCP Guide](./docs/installation/gcp.md)
+</details>
 
-### 1. Add Helm Repository
+## **About Helm Charts**
 
-```bash
-helm repo add [repo-name] [repository-url]
-helm repo update
-```
+Our application uses Helm for package management in Kubernetes. Helm Charts help you:
 
-### 2. Create Namespace
+- 📦 Define, install, and upgrade Kubernetes applications
+- 🔄 Share applications with others
+- 🔧 Manage complex deployments with simple commands
+- ⏪ Roll back to previous versions when needed
 
-```bash
-kubectl create namespace [your-namespace]
+## **Contributing**
 
-# Check current context
-kubectl config get-contexts
+Please contribute using [GitHub Flow](https://guides.github.com/introduction/flow). Create a branch, add commits, and [open a pull request](https://github.com/hoppscotch/helm-charts/compare).
 
-# If context is not updated, update it using:
-kubectl config use-context [your-context-name]
+Please read [`CONTRIBUTING`](CONTRIBUTING.md) for details on our [`CODE OF CONDUCT`](CODE_OF_CONDUCT.md), and the process for submitting pull requests to us.
 
-# Verify current context
-kubectl config current-context
 
-# Set namespace for current context
-kubectl config set-context --current --namespace=[your-namespace]
-```
+## **Continuous Integration**
 
-### 3. Configure Values
+We use [GitHub Actions](https://github.com/features/actions) for continuous integration. Check out our [build workflows](https://github.com/hoppscotch/hoppscotch/actions).
 
-Create a values configuration file with your settings:
+## **Changelog**
 
-```yaml
-# Example configuration
-ingress:
-  enabled: true
-  annotations:
-    kubernetes.io/ingress.class: nginx
+See the [`CHANGELOG`](CHANGELOG.md) file for details.
 
-resources:
-  requests:
-    memory: "256Mi"
-    cpu: "250m"
-  limits:
-    memory: "512Mi"
-    cpu: "500m"
-```
+## **Authors**
 
-### 4. Install Helm Chart
+This project owes its existence to the collective efforts of all those who contribute — [contribute now](CONTRIBUTING.md).
 
-```bash
-helm install [release-name] [chart-name] \
-  --namespace [your-namespace] \
-  -f [path-to-values-file]
-```
+<div align="center">
+  <a href="https://github.com/hoppscotch/helm-charts/graphs/contributors">
+    <img src="https://opencollective.com/hoppscotch/contributors.svg?width=840&button=false"
+      alt="Contributors"
+      width="100%" />
+  </a>
+</div>
 
-Example:
+## **License**
 
-```bash
-helm install my-release my-chart \
-  --namespace my-namespace \
-  -f ./values.yaml
-```
-
-## Configuration
-
-### Essential Parameters
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `ingress.enabled` | Enable ingress controller | `true` |
-| `resources.requests.memory` | Memory request | `256Mi` |
-| `resources.requests.cpu` | CPU request | `250m` |
-
-## Verification
-
-### 1. Check Deployment Status
-
-```bash
-kubectl get pods -n [your-namespace]
-kubectl get services -n [your-namespace]
-kubectl get ingress -n [your-namespace]
-```
-
-### 2. Validate Application Access
-
-```bash
-kubectl get ingress -n [your-namespace]  # Note the ADDRESS field
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Pods Not Starting**
-   ```bash
-   kubectl describe pod [pod-name] -n [your-namespace]
-   kubectl logs [pod-name] -n [your-namespace]
-   ```
-
-2. **NGINX Issues**
-   ```bash
-   kubectl get pods -n ingress-nginx
-   kubectl logs [nginx-pod-name] -n ingress-nginx
-   ```
-
-3. **Helm Chart Issues**
-   ```bash
-   helm status [release-name] -n [your-namespace]
-   ```
-
-## Maintenance
-
-### Upgrading
-
-```bash
-helm repo update
-helm upgrade [release-name] [chart-name] \
-  --namespace [your-namespace] \
-  -f [path-to-values-file]
-```
-
-### Rollback
-
-```bash
-helm rollback [release-name] [revision] -n [your-namespace]
-```
-
-### Uninstallation
-
-```bash
-helm uninstall [release-name] -n [your-namespace]
-```
-
-## Support
-
-For additional support:
-- Submit issues on our GitHub repository
-
-## Security Considerations
-
-- Always use unique credentials for production environments
-- Regularly update your Helm charts and dependencies
-- Monitor cluster resources and set appropriate resource limits
-- Enable network policies as needed
-
-## References
-
-- [Digital Ocean Kubernetes Documentation](https://www.digitalocean.com/docs/kubernetes/)
-- [Helm Documentation](https://helm.sh/docs/)
-- [NGINX Ingress Controller Documentation](https://kubernetes.github.io/ingress-nginx/)
-
----
-
-**Note:** Replace placeholders (marked with [square brackets]) with your actual values before using this guide.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT) — see the [`LICENSE`](LICENSE) file for details.
