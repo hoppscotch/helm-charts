@@ -1,0 +1,139 @@
+# Global settings for the application
+global:
+  externalIP: "0.0.0.0" # Example: "192.168.1.1"
+
+# Community-specific settings
+community:
+  replicas: 1 # Example: 3
+  image:
+    repository: hoppscotch/hoppscotch
+    tag: latest # Example: "v1.0.0"
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  migration:
+    upgradeEnabled: false
+
+  config:
+    database:
+      url: "postgres://user:password@hostname:port/database?sslmode=require"
+
+    mailer:
+      enable: true
+      useCustomConfigs: true
+      addressFrom: '"Dummy Name" <dummy@example.com>'
+      smtp:
+        url: "smtps://user:pass@smtp.example.com"
+        host: "smtp.example.com"
+        port: "587"
+        secure: false
+        user: "user"
+        password: "password"
+        tlsRejectUnauthorized: false
+
+    rateLimit:
+      ttl: 60
+      max: 100
+
+    affinityEnabled: false
+    nodeHostnames: "node-1,node-2" # Example: "node-3,node-4"
+
+    authjwt:
+      sessionSecret: "dummySessionSecret"
+      jwtSecret: "dummyJwtSecret"
+      tokenSaltComplexity: 10
+      magicLinkTokenValidity: 3
+      refreshTokenValidity: "1d"
+      accessTokenValidity: "1d"
+      dataEncryptionKey: "dummyDataEncryptionKey"
+
+    urls:
+      base: "http://frontend.example.com"
+      shortcode: "http://frontend.example.com"
+      admin: "http://admin.example.com"
+      backend:
+        gql: "http://backend.example.com/graphql"
+        ws: "ws://backend.example.com/graphql"
+        api: "http://backend.example.com/v1"
+      redirect: "http://frontend.example.com"
+      whitelistedOrigins: "http://backend.example.com,http://frontend.example.com,http://admin.example.com"
+
+    auth:
+      allowedProviders: "GOOGLE,MICROSOFT,GITHUB,EMAIL,SAML,OIDC"
+
+      google:
+        clientId: "dummyGoogleClientId"
+        clientSecret: "dummyGoogleClientSecret"
+        callbackUrl: "http://backend.example.com/v1/auth/google/callback"
+        scope: "email,profile"
+
+      github:
+        clientId: "dummyGithubClientId"
+        clientSecret: "dummyGithubClientSecret"
+        callbackUrl: "http://backend.example.com/v1/auth/github/callback"
+        scope: "user:email"
+
+      microsoft:
+        clientId: "dummyMicrosoftClientId"
+        clientSecret: "dummyMicrosoftClientSecret"
+        callbackUrl: "http://backend.example.com/v1/auth/microsoft/callback"
+        scope: "user.read"
+        tenant: "dummyTenantId"
+
+    community:
+      enableSubpathBasedAccess: false
+
+    links:
+      tos: "https://docs.example.com/terms"
+      privacyPolicy: "https://docs.example.com/privacy"
+
+# Service configuration
+service:
+  apiVersion: v1
+  name: hoppscotch-community
+  app: hoppscotch-community
+  # Dynamically set based on ingress
+  type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
+  cloud:
+    provider: "" # gke, aws, azure
+    resourceGroup: "" # For Azure specific configurations
+
+  # Only set externalTrafficPolicy for LoadBalancer
+  externalTrafficPolicy: "{{ .Values.service.ingress.enabled | ternary \"\" \"Cluster\" }}"
+
+  ports:
+    backend:
+      port: 3170
+      targetPort: 3170
+      protocol: TCP
+      name: backend
+    frontend:
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: frontend
+    admin:
+      port: 3100
+      targetPort: 3100
+      protocol: TCP
+      name: admin
+  selector:
+    app: hoppscotch-community
+
+  # Ingress Configuration
+  ingress:
+    enabled: false
+    mainHost: frontend.example.com
+    adminHost: admin.example.com
+    backendHost: backend.example.com
+    className: nginx # nginx, alb, traefik
+
+  # TLS Configuration
+  tls:
+    enabled: false
+    secretName: hoppscotch-tls

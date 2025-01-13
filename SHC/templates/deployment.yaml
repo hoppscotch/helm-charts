@@ -1,0 +1,55 @@
+# templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-community
+  labels:
+    app: {{ .Release.Name }}-community
+spec:
+  replicas: {{ .Values.community.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-community
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-community
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        rollme: {{ randAlphaNum 5 | quote }}
+    spec:
+      containers:
+        - name: community
+          image: "{{ .Values.community.image.repository }}:{{ .Values.community.image.tag }}"
+          imagePullPolicy: {{ .Values.community.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.ports.backend.targetPort }}
+              name: {{ .Values.service.ports.backend.name }}
+            - containerPort: {{ .Values.service.ports.frontend.targetPort }}
+              name: {{ .Values.service.ports.frontend.name }}
+            - containerPort: {{ .Values.service.ports.admin.targetPort }}
+              name: {{ .Values.service.ports.admin.name }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-community-config
+          resources:
+            {{- toYaml .Values.community.resources | nindent 12 }}
+      {{- if .Values.community.config.affinityEnabled }}
+      affinity: 
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kubernetes.io/hostname"
+                    operator: In
+                    values:
+                      {{- $nodeHostnames := .Values.community.config.nodeHostnames | split "," }}
+                      {{- range $node := $nodeHostnames }}
+                      - "{{ $node }}"
+                      {{- end }}
+      {{- end }}

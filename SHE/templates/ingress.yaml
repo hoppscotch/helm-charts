@@ -1,0 +1,67 @@
+# templates/ingress.yaml
+{{- if .Values.service.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.service.name }}
+  annotations:
+    {{- if .Values.service.cloud.provider | eq "gke" }}
+    networking.gke.io/load-balancer-type: "External"
+    {{- else if .Values.service.cloud.provider | eq "aws" }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    {{- else if .Values.service.cloud.provider | eq "azure" }}
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+    {{- else }}
+    # Default ingress annotations for unspecified cloud provider
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.service.ingress.className | default "nginx" }}
+  
+  {{- if .Values.service.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.service.ingress.mainHost }}
+    - {{ .Values.service.ingress.adminHost }}
+    - {{ .Values.service.ingress.backendHost }}
+    secretName: {{ .Values.service.tls.secretName }}
+  {{- end }}
+  
+  rules:
+  - host: {{ .Values.service.ingress.mainHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: 3000
+  
+  - host: {{ .Values.service.ingress.adminHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: 3100
+  
+  - host: {{ .Values.service.ingress.backendHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: 3170
+{{- end }}

@@ -1,0 +1,27 @@
+# templates/migration-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-db-migration
+  annotations:
+    {{- if .Release.IsInstall }}
+    "helm.sh/hook": pre-install
+    {{- else if and (not .Release.IsInstall) .Values.community.migration.upgradeEnabled }}
+    "helm.sh/hook": pre-upgrade
+    {{- end }}
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: db-migration
+        image: "{{ .Values.community.image.repository }}:{{ .Values.community.image.tag }}"
+        command: 
+          - /bin/sh
+          - -c
+          - pnpx prisma migrate deploy
+        env:
+          - name: DATABASE_URL
+            value: {{ .Values.community.config.database.url | quote }}
