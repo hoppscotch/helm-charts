@@ -3,4 +3,4 @@ name: hoppscotch
 description: A Helm chart for Hoppscotch Enterprise Edition
 type: application
 version: 0.1.0
-appVersion: "2024.8.0"
+appVersion: "2024.12.1"

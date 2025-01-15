@@ -34,7 +34,6 @@ helm install my-release ./helm-charts/charts/shc
 # Deploy application with custom values file
 helm install my-release ./helm-charts/charts/shc -f [path-to-values-file]
 ```
-```
 
 ### GCP Installation
 
