@@ -21,3 +21,8 @@
 .idea/
 *.tmproj
 .vscode/
+*.tgz
+*.tar.gz
+*.log
+tmp/
+logs/

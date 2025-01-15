@@ -24,7 +24,7 @@
 
 #### **Support**
 
-[![Chat on Discord](https://img.shields.io/badge/chat-Discord-7289DA?logo=discord)](https://hoppscotch.io/discord) [![Chat on Telegram](https://img.shields.io/badge/chat-Telegram-2CA5E0?logo=telegram)](https://hoppscotch.io/telegram) [![Discuss on GitHub](https://img.shields.io/badge/discussions-GitHub-333333?logo=github)](https://github.com/hoppscotch/hoppscotch/discussions)
+[![Chat on Discord](https://img.shields.io/badge/chat-Discord-7289DA?logo=discord)](https://hoppscotch.io/discord) [![Chat on Telegram](https://img.shields.io/badge/chat-Telegram-2CA5E0?logo=telegram)](https://hoppscotch.io/telegram)
 
 ### **Features**
 
@@ -56,14 +56,13 @@
 # Configure access
 export KUBECONFIG=path/to/k8s-config.yaml
 
-# Install NGINX Ingress
+# (Optional) Install NGINX Ingress
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/do/deploy.yaml
 
 # Deploy application
 helm install my-release ./helm-charts/app -f [path-to-values-file]
 ```
 
-[View Detailed Digital Ocean Guide](./docs/installation/digitalocean.md)
 </details>
 
 <details>
@@ -80,14 +79,13 @@ helm install my-release ./helm-charts/app -f [path-to-values-file]
 # Configure cluster access
 gcloud container clusters get-credentials cluster-name --zone zone --project project-id
 
-# Install NGINX Ingress Controller
+# (Optional) Install NGINX Ingress
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 
 # Deploy application
 helm install my-release ./helm-charts/app -f [path-to-values-file]
 ```
 
-[View Detailed GCP Guide](./docs/installation/gcp.md)
 </details>
 
 ## **About Helm Charts**
@@ -108,11 +106,8 @@ Please read [`CONTRIBUTING`](CONTRIBUTING.md) for details on our [`CODE OF CONDU
 
 ## **Continuous Integration**
 
-We use [GitHub Actions](https://github.com/features/actions) for continuous integration. Check out our [build workflows](https://github.com/hoppscotch/hoppscotch/actions).
+We use [GitHub Actions](https://github.com/features/actions) for continuous integration.
 
-## **Changelog**
-
-See the [`CHANGELOG`](CHANGELOG.md) file for details.
 
 ## **Authors**
 
