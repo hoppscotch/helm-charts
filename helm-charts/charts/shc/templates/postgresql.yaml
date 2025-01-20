@@ -1,0 +1,61 @@
+{{- if not .Values.community.config.database.external }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-postgresql
+  labels:
+    app: {{ .Release.Name }}-postgresql
+spec:
+  serviceName: {{ .Release.Name }}-postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-postgresql
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: {{ .Values.community.config.postgresql.image }}
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.community.config.postgresql.database }}
+        - name: POSTGRES_USER
+          value: {{ .Values.community.config.postgresql.username }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.community.config.postgresql.password }}
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata  # Added this line
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.community.config.postgresql.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-postgresql
+  labels:
+    app: {{ .Release.Name }}-postgresql
+spec:
+  ports:
+  - port: 5432
+    targetPort: postgresql
+    protocol: TCP
+    name: postgresql
+  selector:
+    app: {{ .Release.Name }}-postgresql
+{{- end }}

@@ -2,11 +2,11 @@
 global:
   externalIP: "0.0.0.0" # Example: "192.168.1.1"
 
-# Community-specific settings
-community:
+# Enterprise-specific settings
+enterprise:
   replicas: 1 # Example: 3
   image:
-    repository: hoppscotch/hoppscotch
+    repository: hoppscotch/hoppscotch-enterprise
     tag: latest # Example: "v1.0.0"
     pullPolicy: IfNotPresent
   resources:
@@ -17,11 +17,19 @@ community:
       cpu: 250m
       memory: 256Mi
   migration:
-    upgradeEnabled: false
+    upgradeEnabled: false # If true, the migration job will run on every helm upgrade
 
   config:
     database:
+      external: false # Flag to use external DB, if false, it will use the internal postgresql created by the helm chart
       url: "postgres://user:password@hostname:port/database?sslmode=require"
+    postgresql:
+      image: postgres:15
+      persistence:
+        size: 8Gi
+      database: hoppscotch
+      username: hoppscotch
+      password: hoppscotch123
 
     mailer:
       enable: true
@@ -42,6 +50,20 @@ community:
 
     affinityEnabled: false
     nodeHostnames: "node-1,node-2" # Example: "node-3,node-4"
+
+    horizontalScaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 80
+
+    redis:
+      enabled: false
+      host: "redis.example.com"
+      port: 6379
+      password: "password"
+      database: 1
 
     authjwt:
       sessionSecret: "dummySessionSecret"
@@ -77,6 +99,11 @@ community:
         clientSecret: "dummyGithubClientSecret"
         callbackUrl: "http://backend.example.com/v1/auth/github/callback"
         scope: "user:email"
+        authorizationUrl: "https://github.com/login/oauth/authorize"
+        tokenUrl: "https://github.com/login/oauth/access_token"
+        userProfileUrl: "https://api.github.com/users"
+        userEmailUrl: "https://api.github.com/user/emails"
+        enterpriseEnabled: true
 
       microsoft:
         clientId: "dummyMicrosoftClientId"
@@ -85,7 +112,35 @@ community:
         scope: "user.read"
         tenant: "dummyTenantId"
 
-    community:
+      saml:
+        issuer: "http://www.example.com/issuer"
+        audience: "nestjs-saml"
+        callbackUrl: "http://backend.example.com/v1/auth/saml/callback"
+        cert: "dummyCert"
+        entryPoint: "https://example.com/sso/saml"
+        wantAssertionsSigned: true
+        wantResponseSigned: false
+
+      oidc:
+        providerName: "DummyProvider"
+        issuer: "https://example.com/oauth2"
+        authUrl: "https://example.com/oauth2/authorize"
+        tokenUrl: "https://example.com/api/oauth2/token"
+        userInfoUrl: "https://example.com/api/oauth2/@me"
+        clientId: "dummyOidcClientId"
+        clientSecret: "dummyOidcClientSecret"
+        callbackUrl: "http://backend.example.com/v1/auth/oidc/callback"
+        scope: "identify email"
+
+    clickhouse:
+      allowAuditLogs: false
+      allowWorkspaceActivityLogs: false
+      host: "https://example.com:8443"
+      user: "default"
+      password: "password"
+
+    enterprise:
+      licenseKey: "dummyLicenseKey"
       enableSubpathBasedAccess: false
 
     links:
@@ -95,8 +150,8 @@ community:
 # Service configuration
 service:
   apiVersion: v1
-  name: hoppscotch-community
-  app: hoppscotch-community
+  name: hoppscotch-enterprise
+  app: hoppscotch-enterprise
   # Dynamically set based on ingress
   type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
   cloud:
@@ -123,7 +178,7 @@ service:
       protocol: TCP
       name: admin
   selector:
-    app: hoppscotch-community
+    app: hoppscotch-enterprise
 
   # Ingress Configuration
   ingress:

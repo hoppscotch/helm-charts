@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-enterprise-config
 data:
   # Database
-  DATABASE_URL: {{ .Values.enterprise.config.database.url | quote }}
+  DATABASE_URL: {{ if .Values.enterprise.config.database.external }}{{ .Values.enterprise.config.database.url | quote }}{{ else }}{{ printf "postgres://%s:%s@%s-postgresql:5432/%s?sslmode=disable" .Values.enterprise.config.postgresql.username .Values.enterprise.config.postgresql.password .Release.Name .Values.enterprise.config.postgresql.database | quote }}{{ end }}
 
   # Mailer
   MAILER_SMTP_ENABLE: {{ .Values.enterprise.config.mailer.enable | quote }}
@@ -41,6 +41,7 @@ data:
   REFRESH_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.refreshTokenValidity | quote }}
   ACCESS_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.accessTokenValidity | quote }}
   DATA_ENCRYPTION_KEY: {{ .Values.enterprise.config.authjwt.dataEncryptionKey | quote }}
+  ALLOW_SECURE_COOKIES: {{ .Values.enterprise.config.authjwt.allowSecureCookies | quote }}
 
   # URLs and Frontend Config
   VITE_BASE_URL: {{ .Values.enterprise.config.urls.base | quote }}

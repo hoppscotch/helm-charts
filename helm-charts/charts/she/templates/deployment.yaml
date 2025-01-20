@@ -23,6 +23,35 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
+      serviceAccountName: {{ .Release.Name }}-sa
+      initContainers:
+      {{- if not .Values.enterprise.config.database.external }}
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        command:
+          - /bin/sh
+          - -c
+          - |
+            until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
+              sleep 2
+            done
+      {{- end }}
+      - name: wait-for-migration
+        image: bitnami/kubectl:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Waiting for migration to complete..."
+            while true; do
+              echo "Running kubectl command to check job status..."
+              if [ "$(kubectl get job {{ .Release.Name }}-db-migration -o jsonpath='{.status.succeeded}')" = "1" ]; then
+                echo "Migration completed."
+                break
+              fi
+              echo "Migration not yet completed. Retrying in 2 seconds..."
+              sleep 2
+            done
       containers:
         - name: enterprise
           image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"

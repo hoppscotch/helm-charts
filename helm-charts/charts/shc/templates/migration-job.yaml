@@ -4,24 +4,43 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-db-migration
   annotations:
-    {{- if .Release.IsInstall }}
-    "helm.sh/hook": pre-install
-    {{- else if and (not .Release.IsInstall) .Values.community.migration.upgradeEnabled }}
-    "helm.sh/hook": pre-upgrade
+    {{- if .Values.community.migration.upgradeEnabled }}
+    "helm.sh/hook": post-install,post-upgrade
+    {{- else }}
+    "helm.sh/hook": post-install
     {{- end }}
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "1"  # run after database
 spec:
   template:
     spec:
       restartPolicy: OnFailure
+      {{- if not .Values.community.config.database.external }}
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Waiting for PostgreSQL..."
+            until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.community.config.postgresql.username }}; do
+              sleep 2
+            done
+            echo "PostgreSQL is ready"
+      {{- end }}
       containers:
       - name: db-migration
         image: "{{ .Values.community.image.repository }}:{{ .Values.community.image.tag }}"
         command: 
           - /bin/sh
           - -c
-          - pnpx prisma migrate deploy
+          - |
+            echo "Running database migrations..."
+            pnpx prisma migrate deploy
         env:
           - name: DATABASE_URL
+            {{- if .Values.community.config.database.external }}
             value: {{ .Values.community.config.database.url | quote }}
+            {{- else }}
+            value: "postgresql://{{ .Values.community.config.postgresql.username }}:{{ .Values.community.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.community.config.postgresql.database }}?schema=public"
+            {{- end }}

@@ -27,7 +27,7 @@ The following table lists the configurable parameters of the Hoppscotch Enterpri
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `replicaCount` | Number of replicas | `2` |
+| `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `hoppscotch/hoppscotch-enterprise` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
@@ -36,7 +36,7 @@ The following table lists the configurable parameters of the Hoppscotch Enterpri
 | `ingress.enabled` | Enable ingress controller resource | `true` |
 | `enterprise.license` | Enterprise license key | `""` |
 
-To modify the default configuration, create a `values.yaml` file and specify your values:
+To modify the default configuration, Update the `values.yaml` file and specify your values or install chart with your custom values file:
 
 ```yaml
 replicaCount: 3
@@ -52,15 +52,15 @@ service:
 Then install the chart with your custom values:
 
 ```bash
-helm install my-release ./helm-charts/charts/she -f values.yaml
+helm install [RELEASE_NAME] ./helm-charts/charts/she -f values.yaml
 ```
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `my-release` deployment:
+To uninstall/delete the `[RELEASE_NAME]` deployment:
 
 ```bash
-helm uninstall my-release
+helm uninstall [RELEASE_NAME]
 ```
 
 ## Enterprise Support

@@ -3,25 +3,46 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ .Release.Name }}-db-migration
+  labels:
+    app: {{ .Release.Name }}-db-migration
   annotations:
-    {{- if .Release.IsInstall }}
-    "helm.sh/hook": pre-install
-    {{- else if and (not .Release.IsInstall) .Values.enterprise.migration.upgradeEnabled }}
-    "helm.sh/hook": pre-upgrade
+    {{- if .Values.enterprise.migration.upgradeEnabled }}
+    "helm.sh/hook": post-install,post-upgrade
+    {{- else }}
+    "helm.sh/hook": post-install
     {{- end }}
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "1"  # run after database
 spec:
   template:
     spec:
       restartPolicy: OnFailure
+      {{- if not .Values.enterprise.config.database.external }}
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Waiting for PostgreSQL..."
+            until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
+              sleep 2
+            done
+            echo "PostgreSQL is ready"
+      {{- end }}
       containers:
       - name: db-migration
         image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"
         command: 
           - /bin/sh
           - -c
-          - pnpx prisma migrate deploy
+          - |
+            echo "Running database migrations..."
+            pnpx prisma migrate deploy
         env:
           - name: DATABASE_URL
+            {{- if .Values.enterprise.config.database.external }}
             value: {{ .Values.enterprise.config.database.url | quote }}
+            {{- else }}
+            value: "postgresql://{{ .Values.enterprise.config.postgresql.username }}:{{ .Values.enterprise.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.enterprise.config.postgresql.database }}?schema=public"
+            {{- end }}

@@ -26,7 +26,7 @@ The following table lists the configurable parameters of the Hoppscotch Communit
 | `service.port` | Service port | `3000` |
 | `ingress.enabled` | Enable ingress controller resource | `false` |
 
-To modify the default configuration, create a `values.yaml` file and specify your values:
+To modify the default configuration, Update the `values.yaml` file and specify your values or install chart with your custom values file:
 
 ```yaml
 replicaCount: 2
@@ -40,15 +40,15 @@ service:
 Then install the chart with your custom values:
 
 ```bash
-helm install my-release ./helm-charts/charts/shc -f values.yaml
+helm install [RELEASE_NAME] ./helm-charts/charts/shc -f values.yaml
 ```
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `my-release` deployment:
+To uninstall/delete the `[RELEASE_NAME]` deployment:
 
 ```bash
-helm uninstall my-release
+helm uninstall [RELEASE_NAME]
 ```
 
 ## Support

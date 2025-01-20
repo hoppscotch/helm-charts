@@ -32,10 +32,10 @@ export KUBECONFIG=path/to/k8s-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/do/deploy.yaml
 
 # Deploy application with default values
-helm install my-release ./helm-charts/charts/she
+helm install [RELEASE_NAME] ./helm-charts/charts/she
 
 # Deploy application with custom values file
-helm install my-release ./helm-charts/charts/she -f [path-to-values-file]
+helm install [RELEASE_NAME] ./helm-charts/charts/she -f [path-to-values-file]
 ```
 
 ### GCP Installation
@@ -58,10 +58,10 @@ gcloud container clusters get-credentials cluster-name --zone zone --project pro
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 
 # Deploy application with default values
-helm install my-release ./helm-charts/charts/she
+helm install [RELEASE_NAME] ./helm-charts/charts/she
 
 # Deploy application with custom values file
-helm install my-release ./helm-charts/charts/she -f [path-to-values-file]
+helm install [RELEASE_NAME] ./helm-charts/charts/she -f [path-to-values-file]
 ```
 
 ## Enterprise Configuration
@@ -79,7 +79,7 @@ image:
 
 To upgrade your deployment:
 ```bash
-helm upgrade my-release ./helm-charts/shc -f [path-to-values-file]
+helm upgrade [RELEASE_NAME] ./helm-charts/shc -f [path-to-values-file]
 ```
 
 ## Compliance and Auditing
