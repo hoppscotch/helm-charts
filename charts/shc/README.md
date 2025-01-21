@@ -40,7 +40,7 @@ service:
 Then install the chart with your custom values:
 
 ```bash
-helm install [RELEASE_NAME] ./helm-charts/charts/shc -f values.yaml
+helm install [RELEASE_NAME] ./charts/shc -f values.yaml
 ```
 
 ## Uninstalling the Chart

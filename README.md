@@ -60,7 +60,11 @@ export KUBECONFIG=path/to/k8s-config.yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/do/deploy.yaml
 
 # Deploy application
-helm install [RELEASE_NAME] ./helm-charts/app -f [path-to-values-file]
+## Community
+helm install [RELEASE_NAME] ./charts/shc -f [path-to-values-file]
+
+## Enterprise
+helm install [RELEASE_NAME] ./charts/she -f [path-to-values-file]
 ```
 
 </details>
@@ -83,7 +87,11 @@ gcloud container clusters get-credentials cluster-name --zone zone --project pro
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 
 # Deploy application
-helm install [RELEASE_NAME] ./helm-charts/app -f [path-to-values-file]
+## Community
+helm install [RELEASE_NAME] ./charts/shc -f [path-to-values-file]
+
+## Enterprise
+helm install [RELEASE_NAME] ./charts/she -f [path-to-values-file]
 ```
 
 </details>
