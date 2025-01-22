@@ -21,6 +21,17 @@ This Helm chart bootstraps Hoppscotch Enterprise Edition deployment on a Kuberne
 - Valid Enterprise License
 - Ingress controller (recommended)
 
+## URLs Configuration
+
+Update the URLs for frontend, backend, and admin in the `values.yaml` file as follows:
+
+```yaml
+urls:
+  frontend: "https://frontend.yourdomain.com"
+  backend: "https://backend.yourdomain.com"
+  admin: "https://admin.yourdomain.com"
+```
+
 ## Configuration
 
 The following table lists the configurable parameters of the Hoppscotch Enterprise chart and their default values:

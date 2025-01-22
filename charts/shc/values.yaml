@@ -27,13 +27,13 @@ community:
       image: postgres:15
       persistence:
         size: 8Gi
-      database: hoppscotch
+      database: hoppscotchCommunity
       username: hoppscotch
       password: hoppscotch123
 
     mailer:
-      enable: true
-      useCustomConfigs: true
+      enable: false
+      useCustomConfigs: false
       addressFrom: '"Dummy Name" <dummy@example.com>'
       smtp:
         url: "smtps://user:pass@smtp.example.com"
@@ -58,7 +58,7 @@ community:
       magicLinkTokenValidity: 3
       refreshTokenValidity: "1d"
       accessTokenValidity: "1d"
-      dataEncryptionKey: "dummyDataEncryptionKey"
+      dataEncryptionKey: "data encryption key with 32 char"
 
     urls:
       base: "http://frontend.example.com"
@@ -135,7 +135,7 @@ service:
 
   # Ingress Configuration
   ingress:
-    enabled: false
+    enabled: true
     mainHost: frontend.example.com
     adminHost: admin.example.com
     backendHost: backend.example.com

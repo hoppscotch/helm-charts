@@ -12,6 +12,17 @@ This Helm chart bootstraps Hoppscotch Community Edition deployment on a Kubernet
 - Helm 3.x
 - Ingress controller
 
+## URLs Configuration
+
+Update the URLs for frontend, backend, and admin in the `values.yaml` file as follows:
+
+```yaml
+urls:
+  frontend: "https://frontend.yourdomain.com"
+  backend: "https://backend.yourdomain.com"
+  admin: "https://admin.yourdomain.com"
+```
+
 ## Configuration
 
 The following table lists the configurable parameters of the Hoppscotch Community chart and their default values:
