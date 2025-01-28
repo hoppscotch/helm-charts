@@ -130,6 +130,11 @@ service:
       targetPort: 3100
       protocol: TCP
       name: admin
+    subpath:
+      port: 80
+      targetPort: 80
+      protocol: TCP
+      name: subpath
   selector:
     app: hoppscotch-community
 

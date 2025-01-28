@@ -57,12 +57,17 @@ spec:
           image: "{{ .Values.community.image.repository }}:{{ .Values.community.image.tag }}"
           imagePullPolicy: {{ .Values.community.image.pullPolicy }}
           ports:
+          {{- if .Values.community.config.community.enableSubpathBasedAccess }}
+            - containerPort: {{ .Values.service.ports.subpath.targetPort }}
+              name: {{ .Values.service.ports.subpath.name }}
+          {{- else }}
             - containerPort: {{ .Values.service.ports.backend.targetPort }}
               name: {{ .Values.service.ports.backend.name }}
             - containerPort: {{ .Values.service.ports.frontend.targetPort }}
               name: {{ .Values.service.ports.frontend.name }}
             - containerPort: {{ .Values.service.ports.admin.targetPort }}
               name: {{ .Values.service.ports.admin.name }}
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-community-config

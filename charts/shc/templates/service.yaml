@@ -20,10 +20,7 @@ metadata:
     service.kubernetes.io/load-balancer-type: "External"
     {{- end }}
 spec:
-  type: {{ 
-    ternary "ClusterIP" "LoadBalancer" 
-    .Values.service.ingress.enabled 
-  }}
+  type: {{ ternary "ClusterIP" "LoadBalancer" .Values.service.ingress.enabled }}
   
   {{- if not .Values.service.ingress.enabled }}
   loadBalancerIP: {{ .Values.global.externalIP }}
@@ -31,6 +28,12 @@ spec:
   {{- end }}
   
   ports:
+  {{- if .Values.community.config.community.enableSubpathBasedAccess }}
+  - port: {{ .Values.service.ports.subpath.port }}
+    targetPort: {{ .Values.service.ports.subpath.targetPort }}
+    protocol: TCP
+    name: {{ .Values.service.ports.subpath.name }}
+  {{- else }}
   - port: {{ .Values.service.ports.frontend.port }}
     targetPort: {{ .Values.service.ports.frontend.targetPort }}
     protocol: {{ .Values.service.ports.frontend.protocol }}
@@ -45,6 +48,7 @@ spec:
     targetPort: {{ .Values.service.ports.backend.targetPort }}
     protocol: {{ .Values.service.ports.backend.protocol }}
     name: {{ .Values.service.ports.backend.name }}
+  {{- end }}
   
   selector:
     app: {{ .Values.service.selector.app }}

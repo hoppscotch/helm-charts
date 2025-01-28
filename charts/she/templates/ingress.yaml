@@ -24,14 +24,48 @@ spec:
   
   {{- if .Values.service.tls.enabled }}
   tls:
+  {{- if .Values.enterprise.config.enterprise.enableSubpathBasedAccess }}
+  - hosts:
+    - {{ .Values.service.ingress.mainHost }}
+    secretName: {{ .Values.service.tls.secretName }}
+  {{- else }}
   - hosts:
     - {{ .Values.service.ingress.mainHost }}
     - {{ .Values.service.ingress.adminHost }}
     - {{ .Values.service.ingress.backendHost }}
     secretName: {{ .Values.service.tls.secretName }}
   {{- end }}
+  {{- end }}
   
   rules:
+  {{- if .Values.enterprise.config.enterprise.enableSubpathBasedAccess }}
+  # Subpath-based access - all routes through port 3080
+  - host: {{ .Values.service.ingress.mainHost }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: {{ .Values.service.ports.subpath.port }}
+      - path: /backend
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: {{ .Values.service.ports.subpath.port }}
+      - path: /admin
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.service.name }}
+            port:
+              number: {{ .Values.service.ports.subpath.port }}
+  {{- else }}
+  # Host-based access - different ports for each application
   - host: {{ .Values.service.ingress.mainHost }}
     http:
       paths:
@@ -64,4 +98,5 @@ spec:
             name: {{ .Values.service.name }}
             port:
               number: 3170
+  {{- end }}
 {{- end }}
