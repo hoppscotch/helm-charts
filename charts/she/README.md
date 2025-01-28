@@ -23,13 +23,27 @@ This Helm chart bootstraps Hoppscotch Enterprise Edition deployment on a Kuberne
 
 ## URLs Configuration
 
-Update the URLs for frontend, backend, and admin in the `values.yaml` file as follows:
+Update the URLs for main, backend, admin and related urls in the `values.yaml`:
 
 ```yaml
-urls:
-  frontend: "https://frontend.yourdomain.com"
-  backend: "https://backend.yourdomain.com"
-  admin: "https://admin.yourdomain.com"
+  # Ingress Configuration
+  ingress:
+    enabled: true
+    mainHost: frontend.yourdomain.com
+    adminHost: admin.yourdomain.com
+    backendHost: backend.yourdomain.com
+```
+when **subpath is enabled**. Only update the main and related urls:
+```yaml
+  enableSubpathBasedAccess: true
+  # Ingress Configuration
+  ingress:
+    enabled: true
+  mainHost: "yourdomain.com"
+  # Services will be available at:
+  # - Main: yourdomain.com
+  # - Backend: yourdomain.com/backend
+  # - Admin: yourdomain.com/admin
 ```
 
 ## Configuration
