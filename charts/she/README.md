@@ -23,7 +23,7 @@ This Helm chart bootstraps Hoppscotch Enterprise Edition deployment on a Kuberne
 
 ## URLs Configuration
 
-Update the URLs for main, backend, admin and related urls in the `values.yaml`:
+Update the URLs for mainHost, backendHost, adminHost and related urls in the `values.yaml`:
 
 ```yaml
   urls:
@@ -44,7 +44,7 @@ Update the URLs for main, backend, admin and related urls in the `values.yaml`:
     adminHost: admin.yourdomain.com
     backendHost: backend.yourdomain.com
 ```
-when **subpath is enabled**. Only update the main and related urls:
+when **subpath is enabled**. Only update the mainHost and related urls:
 ```yaml
   urls:
     base: "http://yourdomain.com"
@@ -62,11 +62,11 @@ when **subpath is enabled**. Only update the main and related urls:
   # Ingress Configuration
   ingress:
     enabled: true
-  mainHost: "yourdomain.com"
-  # Services will be available at:
-  # - Main: yourdomain.com
-  # - Backend: yourdomain.com/backend
-  # - Admin: yourdomain.com/admin
+    mainHost: "yourdomain.com"
+    # Services will be available at:
+    # - Main: yourdomain.com
+    # - Backend: yourdomain.com/backend
+    # - Admin: yourdomain.com/admin
 ```
 
 ## Configuration
