@@ -103,6 +103,61 @@ Then install the chart with your custom values:
 helm install [RELEASE_NAME] ./charts/she -f values.yaml
 ```
 
+### Database Configuration
+
+#### ClickHouse Configuration
+```yaml
+enterprise:
+  config:
+    clickhouse:
+      allowAuditLogs: true
+      allowWorkspaceActivityLogs: true
+      # External ClickHouse configuration
+      external: false
+      host: "your-clickhouse-host"
+      user: "your-clickhouse-user"
+      password: "your-clickhouse-password"
+      
+      # Self-hosted ClickHouse configuration
+      clickhouse:
+        image: "clickhouse/clickhouse-server:latest"
+        username: "default"
+        password: "clickhouse-password"
+        persistence:
+          size: "10Gi"
+```
+
+#### Redis Configuration
+```yaml
+enterprise:
+  config:
+    horizontalScaling:
+      enabled: true
+    redis:
+      # External Redis configuration
+      external: false
+      host: "your-redis-host"
+      password: "your-redis-password"
+      
+      # Self-hosted Redis configuration
+      redis:
+        image: "redis:latest"
+        password: "redis-password"
+        persistence:
+          size: "5Gi"
+```
+
+### Database Deployment Options
+
+1. **Self-hosted Databases**
+   - Set `external: false` for automatic deployment
+   - Databases are deployed as StatefulSets with persistent storage
+   - Configuration managed through values.yaml
+
+2. **External Databases**
+   - Set `external: true` and provide connection details
+   - Manual database management required
+
 ## Uninstalling the Chart
 
 To uninstall/delete the `[RELEASE_NAME]` deployment:
