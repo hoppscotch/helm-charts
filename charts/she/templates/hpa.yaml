@@ -1,6 +1,6 @@
 # templates/hpa.yaml
 {{- if .Values.enterprise.config.horizontalScaling.enabled }}
-apiVersion: horizontalScaling/v2
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ .Release.Name }}-hpa

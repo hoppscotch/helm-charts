@@ -24,13 +24,9 @@ data:
 
   # Horizontal Scaling
   # Enable/Disable Horizontally Scaling
-  ENABLE_HORIZONTALLY_SCALING: {{ .Values.enterprise.config.horizontalScaling.enabled | quote }}
-  REDIS_ENABLED: {{ .Values.enterprise.config.redis.enabled | quote }}
-  {{- if .Values.enterprise.config.redis.enabled }}
-  REDIS_HOST: {{ .Values.enterprise.config.redis.host | quote }}
-  REDIS_PORT: {{ .Values.enterprise.config.redis.port | quote }}
-  REDIS_PASSWORD: {{ .Values.enterprise.config.redis.password | quote }}
-  REDIS_DATABASE: {{ .Values.enterprise.config.redis.database | quote }}
+  HORIZONTAL_SCALING: {{ .Values.enterprise.config.horizontalScaling.enabled | quote }}
+  {{- if .Values.enterprise.config.horizontalScaling.enabled }}
+  REDIS_URL: {{ if .Values.enterprise.config.redis.external }}{{ .Values.enterprise.config.redis.url | quote }}{{ else }}{{ printf "redis://%s-redis:6379/0" .Release.Name | quote }}{{ end }}
   {{- end }}
 
   # Auth Tokens
@@ -100,9 +96,9 @@ data:
   # ClickHouse Config
   ALLOW_AUDIT_LOGS: {{ .Values.enterprise.config.clickhouse.allowAuditLogs | quote }}
   ALLOW_WORKSPACE_ACTIVITY_LOGS: {{ .Values.enterprise.config.clickhouse.allowWorkspaceActivityLogs | quote }}
-  CLICKHOUSE_HOST: {{ .Values.enterprise.config.clickhouse.host | quote }}
-  CLICKHOUSE_USER: {{ .Values.enterprise.config.clickhouse.user | quote }}
-  CLICKHOUSE_PASSWORD: {{ .Values.enterprise.config.clickhouse.password | quote }}
+  CLICKHOUSE_HOST: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.host | quote }}{{ else }}{{ printf "http://%s-clickhouse:8123" .Release.Name | quote }}{{ end }}
+  CLICKHOUSE_USER: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.user | quote }}{{ else }}{{ .Values.enterprise.config.clickhouse.clickhouse.username }}{{ end }}
+  CLICKHOUSE_PASSWORD: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.password | quote }}{{ else }}{{ .Values.enterprise.config.clickhouse.clickhouse.password }}{{ end }}
 
   # Enterprise Config
   VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.enterprise.config.auth.allowedProviders | quote }}

@@ -59,11 +59,13 @@ enterprise:
       targetMemoryUtilizationPercentage: 80
 
     redis:
-      enabled: false
-      host: "redis.example.com"
-      port: 6379
-      password: "password"
-      database: 1
+      external: false
+      url: "redis://username:password@hostname:port/database"
+      redis:
+        image: redis:6.2
+        password: redispassword
+        persistence:
+          size: 5Gi
 
     authjwt:
       sessionSecret: "dummySessionSecret"
@@ -133,11 +135,18 @@ enterprise:
         scope: "identify email"
 
     clickhouse:
+      external: false
       allowAuditLogs: false
       allowWorkspaceActivityLogs: false
       host: "https://example.com:8443"
       user: "default"
       password: "password"
+      clickhouse:
+        image: clickhouse/clickhouse-server:24.8
+        username: default
+        password: ""
+        persistence:
+          size: 10Gi
 
     enterprise:
       licenseKey: "dummyLicenseKey"

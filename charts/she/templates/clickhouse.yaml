@@ -1,0 +1,64 @@
+{{- if .Values.enterprise.config.clickhouse.allowAuditLogs }}
+{{- if not .Values.enterprise.config.clickhouse.external }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  labels:
+    app: {{ .Release.Name }}-clickhouse
+spec:
+  serviceName: {{ .Release.Name }}-clickhouse
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-clickhouse
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-clickhouse
+    spec:
+      containers:
+      - name: clickhouse
+        image: {{ .Values.enterprise.config.clickhouse.clickhouse.image }}
+        env:
+        - name: CLICKHOUSE_USER
+          value: {{ .Values.enterprise.config.clickhouse.clickhouse.username }}
+        - name: CLICKHOUSE_PASSWORD
+          value: {{ .Values.enterprise.config.clickhouse.clickhouse.password }}
+        ports:
+        - containerPort: 8123
+          name: clickhousehttp
+        - containerPort: 9000
+          name: clickhouse
+        volumeMounts:
+        - name: clickhouse-data
+          mountPath: /var/lib/clickhouse
+  volumeClaimTemplates:
+  - metadata:
+      name: clickhouse-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.enterprise.config.clickhouse.clickhouse.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-clickhouse
+  labels:
+    app: {{ .Release.Name }}-clickhouse
+spec:
+  ports:
+  - port: 8123
+    targetPort: clickhousehttp
+    protocol: TCP
+    name: clickhousehttp
+  - port: 9000
+    targetPort: clickhouse
+    protocol: TCP
+    name: clickhouse
+  selector:
+    app: {{ .Release.Name }}-clickhouse
+{{- end }}
+{{- end }}
