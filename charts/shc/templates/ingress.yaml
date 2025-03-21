@@ -16,7 +16,6 @@ metadata:
     appgw.ingress.kubernetes.io/use-private-ip: "false"
     {{- else }}
     # Default ingress annotations for unspecified cloud provider
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     {{- end }}
 spec:
