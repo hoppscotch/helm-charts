@@ -3,6 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ .Release.Name }}-db-migration
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-db-migration
   annotations:

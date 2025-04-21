@@ -3,8 +3,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-postgresql
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-postgresql
+  annotations:
+    database/type: "postgresql"
 spec:
   serviceName: {{ .Release.Name }}-postgresql
   replicas: 1
@@ -48,8 +51,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-postgresql
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-postgresql
+  annotations:
+    service/database: "postgresql"
 spec:
   ports:
   - port: 5432

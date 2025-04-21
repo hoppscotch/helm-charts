@@ -1,6 +1,7 @@
 # Global settings for the application
 global:
   externalIP: "0.0.0.0" # Example: "192.168.1.1"
+  namespace: "default" # Example: "hoppscotch"
 
 # Community-specific settings
 community:
@@ -22,7 +23,7 @@ community:
   config:
     database:
       external: false # Flag to use external DB, if false, it will use the internal postgresql created by the helm chart
-      url: "postgres://user:password@hostname:port/database?sslmode=require" # External database URL if provided
+      url: "postgres://user:password@hostname:port/database?sslmode=require"
     postgresql:
       image: postgres:15
       persistence:
@@ -72,26 +73,27 @@ community:
       whitelistedOrigins: "http://backend.example.com,http://frontend.example.com,http://admin.example.com"
 
     auth:
-      allowedProviders: "GOOGLE,MICROSOFT,GITHUB,EMAIL"
+      allowedProviders: "EMAIL" # "GOOGLE,MICROSOFT,GITHUB,EMAIL"
 
+      existingSecret: ""
       google:
-        clientId: "dummyGoogleClientId"
-        clientSecret: "dummyGoogleClientSecret"
-        callbackUrl: "http://backend.example.com/v1/auth/google/callback"
-        scope: "email,profile"
+        clientId:  "" # "dummyGoogleClientId"
+        clientSecret:  "" # "dummyGoogleClientSecret"
+        callbackUrl:  "" # "http://backend.example.com/v1/auth/google/callback"
+        scope:  "" # "email,profile"
 
       github:
-        clientId: "dummyGithubClientId"
-        clientSecret: "dummyGithubClientSecret"
-        callbackUrl: "http://backend.example.com/v1/auth/github/callback"
-        scope: "user:email"
+        clientId:  "" # "dummyGithubClientId"
+        clientSecret:  "" # "dummyGithubClientSecret"
+        callbackUrl:  "" # "http://backend.example.com/v1/auth/github/callback"
+        scope:  "" # "user:email"
 
       microsoft:
-        clientId: "dummyMicrosoftClientId"
-        clientSecret: "dummyMicrosoftClientSecret"
-        callbackUrl: "http://backend.example.com/v1/auth/microsoft/callback"
-        scope: "user.read"
-        tenant: "dummyTenantId"
+        clientId:  "" # "dummyMicrosoftClientId"
+        clientSecret:  "" # "dummyMicrosoftClientSecret"
+        callbackUrl:  "" # "http://backend.example.com/v1/auth/microsoft/callback"
+        scope:  "" # "user.read"
+        tenant:  "" # "dummyTenantId"
 
     community:
       enableSubpathBasedAccess: false
@@ -100,6 +102,15 @@ community:
       tos: "https://docs.example.com/terms"
       privacyPolicy: "https://docs.example.com/privacy"
 
+# ServiceAccount configuration
+serviceAccount:
+  # Name of the ServiceAccount; if not set, defaults to "{{ .Release.Name }}-sa"
+  name: ""
+  # Annotations for the ServiceAccount (e.g., for AWS IRSA)
+  annotations: {}
+  # Example for AWS IRSA:
+  # eks.amazonaws.com/role-arn: "arn:aws:iam::${aws_account_id}:role/devops-${stage}-hoppscotch"
+
 # Service configuration
 service:
   apiVersion: v1
@@ -107,10 +118,6 @@ service:
   app: hoppscotch-community
   # Dynamically set based on ingress
   type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
-  cloud:
-    provider: "" # gke, aws, azure
-    resourceGroup: "" # For Azure specific configurations
-
   # Only set externalTrafficPolicy for LoadBalancer
   externalTrafficPolicy: "{{ .Values.service.ingress.enabled | ternary \"\" \"Cluster\" }}"
 
@@ -145,6 +152,15 @@ service:
     adminHost: admin.example.com
     backendHost: backend.example.com
     className: nginx # nginx, alb, traefik
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    service.kubernetes.io/load-balancer-type: "External"
+    # Example AWS ALB internal configuration
+    # alb.ingress.kubernetes.io/scheme: "internal"
+    # alb.ingress.kubernetes.io/security-groups: "sg-12345678"
+    # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:region:account-id:certificate/cert-id"
 
   # TLS Configuration
   tls:
