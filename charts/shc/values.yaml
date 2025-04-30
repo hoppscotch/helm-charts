@@ -28,6 +28,7 @@ community:
       image: postgres:15
       persistence:
         size: 8Gi
+        storageClass: ""
       database: hoppscotchCommunity
       username: hoppscotch
       password: hoppscotch123

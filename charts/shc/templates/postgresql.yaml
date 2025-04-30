@@ -43,6 +43,13 @@ spec:
       name: postgresql-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.community.config.postgresql.persistence.storageClass }}
+      {{- if (eq "-" .Values.community.config.postgresql.persistence.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.community.config.postgresql.persistence.storageClass }}"
+      {{- end }}
+      {{- end }}
       resources:
         requests:
           storage: {{ .Values.community.config.postgresql.persistence.size }}
