@@ -3,12 +3,12 @@ entries:
   hoppscotch:
   - apiVersion: v2
     appVersion: 2025.4.0
-    created: "2025-04-30T14:08:08.961474987-03:00"
+    created: "2025-04-30T14:21:55.419456858-03:00"
     description: A Helm chart for Hoppscotch Enterprise Edition
-    digest: bfd91a85b1dcf633b276f6b2fae183f3506ace32dbbaa0d63fb37e6a6f53916a
+    digest: b81aa626e671fad994fb2f0ac27ed5df815d6c727b2ac4dacbef623c17eac68c
     name: hoppscotch
     type: application
     urls:
     - https://hoppscotch.github.io/helm-charts/hoppscotch-2025.4.0.tgz
     version: 2025.4.0
-generated: "2025-04-30T14:08:08.960759241-03:00"
+generated: "2025-04-30T14:21:55.418620952-03:00"
