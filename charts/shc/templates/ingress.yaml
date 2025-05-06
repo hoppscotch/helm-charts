@@ -4,20 +4,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Release.Name }}-community
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   annotations:
-    {{- if .Values.service.cloud.provider | eq "gke" }}
-    networking.gke.io/load-balancer-type: "External"
-    {{- else if .Values.service.cloud.provider | eq "aws" }}
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    alb.ingress.kubernetes.io/scheme: "internet-facing"
-    alb.ingress.kubernetes.io/target-type: "ip"
-    {{- else if .Values.service.cloud.provider | eq "azure" }}
-    appgw.ingress.kubernetes.io/use-private-ip: "false"
-    {{- else }}
-    # Default ingress annotations for unspecified cloud provider
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    {{- toYaml .Values.service.ingress.annotations | nindent 4 }}
+    {{- if .Values.service.tls.enabled }}
+    tls/enabled: "true"
     {{- end }}
 spec:
   ingressClassName: {{ .Values.service.ingress.className | default "nginx" }}
