@@ -2,8 +2,14 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-community-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  annotations:
+    purpose: "community-configuration"
 data:
-  # Mailer
+  # Mailer (non-sensitive)
   MAILER_SMTP_ENABLE: {{ .Values.community.config.mailer.enable | quote }}
   MAILER_USE_CUSTOM_CONFIGS: {{ .Values.community.config.mailer.useCustomConfigs | quote }}
   MAILER_ADDRESS_FROM: {{ .Values.community.config.mailer.addressFrom | quote }}
@@ -11,23 +17,18 @@ data:
   MAILER_SMTP_HOST: {{ .Values.community.config.mailer.smtp.host | quote }}
   MAILER_SMTP_PORT: {{ .Values.community.config.mailer.smtp.port | quote }}
   MAILER_SMTP_SECURE: {{ .Values.community.config.mailer.smtp.secure | quote }}
-  MAILER_SMTP_USER: {{ .Values.community.config.mailer.smtp.user | quote }}
-  MAILER_SMTP_PASSWORD: {{ .Values.community.config.mailer.smtp.password | quote }}
   MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.community.config.mailer.smtp.tlsRejectUnauthorized | quote }}
 
   # Rate Limit
   RATE_LIMIT_TTL: {{ .Values.community.config.rateLimit.ttl | quote }}
   RATE_LIMIT_MAX: {{ .Values.community.config.rateLimit.max | quote }}
 
-  # Auth Tokens
-  SESSION_SECRET: {{ .Values.community.config.authjwt.sessionSecret | quote }}
-  JWT_SECRET: {{ .Values.community.config.authjwt.jwtSecret | quote }}
+  # Auth Tokens (non-sensitive)
   TOKEN_SALT_COMPLEXITY: {{ .Values.community.config.authjwt.tokenSaltComplexity | quote }}
   MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.magicLinkTokenValidity | quote }}
   REFRESH_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.refreshTokenValidity | quote }}
   ACCESS_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.accessTokenValidity | quote }}
   ALLOW_SECURE_COOKIES: {{ .Values.community.config.authjwt.allowSecureCookies | quote }}
-  DATA_ENCRYPTION_KEY: {{ .Values.community.config.authjwt.dataEncryptionKey | quote }}
 
   # URLs and Frontend Config
   VITE_BASE_URL: {{ .Values.community.config.urls.base | quote }}

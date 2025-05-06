@@ -3,22 +3,11 @@ apiVersion: {{ .Values.service.apiVersion }}
 kind: Service
 metadata:
   name: {{ .Values.service.name }}
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Values.service.app }}
   annotations:
-    {{- if and (eq .Values.service.type "LoadBalancer") (.Values.service.cloud.provider | default "gke" | eq "gke") }}
-    networking.gke.io/load-balancer-type: "External"
-    cloud.google.com/load-balancer-type: "External"
-    {{- else if and (eq .Values.service.type "LoadBalancer") (.Values.service.cloud.provider | eq "aws") }}
-    service.beta.kubernetes.io/aws-load-balancer-type: "external"
-    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
-    {{- else if and (eq .Values.service.type "LoadBalancer") (.Values.service.cloud.provider | eq "azure") }}
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ .Values.service.cloud.resourceGroup | default "" }}
-    {{- else if and (eq .Values.service.type "LoadBalancer") (not .Values.service.cloud.provider) }}
-    # Default LoadBalancer annotations for unspecified cloud provider
-    service.kubernetes.io/load-balancer-type: "External"
-    {{- end }}
+    {{- toYaml .Values.service.annotations | nindent 4 }}
 spec:
   type: {{ ternary "ClusterIP" "LoadBalancer" .Values.service.ingress.enabled }}
   

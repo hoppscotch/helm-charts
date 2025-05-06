@@ -1,6 +1,7 @@
 # Global settings for the application
 global:
   externalIP: "0.0.0.0" # Example: "192.168.1.1"
+  namespace: "default" # Example: "hoppscotch"
 
 # Enterprise-specific settings
 enterprise:
@@ -144,7 +145,7 @@ enterprise:
       clickhouse:
         image: clickhouse/clickhouse-server:24.8
         username: default
-        password: ""
+        password: "password"
         persistence:
           size: 10Gi
 
@@ -156,6 +157,15 @@ enterprise:
       tos: "https://docs.example.com/terms"
       privacyPolicy: "https://docs.example.com/privacy"
 
+# ServiceAccount configuration
+serviceAccount:
+  # Name of the ServiceAccount; if not set, defaults to "{{ .Release.Name }}-sa"
+  name: ""
+  # Annotations for the ServiceAccount (e.g., for AWS IRSA)
+  annotations: {}
+  # Example for AWS IRSA:
+  # eks.amazonaws.com/role-arn: "arn:aws:iam::${aws_account_id}:role/devops-${stage}-hoppscotch"
+
 # Service configuration
 service:
   apiVersion: v1
@@ -163,10 +173,6 @@ service:
   app: hoppscotch-enterprise
   # Dynamically set based on ingress
   type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
-  cloud:
-    provider: "" # gke, aws, azure
-    resourceGroup: "" # For Azure specific configurations
-
   # Only set externalTrafficPolicy for LoadBalancer
   externalTrafficPolicy: "{{ .Values.service.ingress.enabled | ternary \"\" \"Cluster\" }}"
 
@@ -201,6 +207,15 @@ service:
     adminHost: admin.example.com
     backendHost: backend.example.com
     className: nginx # nginx, alb, traefik
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    service.kubernetes.io/load-balancer-type: "External"
+    # Example AWS ALB internal configuration
+    # alb.ingress.kubernetes.io/scheme: "internal"
+    # alb.ingress.kubernetes.io/security-groups: "sg-12345678"
+    # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:region:account-id:certificate/cert-id"
 
   # TLS Configuration
   tls:

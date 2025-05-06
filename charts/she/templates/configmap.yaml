@@ -2,42 +2,22 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-enterprise-config
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+  annotations:
+    {{- if .Values.enterprise.config.horizontalScaling.enabled }}
+    scaling/enabled: "true"
+    {{- end }}
+    purpose: "enterprise-configuration"
 data:
-  # Database
-  DATABASE_URL: {{ if .Values.enterprise.config.database.external }}{{ .Values.enterprise.config.database.url | quote }}{{ else }}{{ printf "postgres://%s:%s@%s-postgresql:5432/%s?sslmode=disable" .Values.enterprise.config.postgresql.username .Values.enterprise.config.postgresql.password .Release.Name .Values.enterprise.config.postgresql.database | quote }}{{ end }}
-
-  # Mailer
-  MAILER_SMTP_ENABLE: {{ .Values.enterprise.config.mailer.enable | quote }}
-  MAILER_USE_CUSTOM_CONFIGS: {{ .Values.enterprise.config.mailer.useCustomConfigs | quote }}
-  MAILER_ADDRESS_FROM: {{ .Values.enterprise.config.mailer.addressFrom | quote }}
-  MAILER_SMTP_URL: {{ .Values.enterprise.config.mailer.smtp.url | quote }}
-  MAILER_SMTP_HOST: {{ .Values.enterprise.config.mailer.smtp.host | quote }}
-  MAILER_SMTP_PORT: {{ .Values.enterprise.config.mailer.smtp.port | quote }}
-  MAILER_SMTP_SECURE: {{ .Values.enterprise.config.mailer.smtp.secure | quote }}
-  MAILER_SMTP_USER: {{ .Values.enterprise.config.mailer.smtp.user | quote }}
-  MAILER_SMTP_PASSWORD: {{ .Values.enterprise.config.mailer.smtp.password | quote }}
-  MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.enterprise.config.mailer.smtp.tlsRejectUnauthorized | quote }}
-
   # Rate Limit
   RATE_LIMIT_TTL: {{ .Values.enterprise.config.rateLimit.ttl | quote }}
   RATE_LIMIT_MAX: {{ .Values.enterprise.config.rateLimit.max | quote }}
 
   # Horizontal Scaling
-  # Enable/Disable Horizontally Scaling
   HORIZONTAL_SCALING: {{ .Values.enterprise.config.horizontalScaling.enabled | quote }}
-  {{- if .Values.enterprise.config.horizontalScaling.enabled }}
-  REDIS_URL: {{ if .Values.enterprise.config.redis.external }}{{ .Values.enterprise.config.redis.url | quote }}{{ else }}{{ printf "redis://%s-redis:6379/0" .Release.Name | quote }}{{ end }}
-  {{- end }}
-
-  # Auth Tokens
-  SESSION_SECRET: {{ .Values.enterprise.config.authjwt.sessionSecret | quote }}
-  JWT_SECRET: {{ .Values.enterprise.config.authjwt.jwtSecret | quote }}
-  TOKEN_SALT_COMPLEXITY: {{ .Values.enterprise.config.authjwt.tokenSaltComplexity | quote }}
-  MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.magicLinkTokenValidity | quote }}
-  REFRESH_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.refreshTokenValidity | quote }}
-  ACCESS_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.accessTokenValidity | quote }}
-  DATA_ENCRYPTION_KEY: {{ .Values.enterprise.config.authjwt.dataEncryptionKey | quote }}
-  ALLOW_SECURE_COOKIES: {{ .Values.enterprise.config.authjwt.allowSecureCookies | quote }}
 
   # URLs and Frontend Config
   VITE_BASE_URL: {{ .Values.enterprise.config.urls.base | quote }}
@@ -49,15 +29,41 @@ data:
   REDIRECT_URL: {{ .Values.enterprise.config.urls.redirect | quote }}
   WHITELISTED_ORIGINS: {{ .Values.enterprise.config.urls.whitelistedOrigins | quote }}
 
-  # Google Auth
-  GOOGLE_CLIENT_ID: {{ .Values.enterprise.config.auth.google.clientId | quote }}
-  GOOGLE_CLIENT_SECRET: {{ .Values.enterprise.config.auth.google.clientSecret | quote }}
+  # ClickHouse Config
+  ALLOW_AUDIT_LOGS: {{ .Values.enterprise.config.clickhouse.allowAuditLogs | quote }}
+  ALLOW_WORKSPACE_ACTIVITY_LOGS: {{ .Values.enterprise.config.clickhouse.allowWorkspaceActivityLogs | quote }}
+  CLICKHOUSE_HOST: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.host | quote }}{{ else }}{{ printf "http://%s-clickhouse:8123" .Release.Name | quote }}{{ end }}
+
+  # Enterprise Config
+  VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.enterprise.config.auth.allowedProviders | quote }}
+  ENABLE_SUBPATH_BASED_ACCESS: {{ .Values.enterprise.config.enterprise.enableSubpathBasedAccess | quote }}
+
+  # Links
+  VITE_APP_TOS_LINK: {{ .Values.enterprise.config.links.tos | quote }}
+  VITE_APP_PRIVACY_POLICY_LINK: {{ .Values.enterprise.config.links.privacyPolicy | quote }}
+
+  # Mailer (non-sensitive)
+  MAILER_SMTP_ENABLE: {{ .Values.enterprise.config.mailer.enable | quote }}
+  MAILER_USE_CUSTOM_CONFIGS: {{ .Values.enterprise.config.mailer.useCustomConfigs | quote }}
+  MAILER_ADDRESS_FROM: {{ .Values.enterprise.config.mailer.addressFrom | quote }}
+  MAILER_SMTP_URL: {{ .Values.enterprise.config.mailer.smtp.url | quote }}
+  MAILER_SMTP_HOST: {{ .Values.enterprise.config.mailer.smtp.host | quote }}
+  MAILER_SMTP_PORT: {{ .Values.enterprise.config.mailer.smtp.port | quote }}
+  MAILER_SMTP_SECURE: {{ .Values.enterprise.config.mailer.smtp.secure | quote }}
+  MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.enterprise.config.mailer.smtp.tlsRejectUnauthorized | quote }}
+
+  # Auth Tokens (non-sensitive)
+  TOKEN_SALT_COMPLEXITY: {{ .Values.enterprise.config.authjwt.tokenSaltComplexity | quote }}
+  MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.magicLinkTokenValidity | quote }}
+  REFRESH_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.refreshTokenValidity | quote }}
+  ACCESS_TOKEN_VALIDITY: {{ .Values.enterprise.config.authjwt.accessTokenValidity | quote }}
+  ALLOW_SECURE_COOKIES: {{ .Values.enterprise.config.authjwt.allowSecureCookies | quote }}
+
+  # Google Auth (non-sensitive)
   GOOGLE_CALLBACK_URL: {{ .Values.enterprise.config.auth.google.callbackUrl | quote }}
   GOOGLE_SCOPE: {{ .Values.enterprise.config.auth.google.scope | quote }}
 
-  # Github Auth
-  GITHUB_CLIENT_ID: {{ .Values.enterprise.config.auth.github.clientId | quote }}
-  GITHUB_CLIENT_SECRET: {{ .Values.enterprise.config.auth.github.clientSecret | quote }}
+  # Github Auth (non-sensitive)
   GITHUB_CALLBACK_URL: {{ .Values.enterprise.config.auth.github.callbackUrl | quote }}
   GITHUB_SCOPE: {{ .Values.enterprise.config.auth.github.scope | quote }}
   GITHUB_AUTHORIZATION_URL: {{ .Values.enterprise.config.auth.github.authorizationUrl | quote }}
@@ -66,45 +72,16 @@ data:
   GITHUB_USER_EMAIL_URL: {{ .Values.enterprise.config.auth.github.userEmailUrl | quote }}
   IS_GITHUB_ENTERPRISE_ENABLED: {{ .Values.enterprise.config.auth.github.enterpriseEnabled | quote }}
 
-  # Microsoft Auth
-  MICROSOFT_CLIENT_ID: {{ .Values.enterprise.config.auth.microsoft.clientId | quote }}
-  MICROSOFT_CLIENT_SECRET: {{ .Values.enterprise.config.auth.microsoft.clientSecret | quote }}
+  # Microsoft Auth (non-sensitive)
   MICROSOFT_CALLBACK_URL: {{ .Values.enterprise.config.auth.microsoft.callbackUrl | quote }}
   MICROSOFT_SCOPE: {{ .Values.enterprise.config.auth.microsoft.scope | quote }}
   MICROSOFT_TENANT: {{ .Values.enterprise.config.auth.microsoft.tenant | quote }}
 
-  # SAML Config
-  SAML_ISSUER: {{ .Values.enterprise.config.auth.saml.issuer | quote }}
-  SAML_AUDIENCE: {{ .Values.enterprise.config.auth.saml.audience | quote }}
+  # SAML Config (non-sensitive)
   SAML_CALLBACK_URL: {{ .Values.enterprise.config.auth.saml.callbackUrl | quote }}
-  SAML_CERT: {{ .Values.enterprise.config.auth.saml.cert | quote }}
-  SAML_ENTRY_POINT: {{ .Values.enterprise.config.auth.saml.entryPoint | quote }}
   SAML_WANT_ASSERTIONS_SIGNED: {{ .Values.enterprise.config.auth.saml.wantAssertionsSigned | quote }}
   SAML_WANT_RESPONSE_SIGNED: {{ .Values.enterprise.config.auth.saml.wantResponseSigned | quote }}
 
-  # OIDC Config
-  OIDC_PROVIDER_NAME: {{ .Values.enterprise.config.auth.oidc.providerName | quote }}
-  OIDC_ISSUER: {{ .Values.enterprise.config.auth.oidc.issuer | quote }}
-  OIDC_AUTH_URL: {{ .Values.enterprise.config.auth.oidc.authUrl | quote }}
-  OIDC_TOKEN_URL: {{ .Values.enterprise.config.auth.oidc.tokenUrl | quote }}
-  OIDC_USER_INFO_URL: {{ .Values.enterprise.config.auth.oidc.userInfoUrl | quote }}
-  OIDC_CLIENT_ID: {{ .Values.enterprise.config.auth.oidc.clientId | quote }}
-  OIDC_CLIENT_SECRET: {{ .Values.enterprise.config.auth.oidc.clientSecret | quote }}
+  # OIDC Config (non-sensitive)
   OIDC_CALLBACK_URL: {{ .Values.enterprise.config.auth.oidc.callbackUrl | quote }}
   OIDC_SCOPE: {{ .Values.enterprise.config.auth.oidc.scope | quote }}
-
-  # ClickHouse Config
-  ALLOW_AUDIT_LOGS: {{ .Values.enterprise.config.clickhouse.allowAuditLogs | quote }}
-  ALLOW_WORKSPACE_ACTIVITY_LOGS: {{ .Values.enterprise.config.clickhouse.allowWorkspaceActivityLogs | quote }}
-  CLICKHOUSE_HOST: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.host | quote }}{{ else }}{{ printf "http://%s-clickhouse:8123" .Release.Name | quote }}{{ end }}
-  CLICKHOUSE_USER: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.user | quote }}{{ else }}{{ .Values.enterprise.config.clickhouse.clickhouse.username }}{{ end }}
-  CLICKHOUSE_PASSWORD: {{ if .Values.enterprise.config.clickhouse.external }}{{ .Values.enterprise.config.clickhouse.password | quote }}{{ else }}{{ .Values.enterprise.config.clickhouse.clickhouse.password }}{{ end }}
-
-  # Enterprise Config
-  VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.enterprise.config.auth.allowedProviders | quote }}
-  ENTERPRISE_LICENSE_KEY: {{ .Values.enterprise.config.enterprise.licenseKey | quote }}
-  ENABLE_SUBPATH_BASED_ACCESS: {{ .Values.enterprise.config.enterprise.enableSubpathBasedAccess | quote }}
-
-  # Links
-  VITE_APP_TOS_LINK: {{ .Values.enterprise.config.links.tos | quote }}
-  VITE_APP_PRIVACY_POLICY_LINK: {{ .Values.enterprise.config.links.privacyPolicy | quote }}

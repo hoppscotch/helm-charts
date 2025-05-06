@@ -4,8 +4,12 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-clickhouse
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-clickhouse
+  annotations:
+    database/type: "clickhouse"
+    audit/logs: "enabled"
 spec:
   serviceName: {{ .Release.Name }}-clickhouse
   replicas: 1
@@ -46,8 +50,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-clickhouse
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-clickhouse
+  annotations:
+    service/database: "clickhouse"
 spec:
   ports:
   - port: 8123

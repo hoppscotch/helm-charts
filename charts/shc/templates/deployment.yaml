@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-community
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-community
 spec:
@@ -23,7 +24,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      serviceAccountName: {{ .Release.Name }}-sa
+      serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" .Release.Name) }}
       initContainers:
       {{- if not .Values.community.config.database.external }}
       - name: wait-for-postgres
@@ -87,7 +88,7 @@ spec:
               {{- if .Values.community.config.auth.existingSecret }}
                 name: {{ .Values.community.config.auth.existingSecret }}
               {{- else }}
-                name: {{ .Release.Name }}-community-secret
+                name: {{ .Release.Name }}-community-secrets
               {{- end }}
             {{- end}}
           resources:
