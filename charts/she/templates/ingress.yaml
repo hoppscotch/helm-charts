@@ -6,7 +6,9 @@ metadata:
   name: {{ .Values.service.name }}
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   annotations:
-    {{- toYaml .Values.service.ingress.annotations | nindent 4 }}
+    {{- range $key, $value := .Values.service.ingress.annotations}}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
     {{- if .Values.service.tls.enabled }}
     tls/enabled: "true"
     {{- end }}

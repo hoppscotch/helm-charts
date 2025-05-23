@@ -207,15 +207,14 @@ service:
     adminHost: admin.example.com
     backendHost: backend.example.com
     className: nginx # nginx, alb, traefik
-
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    service.kubernetes.io/load-balancer-type: "External"
-    # Example AWS ALB internal configuration
-    # alb.ingress.kubernetes.io/scheme: "internal"
-    # alb.ingress.kubernetes.io/security-groups: "sg-12345678"
-    # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:region:account-id:certificate/cert-id"
+    annotations:
+      # kubernetes.io/ingress.class: nginx
+      # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      # service.kubernetes.io/load-balancer-type: "External"
+      # Example AWS ALB internal configuration
+      # alb.ingress.kubernetes.io/scheme: "internal"
+      # alb.ingress.kubernetes.io/security-groups: "sg-12345678"
+      # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:region:account-id:certificate/cert-id"
 
   # TLS Configuration
   tls:
