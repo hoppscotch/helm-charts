@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  hoppscotch-community:
+  - apiVersion: v2
+    appVersion: 2024.12.1
+    created: "2025-06-30T07:53:20.528250787Z"
+    description: A Helm chart for Hoppscotch Community Edition
+    digest: ab905ea3903a42dc7874fee894fc9ed5765386f260bf87e76944aad89b06facb
+    name: hoppscotch-community
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-community-0.1.0/hoppscotch-community-0.1.0.tgz
+    version: 0.1.0
+  hoppscotch-enterprise:
+  - apiVersion: v2
+    appVersion: 2024.12.1
+    created: "2025-06-30T07:53:20.677064751Z"
+    description: A Helm chart for Hoppscotch Enterprise Edition
+    digest: edd746e6f964d21c48eb80c80ddf11e8ec8c6a5901da703b60a4e6a1e03d9933
+    name: hoppscotch-enterprise
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-enterprise-0.1.0/hoppscotch-enterprise-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-06-30T07:53:20.677073517Z"
