@@ -31,14 +31,23 @@ data:
   ALLOW_SECURE_COOKIES: {{ .Values.community.config.authjwt.allowSecureCookies | quote }}
 
   # URLs and Frontend Config
-  VITE_BASE_URL: {{ .Values.community.config.urls.base | quote }}
-  VITE_SHORTCODE_BASE_URL: {{ .Values.community.config.urls.shortcode | quote }}
-  VITE_ADMIN_URL: {{ .Values.community.config.urls.admin | quote }}
-  VITE_BACKEND_GQL_URL: {{ .Values.community.config.urls.backend.gql | quote }}
-  VITE_BACKEND_WS_URL: {{ .Values.community.config.urls.backend.ws | quote }}
-  VITE_BACKEND_API_URL: {{ .Values.community.config.urls.backend.api | quote }}
-  REDIRECT_URL: {{ .Values.community.config.urls.redirect | quote }}
-  WHITELISTED_ORIGINS: {{ .Values.community.config.urls.whitelistedOrigins | quote }}
+  {{ $protocol := .Values.community.config.urls.https | ternary "https" "http" -}}
+  {{ $wsprotocol := .Values.community.config.urls.https | ternary "wss" "ws" -}}
+  {{- $base_url := printf "%s://%s" $protocol .Values.service.ingress.mainHost -}}
+  {{- $admin_url := printf "%s://%s" $protocol ( .Values.community.config.community.enableSubpathBasedAccess | ternary (printf "%s/admin" .Values.service.ingress.mainHost) .Values.service.ingress.adminHost ) -}}
+  {{- $backend_url := .Values.community.config.community.enableSubpathBasedAccess | ternary (printf "%s/backend" .Values.service.ingress.mainHost) .Values.service.ingress.backendHost -}}
+  {{- $http_backend_url := printf "%s://%s" $protocol $backend_url -}}
+  {{- $url_underscore := (.Values.service.ingress.mainHost | replace "." "_") -}}
+  {{- $app_url := printf "app://%s,http://app.%s" $url_underscore $url_underscore -}}
+
+  VITE_BASE_URL: {{ .Values.community.config.urls.base | default $base_url | quote }}
+  VITE_SHORTCODE_BASE_URL: {{ .Values.community.config.urls.shortcode | default $base_url | quote }}
+  REDIRECT_URL: {{ .Values.community.config.urls.base | default $base_url | quote }}
+  VITE_ADMIN_URL: {{ .Values.community.config.urls.admin | default $admin_url | quote }}
+  VITE_BACKEND_GQL_URL: {{ .Values.community.config.urls.backend.gql | default (printf "%s/graphql" $http_backend_url) | quote }}
+  VITE_BACKEND_WS_URL: {{ .Values.community.config.urls.backend.ws | default (printf "%s://%s/graphql" $wsprotocol $backend_url) | quote }}
+  VITE_BACKEND_API_URL: {{ .Values.community.config.urls.backend.api | default (printf "%s/v1" $http_backend_url) | quote }}
+  WHITELISTED_ORIGINS: {{ printf "%s,%s,%s,%s,%s" $base_url $admin_url $http_backend_url $app_url (.Values.community.config.urls.whitelistedOrigins | default "") | quote }}
 
   # community Config
   VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.community.config.auth.allowedProviders | quote }}

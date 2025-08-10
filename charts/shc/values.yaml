@@ -63,15 +63,16 @@ community:
       dataEncryptionKey: "data encryption key with 32 char"
 
     urls:
-      base: "http://frontend.example.com"
-      shortcode: "http://frontend.example.com"
-      admin: "http://admin.example.com"
+      https: true
+      base: "" # "http://frontend.example.com"
+      shortcode: "" # "http://frontend.example.com"
+      admin: "" # "http://admin.example.com"
       backend:
-        gql: "http://backend.example.com/graphql"
-        ws: "ws://backend.example.com/graphql"
-        api: "http://backend.example.com/v1"
-      redirect: "http://frontend.example.com"
-      whitelistedOrigins: "http://backend.example.com,http://frontend.example.com,http://admin.example.com"
+        gql: "" # "http://backend.example.com/graphql"
+        ws: "" # "ws://backend.example.com/graphql"
+        api: "" # "http://backend.example.com/v1"
+      redirect: "" # "http://frontend.example.com"
+      whitelistedOrigins: ""  # "http://backend.example.com,http://frontend.example.com,http://admin.example.com"
 
     auth:
       allowedProviders: "EMAIL" # "GOOGLE,MICROSOFT,GITHUB,EMAIL"
@@ -114,10 +115,6 @@ serviceAccount:
 
 # Service configuration
 service:
-  apiVersion: v1
-  name: hoppscotch-community
-  app: hoppscotch-community
-  # Dynamically set based on ingress
   type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
   # Only set externalTrafficPolicy for LoadBalancer
   externalTrafficPolicy: "{{ .Values.service.ingress.enabled | ternary \"\" \"Cluster\" }}"
@@ -126,25 +123,15 @@ service:
     backend:
       port: 3170
       targetPort: 3170
-      protocol: TCP
-      name: backend
     frontend:
       port: 3000
       targetPort: 3000
-      protocol: TCP
-      name: frontend
     admin:
       port: 3100
       targetPort: 3100
-      protocol: TCP
-      name: admin
     subpath:
       port: 80
       targetPort: 80
-      protocol: TCP
-      name: subpath
-  selector:
-    app: hoppscotch-community
 
   # Ingress Configuration
   ingress:

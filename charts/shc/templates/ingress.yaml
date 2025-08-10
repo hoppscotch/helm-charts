@@ -3,7 +3,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.service.name }}
+  name: {{ .Release.Name }}-community
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   annotations:
     {{- toYaml .Values.service.ingress.annotations | nindent 4 }}
@@ -38,21 +38,21 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: {{ .Values.service.ports.subpath.port }}
       - path: /backend
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: {{ .Values.service.ports.subpath.port }}
       - path: /admin
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: {{ .Values.service.ports.subpath.port }}
   {{- else }}
@@ -64,7 +64,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: 3000
   
@@ -75,7 +75,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: 3100
   
@@ -86,7 +86,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: {{ .Values.service.name }}
+            name: {{ .Release.Name }}-community
             port:
               number: 3170
   {{- end }}
