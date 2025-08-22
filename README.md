@@ -46,6 +46,29 @@
 
 ### **Installation Guides**
 
+### Helm Repository
+
+You can now install Hoppscotch charts directly from our Helm repository hosted on GitHub Pages.
+
+#### Add the repository
+
+```bash
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+helm repo update
+```
+
+#### Install charts
+
+```bash
+# Community version
+helm install "my-release" hoppscotch/shc
+
+# Enterprise version
+helm install "my-release" hoppscotch/she
+```
+
+---
+
 <details>
 <summary><b>Digital Ocean Installation</b></summary>
 
