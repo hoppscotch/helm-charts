@@ -265,6 +265,62 @@ hoppscotch:
       dataEncryptionKey: "" # Random 32-character alphanumeric string used if not provided
 ```
 
+## Overriding Config Values
+
+You can override config values using an existing secret, extra env vars, extra configmap, or extra secret. The order of
+precedence of these methods is as follows (from highest to lowest):
+
+1. Extra Env Vars
+2. Extra Secret
+3. Extra ConfigMap
+4. Existing Secret
+
+Extra env vars, secret, and configmap must be specified in container parameter sections (e.g. `aio`, `frontend`,
+`backend`, `admin`)
+
+Note: Config order of precedence is driven by Kubernetes, not this chart. See [Environment Variables in Kubernetes Pod](https://www.baeldung.com/ops/kubernetes-pod-environment-variables#1-order-of-precedence)
+for more info.
+
+### Using Extra Env Vars
+
+To use extra environment variables:
+
+```yaml
+aio:
+  extraEnvVars:
+    - name: MY_ENV_VAR
+      value: my-value
+```
+
+### Using Extra Secret
+
+To use an extra secret:
+
+```yaml
+aio:
+  extraEnvVarsSecret: my-extra-secret
+```
+
+### Using Extra ConfigMap
+
+To use an extra configmap:
+
+```yaml
+aio:
+  extraEnvVarsCM: my-extra-configmap
+```
+
+### Using Existing Secret
+
+To use an existing secret:
+
+```yaml
+existingSecret: my-existing-secret
+```
+
+Note: The existing secret must contain all required keys. See [templates/secrets.yaml](templates/secrets.yaml) for more
+info.
+
 ## Waiting for Database Readiness
 
 Hoppscotch pods that connect to the database will wait for the database to be ready before starting. This is
@@ -425,7 +481,7 @@ unique for each release. This allows the job to be run multiple times without co
 | hoppscotch.backend.clickhouse.allowAuditLogs | bool | `false` | Enable audit logs collection to ClickHouse. Enterprise Edition required. |
 | hoppscotch.backend.horizontalScalingEnabled | bool | `false` | Enable horizontal scaling with Redis for state management. Enterprise Edition required. |
 
-### Hoppscotch AIO Parameters
+### Hoppscotch AIO Container Parameters
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -540,7 +596,7 @@ unique for each release. This allows the job to be run multiple times without co
 | aio.metrics.serviceMonitor.relabelings | list | `[]` | ServiceMonitor relabelings |
 | aio.metrics.serviceMonitor.selector | object | `{}` | ServiceMonitor selector |
 
-### Hoppscotch Frontend Parameters
+### Hoppscotch Frontend Container Parameters
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -643,7 +699,7 @@ unique for each release. This allows the job to be run multiple times without co
 | frontend.metrics.serviceMonitor.relabelings | list | `[]` | ServiceMonitor relabelings |
 | frontend.metrics.serviceMonitor.selector | object | `{}` | ServiceMonitor selector |
 
-### Hoppscotch Backend Parameters
+### Hoppscotch Backend Container Parameters
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -746,7 +802,7 @@ unique for each release. This allows the job to be run multiple times without co
 | backend.metrics.serviceMonitor.relabelings | list | `[]` | ServiceMonitor relabelings |
 | backend.metrics.serviceMonitor.selector | object | `{}` | ServiceMonitor selector |
 
-### Hoppscotch Admin Parameters
+### Hoppscotch Admin Container Parameters
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -849,7 +905,7 @@ unique for each release. This allows the job to be run multiple times without co
 | admin.metrics.serviceMonitor.relabelings | list | `[]` | ServiceMonitor relabelings |
 | admin.metrics.serviceMonitor.selector | object | `{}` | ServiceMonitor selector |
 
-### Hoppscotch Migrations Parameters
+### Hoppscotch Migrations Container Parameters
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|

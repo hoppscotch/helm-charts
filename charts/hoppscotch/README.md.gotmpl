@@ -266,6 +266,62 @@ hoppscotch:
       dataEncryptionKey: "" # Random 32-character alphanumeric string used if not provided
 ```
 
+## Overriding Config Values
+
+You can override config values using an existing secret, extra env vars, extra configmap, or extra secret. The order of
+precedence of these methods is as follows (from highest to lowest):
+
+1. Extra Env Vars
+2. Extra Secret
+3. Extra ConfigMap
+4. Existing Secret
+
+Extra env vars, secret, and configmap must be specified in container parameter sections (e.g. `aio`, `frontend`,
+`backend`, `admin`)
+
+Note: Config order of precedence is driven by Kubernetes. See [Environment Variables in Kubernetes Pod](https://www.baeldung.com/ops/kubernetes-pod-environment-variables#1-order-of-precedence)
+for more info.
+
+### Using Extra Env Vars
+
+To use extra environment variables:
+
+```yaml
+aio:
+  extraEnvVars:
+    - name: MY_ENV_VAR
+      value: my-value
+```
+
+### Using Extra Secret
+
+To use an extra secret:
+
+```yaml
+aio:
+  extraEnvVarsSecret: my-extra-secret
+```
+
+### Using Extra ConfigMap
+
+To use an extra configmap:
+
+```yaml
+aio:
+  extraEnvVarsCM: my-extra-configmap
+```
+
+### Using Existing Secret
+
+To use an existing secret:
+
+```yaml
+existingSecret: my-existing-secret
+```
+
+Note: The existing secret must contain all required keys. See [templates/secrets.yaml](templates/secrets.yaml) for more
+info.
+
 ## Waiting for Database Readiness
 
 Hoppscotch pods that connect to the database will wait for the database to be ready before starting. This is
