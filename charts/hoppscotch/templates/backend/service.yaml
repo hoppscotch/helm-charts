@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "hoppscotch.fullname" . }}-backend
+  name: {{ include "hoppscotch.backend.serviceName" . }}
   namespace: {{ include "hoppscotch.namespace" . | quote }}
   labels:
     app.kubernetes.io/component: hoppscotch-backend

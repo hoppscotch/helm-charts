@@ -14,10 +14,15 @@ clean: ## Clean up temporary resources
 	rm -rf .cr-release-packages
 
 .PHONY: fmt
-fmt: fmt-markdown fmt-shell fmt-yaml ## Check all files formatting
+fmt: fmt-commit fmt-markdown fmt-shell fmt-yaml ## Check all files formatting
 
 .PHONY: fmt-fix
 fmt-fix: fmt-markdown-fix fmt-shell-fix fmt-yaml-fix ## Fix all files formatting
+
+.PHONY: fmt-commit
+fmt-commit: ## Check commit message formatting
+	@echo "Checking commit message formatting"
+	cz check --rev-range=main..HEAD
 
 .PHONY: fmt-markdown
 fmt-markdown: ## Check Markdown files formatting
@@ -59,6 +64,16 @@ helm-docs: ## Generate Helm docs
 helm-install: kind-create-cluster ## Install chart
 	@echo "Installing ${CHART_NAME} chart"
 	helm install ${CHART_NAME} charts/${CHART_NAME} -n ${CHART_NAMESPACE} --values=${CHART_VALUES} --create-namespace --wait
+
+.PHONY: helm-package
+helm-package: clean ## Package Helm charts
+	@echo "Packaging Helm charts"
+	cr package charts/${CHART_NAME}
+
+.PHONY: helm-test
+helm-test: ## Run chart tests
+	@echo "Running ${CHART_NAME} chart tests"
+	helm test ${CHART_NAME} --namespace ${CHART_NAMESPACE}
 
 .PHONY: helm-template
 helm-template: clean ## Render chart templates
@@ -111,10 +126,16 @@ install-deps-linux: ## Install dependencies for Linux
 		echo "Error: NPM is not installed" 1>&2; \
 		exit 1; \
 	fi
+	@if ! command -v pipx &> /dev/null; then \
+		echo "Error: pipx is not installed" 1>&2; \
+		exit 1; \
+	fi
 	@echo "Installing chart-releaser"
 	curl -sLo cr.tar.gz https://github.com/helm/chart-releaser/releases/download/v1.8.1/chart-releaser_1.8.1_linux_amd64.tar.gz && tar -C /usr/local/bin -xzf cr.tar.gz && rm cr.tar.gz
 	@echo "Installing chart-testing"
 	curl -sLo ct.tar.gz https://github.com/helm/chart-testing/releases/download/v3.13.0/chart-testing_3.13.0_linux_amd64.tar.gz && tar -C /usr/local/bin -xzf ct.tar.gz && rm ct.tar.gz
+	@echo "Installing commitizen"
+	pipx install commitizen
 	@echo "Installing Docker"
 	sudo apt -y install docker.io
 	@echo "Installing Helm"
@@ -148,6 +169,7 @@ install-deps-macos: ## Install dependencies for MacOS
 	brew update
 	brew install chart-releaser
 	brew install chart-testing
+	brew install commitizen
 	brew install docker
 	brew install helm
 	@if ! helm plugin list | grep -q 'unittest'; then \
@@ -196,7 +218,7 @@ lint-helm: ## Lint Helm charts
 .PHONY: lint-markdown
 lint-markdown: ## Lint Markdown files
 	@echo "Linting Markdown files"
-	markdownlint '**/*.md'
+	markdownlint -d '**/*.md'
 
 .PHONY: lint-shell
 lint-shell: ## Lint shell scripts
@@ -208,11 +230,6 @@ lint-yaml: ## Lint YAML files
 	@echo "Linting YAML files"
 	yamllint .
 
-.PHONY: package
-package: clean ## Package Helm charts
-	@echo "Packaging Helm charts"
-	cr package charts/${CHART_NAME}
-
 .PHONY: pre-commit
 pre-commit: fmt lint test-unit ## Run pre-commit hooks
 
@@ -220,6 +237,9 @@ pre-commit: fmt lint test-unit ## Run pre-commit hooks
 test-e2e: ## Run end-to-end tests
 	@echo "Running end-to-end tests for ${CHART_NAME} chart"
 	${TEST_E2E_DIR}/test-e2e.sh --charts=charts/${CHART_NAME} --debug
+
+.PHONY: test-integration
+test-integration: helm-test ## Run integration tests
 
 .PHONY: test-unit
 test-unit: ## Run unit tests
