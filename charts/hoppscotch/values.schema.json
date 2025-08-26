@@ -1,0 +1,4341 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "admin": {
+      "additionalProperties": false,
+      "description": "Hoppscotch Admin Parameters",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity for Hoppscotch pods assignment",
+          "required": [],
+          "title": "affinity"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable autoscaling for Hoppscotch deployment",
+              "required": [],
+              "title": "enabled"
+            },
+            "maxReplicas": {
+              "default": "100",
+              "description": "Maximum number of Hoppscotch replicas",
+              "required": [],
+              "title": "maxReplicas"
+            },
+            "minReplicas": {
+              "default": "1",
+              "description": "Minimum number of Hoppscotch replicas",
+              "required": [],
+              "title": "minReplicas"
+            },
+            "targetCPUUtilizationPercentage": {
+              "default": "80",
+              "description": "Target CPU utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetCPUUtilizationPercentage"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "default": "80",
+              "description": "Target memory utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetMemoryUtilizationPercentage"
+            }
+          },
+          "required": [],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "containerPorts": {
+          "additionalProperties": false,
+          "properties": {
+            "http": {
+              "default": "80",
+              "description": "Hoppscotch HTTP container port",
+              "required": [],
+              "title": "http"
+            },
+            "https": {
+              "default": "443",
+              "description": "Hoppscotch HTTPS container port",
+              "required": [],
+              "title": "https"
+            }
+          },
+          "required": [],
+          "title": "containerPorts",
+          "type": "object"
+        },
+        "customLivenessProbe": {
+          "additionalProperties": false,
+          "description": "Custom liveness probe that overrides the default one",
+          "required": [],
+          "title": "customLivenessProbe"
+        },
+        "customReadinessProbe": {
+          "additionalProperties": false,
+          "description": "Custom readiness probe that overrides the default one",
+          "required": [],
+          "title": "customReadinessProbe"
+        },
+        "customStartupProbe": {
+          "additionalProperties": false,
+          "description": "Custom startup probe that overrides the default one",
+          "required": [],
+          "title": "customStartupProbe"
+        },
+        "extraEnvVars": {
+          "description": "Array of extra environment variables to be added to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnvVars"
+        },
+        "extraEnvVarsCM": {
+          "default": "",
+          "description": "Name of existing ConfigMap containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsCM"
+        },
+        "extraEnvVarsSecret": {
+          "default": "",
+          "description": "Name of existing Secret containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsSecret"
+        },
+        "image": {
+          "additionalProperties": false,
+          "properties": {
+            "pullPolicy": {
+              "default": "IfNotPresent",
+              "description": "Hoppscotch image pull policy",
+              "required": [],
+              "title": "pullPolicy"
+            },
+            "repository": {
+              "default": "hoppscotch/hoppscotch-admin",
+              "description": "Hoppscotch image repository",
+              "required": [],
+              "title": "repository"
+            },
+            "tag": {
+              "default": "",
+              "description": "Hoppscotch image tag",
+              "required": [],
+              "title": "tag"
+            }
+          },
+          "required": [],
+          "title": "image",
+          "type": "object"
+        },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Ingress annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "apiVersion": {
+              "default": "",
+              "description": "Ingress API version",
+              "required": [],
+              "title": "apiVersion"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable ingress for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraHosts": {
+              "description": "Extra hostnames for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraHosts"
+            },
+            "extraPaths": {
+              "description": "Extra paths for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPaths"
+            },
+            "extraRules": {
+              "description": "Extra ingress rules",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraRules"
+            },
+            "extraTls": {
+              "description": "Extra TLS configurations for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraTls"
+            },
+            "hostname": {
+              "default": "hoppscotch-admin.local",
+              "description": "Ingress hostname",
+              "required": [],
+              "title": "hostname"
+            },
+            "ingressClassName": {
+              "default": "",
+              "description": "Ingress class name",
+              "required": [],
+              "title": "ingressClassName"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path"
+            },
+            "pathType": {
+              "default": "ImplementationSpecific",
+              "description": "Ingress path type",
+              "required": [],
+              "title": "pathType"
+            },
+            "secrets": {
+              "description": "TLS secrets for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "secrets"
+            },
+            "selfSigned": {
+              "default": "false",
+              "description": "Create self-signed TLS certificates",
+              "required": [],
+              "title": "selfSigned"
+            },
+            "tls": {
+              "default": "false",
+              "description": "Enable TLS for ingress",
+              "required": [],
+              "title": "tls"
+            }
+          },
+          "required": [],
+          "title": "ingress",
+          "type": "object"
+        },
+        "metrics": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable metrics collection for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "serviceMonitor": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor annotations",
+                  "required": [],
+                  "title": "annotations"
+                },
+                "enabled": {
+                  "default": "false",
+                  "description": "Enable ServiceMonitor for Prometheus monitoring",
+                  "required": [],
+                  "title": "enabled"
+                },
+                "honorLabels": {
+                  "default": "false",
+                  "description": "Honor labels from target",
+                  "required": [],
+                  "title": "honorLabels"
+                },
+                "interval": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape interval",
+                  "required": [],
+                  "title": "interval"
+                },
+                "jobLabel": {
+                  "default": "",
+                  "description": "ServiceMonitor job label",
+                  "required": [],
+                  "title": "jobLabel"
+                },
+                "labels": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor labels",
+                  "required": [],
+                  "title": "labels"
+                },
+                "metricsRelabelings": {
+                  "description": "ServiceMonitor metrics relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "metricsRelabelings"
+                },
+                "namespace": {
+                  "default": "",
+                  "description": "Namespace for ServiceMonitor (defaults to release namespace)",
+                  "required": [],
+                  "title": "namespace"
+                },
+                "relabelings": {
+                  "description": "ServiceMonitor relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "relabelings"
+                },
+                "scrapeTimeout": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape timeout",
+                  "required": [],
+                  "title": "scrapeTimeout"
+                },
+                "selector": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor selector",
+                  "required": [],
+                  "title": "selector"
+                },
+                "tlsConfig": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor TLS configuration",
+                  "required": [],
+                  "title": "tlsConfig"
+                }
+              },
+              "required": [],
+              "title": "serviceMonitor",
+              "type": "object"
+            }
+          },
+          "required": [
+            "serviceMonitor"
+          ],
+          "title": "metrics",
+          "type": "object"
+        },
+        "networkPolicy": {
+          "additionalProperties": false,
+          "properties": {
+            "addExternalClientAccess": {
+              "default": "true",
+              "description": "Add external client access to NetworkPolicy",
+              "required": [],
+              "title": "addExternalClientAccess"
+            },
+            "allowExternal": {
+              "default": "true",
+              "description": "Allow external traffic to Hoppscotch pods",
+              "required": [],
+              "title": "allowExternal"
+            },
+            "allowExternalEgress": {
+              "default": "true",
+              "description": "Allow external egress traffic from Hoppscotch pods",
+              "required": [],
+              "title": "allowExternalEgress"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable NetworkPolicy for Hoppscotch pods",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraEgress": {
+              "description": "Extra egress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraEgress"
+            },
+            "extraIngress": {
+              "description": "Extra ingress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraIngress"
+            },
+            "ingressNSMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSMatchLabels"
+            },
+            "ingressNSPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSPodMatchLabels"
+            },
+            "ingressPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressPodMatchLabels"
+            }
+          },
+          "required": [],
+          "title": "networkPolicy",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node labels for Hoppscotch pods assignment",
+          "required": [],
+          "title": "nodeSelector"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "default": "false",
+              "description": "Create PodDisruptionBudget for Hoppscotch deployment",
+              "required": [],
+              "title": "create"
+            },
+            "maxUnavailable": {
+              "default": "",
+              "description": "Maximum number of unavailable pods during disruptions",
+              "required": [],
+              "title": "maxUnavailable"
+            },
+            "minAvailable": {
+              "default": "",
+              "description": "Minimum number of available pods during disruptions",
+              "required": [],
+              "title": "minAvailable"
+            }
+          },
+          "required": [],
+          "title": "pdb",
+          "type": "object"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "properties": {
+            "accessModes": {
+              "description": "Access modes for persistent volume",
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "accessModes"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Annotations for persistent volume claim",
+              "required": [],
+              "title": "annotations"
+            },
+            "dataSource": {
+              "additionalProperties": false,
+              "description": "Data source for persistent volume",
+              "required": [],
+              "title": "dataSource"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable persistent storage for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Use existing persistent volume claim",
+              "required": [],
+              "title": "existingClaim"
+            },
+            "mountPath": {
+              "default": "/hoppscotch/data",
+              "description": "Mount path for persistent volume",
+              "required": [],
+              "title": "mountPath"
+            },
+            "selector": {
+              "additionalProperties": false,
+              "description": "Selector for persistent volume",
+              "required": [],
+              "title": "selector"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size of persistent volume",
+              "required": [],
+              "title": "size"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistent volume",
+              "required": [],
+              "title": "storageClass"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Subpath within persistent volume",
+              "required": [],
+              "title": "subPath"
+            }
+          },
+          "required": [],
+          "title": "persistence",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Annotations to add to Hoppscotch pods",
+          "required": [],
+          "title": "podAnnotations"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Labels to add to Hoppscotch pods",
+          "required": [],
+          "title": "podLabels"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch pods",
+          "required": [],
+          "title": "podSecurityContext"
+        },
+        "readinessProbe": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable readiness probe",
+              "required": [],
+              "title": "enabled"
+            },
+            "failureThreshold": {
+              "default": "3",
+              "description": "Failure threshold for readiness probe",
+              "required": [],
+              "title": "failureThreshold"
+            },
+            "initialDelaySeconds": {
+              "default": "0",
+              "description": "Initial delay seconds for readiness probe",
+              "required": [],
+              "title": "initialDelaySeconds"
+            },
+            "periodSeconds": {
+              "default": "10",
+              "description": "Period seconds for readiness probe",
+              "required": [],
+              "title": "periodSeconds"
+            },
+            "successThreshold": {
+              "default": "1",
+              "description": "Success threshold for readiness probe",
+              "required": [],
+              "title": "successThreshold"
+            },
+            "timeoutSeconds": {
+              "default": "1",
+              "description": "Timeout seconds for readiness probe",
+              "required": [],
+              "title": "timeoutSeconds"
+            }
+          },
+          "required": [],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "replicaCount": {
+          "default": "1",
+          "description": "Number of Hoppscotch replicas",
+          "required": [],
+          "title": "replicaCount"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Set container resources for Hoppscotch (overrides resourcesPreset)",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)",
+          "required": [],
+          "title": "resourcesPreset"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch containers",
+          "required": [],
+          "title": "securityContext"
+        },
+        "service": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Service annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "clusterIP": {
+              "default": "",
+              "description": "Static cluster IP address (optional)",
+              "required": [],
+              "title": "clusterIP"
+            },
+            "externalTrafficPolicy": {
+              "default": "Cluster",
+              "description": "External traffic policy (Cluster or Local)",
+              "required": [],
+              "title": "externalTrafficPolicy"
+            },
+            "extraPorts": {
+              "description": "Extra service ports",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPorts"
+            },
+            "loadBalancerIP": {
+              "default": "",
+              "description": "Load balancer IP address (when service type is LoadBalancer)",
+              "required": [],
+              "title": "loadBalancerIP"
+            },
+            "loadBalancerSourceRanges": {
+              "description": "Load balancer source IP ranges (when service type is LoadBalancer)",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "loadBalancerSourceRanges"
+            },
+            "nodePorts": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "",
+                  "description": "NodePort for HTTP (when service type is NodePort)",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "",
+                  "description": "NodePort for HTTPS (when service type is NodePort)",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "nodePorts",
+              "type": "object"
+            },
+            "ports": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "80",
+                  "description": "Service HTTP port",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "443",
+                  "description": "Service HTTPS port",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "ports",
+              "type": "object"
+            },
+            "sessionAffinity": {
+              "default": "None",
+              "description": "Session affinity (None or ClientIP)",
+              "required": [],
+              "title": "sessionAffinity"
+            },
+            "sessionAffinityConfig": {
+              "additionalProperties": false,
+              "description": "Session affinity configuration",
+              "required": [],
+              "title": "sessionAffinityConfig"
+            },
+            "type": {
+              "default": "ClusterIP",
+              "description": "Kubernetes service type",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [
+            "ports",
+            "nodePorts"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations"
+        },
+        "topologySpreadConstraints": {
+          "description": "Topology spread constraints for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "topologySpreadConstraints"
+        },
+        "updateStrategy": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RollingUpdate",
+              "description": "Deployment update strategy type (RollingUpdate or Recreate)",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [],
+          "title": "updateStrategy",
+          "type": "object"
+        },
+        "volumeMounts": {
+          "description": "Extra volume mounts to add to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts"
+        },
+        "volumes": {
+          "description": "Extra volumes to add to Hoppscotch deployment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes"
+        }
+      },
+      "required": [
+        "image",
+        "containerPorts",
+        "readinessProbe",
+        "updateStrategy",
+        "pdb",
+        "autoscaling",
+        "service",
+        "networkPolicy",
+        "ingress",
+        "persistence",
+        "metrics"
+      ],
+      "title": "admin"
+    },
+    "aio": {
+      "additionalProperties": false,
+      "description": "Hoppscotch AIO Parameters",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity for Hoppscotch pods assignment",
+          "required": [],
+          "title": "affinity"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable autoscaling for Hoppscotch deployment",
+              "required": [],
+              "title": "enabled"
+            },
+            "maxReplicas": {
+              "default": "100",
+              "description": "Maximum number of Hoppscotch replicas",
+              "required": [],
+              "title": "maxReplicas"
+            },
+            "minReplicas": {
+              "default": "1",
+              "description": "Minimum number of Hoppscotch replicas",
+              "required": [],
+              "title": "minReplicas"
+            },
+            "targetCPUUtilizationPercentage": {
+              "default": "80",
+              "description": "Target CPU utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetCPUUtilizationPercentage"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "default": "80",
+              "description": "Target memory utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetMemoryUtilizationPercentage"
+            }
+          },
+          "required": [],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "containerPorts": {
+          "additionalProperties": false,
+          "properties": {
+            "admin": {
+              "default": "3100",
+              "description": "Hoppscotch admin container port (for multiport access mode)",
+              "required": [],
+              "title": "admin"
+            },
+            "backend": {
+              "default": "3170",
+              "description": "Hoppscotch backend container port (for multiport access mode)",
+              "required": [],
+              "title": "backend"
+            },
+            "desktop": {
+              "default": "3200",
+              "description": "Hoppscotch desktop container port (for multiport access mode)",
+              "required": [],
+              "title": "desktop"
+            },
+            "frontend": {
+              "default": "3000",
+              "description": "Hoppscotch frontend container port (for multiport access mode)",
+              "required": [],
+              "title": "frontend"
+            },
+            "http": {
+              "default": "80",
+              "description": "Hoppscotch HTTP container port",
+              "required": [],
+              "title": "http"
+            },
+            "https": {
+              "default": "443",
+              "description": "Hoppscotch HTTPS container port",
+              "required": [],
+              "title": "https"
+            }
+          },
+          "required": [],
+          "title": "containerPorts",
+          "type": "object"
+        },
+        "customLivenessProbe": {
+          "additionalProperties": false,
+          "description": "Custom liveness probe that overrides the default one",
+          "required": [],
+          "title": "customLivenessProbe"
+        },
+        "customReadinessProbe": {
+          "additionalProperties": false,
+          "description": "Custom readiness probe that overrides the default one",
+          "required": [],
+          "title": "customReadinessProbe"
+        },
+        "customStartupProbe": {
+          "additionalProperties": false,
+          "description": "Custom startup probe that overrides the default one",
+          "required": [],
+          "title": "customStartupProbe"
+        },
+        "extraEnvVars": {
+          "description": "Array of extra environment variables to be added to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnvVars"
+        },
+        "extraEnvVarsCM": {
+          "default": "",
+          "description": "Name of existing ConfigMap containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsCM"
+        },
+        "extraEnvVarsSecret": {
+          "default": "",
+          "description": "Name of existing Secret containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsSecret"
+        },
+        "image": {
+          "additionalProperties": false,
+          "properties": {
+            "pullPolicy": {
+              "default": "IfNotPresent",
+              "description": "Hoppscotch image pull policy",
+              "required": [],
+              "title": "pullPolicy"
+            },
+            "repository": {
+              "default": "hoppscotch/hoppscotch",
+              "description": "Hoppscotch image repository",
+              "required": [],
+              "title": "repository"
+            },
+            "tag": {
+              "default": "",
+              "description": "Hoppscotch image tag",
+              "required": [],
+              "title": "tag"
+            }
+          },
+          "required": [],
+          "title": "image",
+          "type": "object"
+        },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Ingress annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "apiVersion": {
+              "default": "",
+              "description": "Ingress API version",
+              "required": [],
+              "title": "apiVersion"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable ingress for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraHosts": {
+              "description": "Extra hostnames for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraHosts"
+            },
+            "extraPaths": {
+              "description": "Extra paths for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPaths"
+            },
+            "extraRules": {
+              "description": "Extra ingress rules",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraRules"
+            },
+            "extraTls": {
+              "description": "Extra TLS configurations for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraTls"
+            },
+            "hostname": {
+              "default": "hoppscotch.local",
+              "description": "Ingress hostname",
+              "required": [],
+              "title": "hostname"
+            },
+            "ingressClassName": {
+              "default": "",
+              "description": "Ingress class name",
+              "required": [],
+              "title": "ingressClassName"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path"
+            },
+            "pathType": {
+              "default": "ImplementationSpecific",
+              "description": "Ingress path type",
+              "required": [],
+              "title": "pathType"
+            },
+            "secrets": {
+              "description": "TLS secrets for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "secrets"
+            },
+            "selfSigned": {
+              "default": "false",
+              "description": "Create self-signed TLS certificates",
+              "required": [],
+              "title": "selfSigned"
+            },
+            "tls": {
+              "default": "false",
+              "description": "Enable TLS for ingress",
+              "required": [],
+              "title": "tls"
+            }
+          },
+          "required": [],
+          "title": "ingress",
+          "type": "object"
+        },
+        "metrics": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable metrics collection for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "serviceMonitor": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor annotations",
+                  "required": [],
+                  "title": "annotations"
+                },
+                "enabled": {
+                  "default": "false",
+                  "description": "Enable ServiceMonitor for Prometheus monitoring",
+                  "required": [],
+                  "title": "enabled"
+                },
+                "honorLabels": {
+                  "default": "false",
+                  "description": "Honor labels from target",
+                  "required": [],
+                  "title": "honorLabels"
+                },
+                "interval": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape interval",
+                  "required": [],
+                  "title": "interval"
+                },
+                "jobLabel": {
+                  "default": "",
+                  "description": "ServiceMonitor job label",
+                  "required": [],
+                  "title": "jobLabel"
+                },
+                "labels": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor labels",
+                  "required": [],
+                  "title": "labels"
+                },
+                "metricsRelabelings": {
+                  "description": "ServiceMonitor metrics relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "metricsRelabelings"
+                },
+                "namespace": {
+                  "default": "",
+                  "description": "Namespace for ServiceMonitor (defaults to release namespace)",
+                  "required": [],
+                  "title": "namespace"
+                },
+                "relabelings": {
+                  "description": "ServiceMonitor relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "relabelings"
+                },
+                "scrapeTimeout": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape timeout",
+                  "required": [],
+                  "title": "scrapeTimeout"
+                },
+                "selector": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor selector",
+                  "required": [],
+                  "title": "selector"
+                },
+                "tlsConfig": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor TLS configuration",
+                  "required": [],
+                  "title": "tlsConfig"
+                }
+              },
+              "required": [],
+              "title": "serviceMonitor",
+              "type": "object"
+            }
+          },
+          "required": [
+            "serviceMonitor"
+          ],
+          "title": "metrics",
+          "type": "object"
+        },
+        "networkPolicy": {
+          "additionalProperties": false,
+          "properties": {
+            "addExternalClientAccess": {
+              "default": "true",
+              "description": "Add external client access to NetworkPolicy",
+              "required": [],
+              "title": "addExternalClientAccess"
+            },
+            "allowExternal": {
+              "default": "true",
+              "description": "Allow external traffic to Hoppscotch pods",
+              "required": [],
+              "title": "allowExternal"
+            },
+            "allowExternalEgress": {
+              "default": "true",
+              "description": "Allow external egress traffic from Hoppscotch pods",
+              "required": [],
+              "title": "allowExternalEgress"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable NetworkPolicy for Hoppscotch pods",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraEgress": {
+              "description": "Extra egress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraEgress"
+            },
+            "extraIngress": {
+              "description": "Extra ingress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraIngress"
+            },
+            "ingressNSMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSMatchLabels"
+            },
+            "ingressNSPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSPodMatchLabels"
+            },
+            "ingressPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressPodMatchLabels"
+            }
+          },
+          "required": [],
+          "title": "networkPolicy",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node labels for Hoppscotch pods assignment",
+          "required": [],
+          "title": "nodeSelector"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "default": "false",
+              "description": "Create PodDisruptionBudget for Hoppscotch deployment",
+              "required": [],
+              "title": "create"
+            },
+            "maxUnavailable": {
+              "default": "",
+              "description": "Maximum number of unavailable pods during disruptions",
+              "required": [],
+              "title": "maxUnavailable"
+            },
+            "minAvailable": {
+              "default": "",
+              "description": "Minimum number of available pods during disruptions",
+              "required": [],
+              "title": "minAvailable"
+            }
+          },
+          "required": [],
+          "title": "pdb",
+          "type": "object"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "properties": {
+            "accessModes": {
+              "description": "Access modes for persistent volume",
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "accessModes"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Annotations for persistent volume claim",
+              "required": [],
+              "title": "annotations"
+            },
+            "dataSource": {
+              "additionalProperties": false,
+              "description": "Data source for persistent volume",
+              "required": [],
+              "title": "dataSource"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable persistent storage for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Use existing persistent volume claim",
+              "required": [],
+              "title": "existingClaim"
+            },
+            "mountPath": {
+              "default": "/hoppscotch/data",
+              "description": "Mount path for persistent volume",
+              "required": [],
+              "title": "mountPath"
+            },
+            "selector": {
+              "additionalProperties": false,
+              "description": "Selector for persistent volume",
+              "required": [],
+              "title": "selector"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size of persistent volume",
+              "required": [],
+              "title": "size"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistent volume",
+              "required": [],
+              "title": "storageClass"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Subpath within persistent volume",
+              "required": [],
+              "title": "subPath"
+            }
+          },
+          "required": [],
+          "title": "persistence",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Annotations to add to Hoppscotch pods",
+          "required": [],
+          "title": "podAnnotations"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Labels to add to Hoppscotch pods",
+          "required": [],
+          "title": "podLabels"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch pods",
+          "required": [],
+          "title": "podSecurityContext"
+        },
+        "readinessProbe": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable readiness probe",
+              "required": [],
+              "title": "enabled"
+            },
+            "failureThreshold": {
+              "default": "3",
+              "description": "Failure threshold for readiness probe",
+              "required": [],
+              "title": "failureThreshold"
+            },
+            "initialDelaySeconds": {
+              "default": "0",
+              "description": "Initial delay seconds for readiness probe",
+              "required": [],
+              "title": "initialDelaySeconds"
+            },
+            "periodSeconds": {
+              "default": "10",
+              "description": "Period seconds for readiness probe",
+              "required": [],
+              "title": "periodSeconds"
+            },
+            "successThreshold": {
+              "default": "1",
+              "description": "Success threshold for readiness probe",
+              "required": [],
+              "title": "successThreshold"
+            },
+            "timeoutSeconds": {
+              "default": "1",
+              "description": "Timeout seconds for readiness probe",
+              "required": [],
+              "title": "timeoutSeconds"
+            }
+          },
+          "required": [],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "replicaCount": {
+          "default": "1",
+          "description": "Number of Hoppscotch replicas",
+          "required": [],
+          "title": "replicaCount"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Set container resources for Hoppscotch (overrides resourcesPreset)",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)",
+          "required": [],
+          "title": "resourcesPreset"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch containers",
+          "required": [],
+          "title": "securityContext"
+        },
+        "service": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Service annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "clusterIP": {
+              "default": "",
+              "description": "Static cluster IP address (optional)",
+              "required": [],
+              "title": "clusterIP"
+            },
+            "externalTrafficPolicy": {
+              "default": "Cluster",
+              "description": "External traffic policy (Cluster or Local)",
+              "required": [],
+              "title": "externalTrafficPolicy"
+            },
+            "extraPorts": {
+              "description": "Extra service ports",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPorts"
+            },
+            "loadBalancerIP": {
+              "default": "",
+              "description": "Load balancer IP address (when service type is LoadBalancer)",
+              "required": [],
+              "title": "loadBalancerIP"
+            },
+            "loadBalancerSourceRanges": {
+              "description": "Load balancer source IP ranges (when service type is LoadBalancer)",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "loadBalancerSourceRanges"
+            },
+            "nodePorts": {
+              "additionalProperties": false,
+              "properties": {
+                "admin": {
+                  "default": "",
+                  "description": "NodePort for admin (when service type is NodePort and multiport access is enabled)",
+                  "required": [],
+                  "title": "admin"
+                },
+                "backend": {
+                  "default": "",
+                  "description": "NodePort for backend (when service type is NodePort and multiport access is enabled)",
+                  "required": [],
+                  "title": "backend"
+                },
+                "desktop": {
+                  "default": "",
+                  "description": "NodePort for desktop (when service type is NodePort and multiport access is enabled)",
+                  "required": [],
+                  "title": "desktop"
+                },
+                "frontend": {
+                  "default": "",
+                  "description": "NodePort for frontend (when service type is NodePort and multiport access is enabled)",
+                  "required": [],
+                  "title": "frontend"
+                },
+                "http": {
+                  "default": "",
+                  "description": "NodePort for HTTP (when service type is NodePort)",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "",
+                  "description": "NodePort for HTTPS (when service type is NodePort)",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "nodePorts",
+              "type": "object"
+            },
+            "ports": {
+              "additionalProperties": false,
+              "properties": {
+                "admin": {
+                  "default": "3100",
+                  "description": "Admin service HTTP port (when multiport access is enabled)",
+                  "required": [],
+                  "title": "admin"
+                },
+                "backend": {
+                  "default": "3170",
+                  "description": "Backend service HTTP port (when multiport access is enabled)",
+                  "required": [],
+                  "title": "backend"
+                },
+                "desktop": {
+                  "default": "3200",
+                  "description": "Desktop service HTTP port (when multiport access is enabled)",
+                  "required": [],
+                  "title": "desktop"
+                },
+                "frontend": {
+                  "default": "3000",
+                  "description": "Frontend service HTTP port (when multiport access is enabled)",
+                  "required": [],
+                  "title": "frontend"
+                },
+                "http": {
+                  "default": "80",
+                  "description": "Service HTTP port",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "443",
+                  "description": "Service HTTPS port",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "ports",
+              "type": "object"
+            },
+            "sessionAffinity": {
+              "default": "None",
+              "description": "Session affinity (None or ClientIP)",
+              "required": [],
+              "title": "sessionAffinity"
+            },
+            "sessionAffinityConfig": {
+              "additionalProperties": false,
+              "description": "Session affinity configuration",
+              "required": [],
+              "title": "sessionAffinityConfig"
+            },
+            "type": {
+              "default": "ClusterIP",
+              "description": "Kubernetes service type",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [
+            "ports",
+            "nodePorts"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations"
+        },
+        "topologySpreadConstraints": {
+          "description": "Topology spread constraints for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "topologySpreadConstraints"
+        },
+        "updateStrategy": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RollingUpdate",
+              "description": "Deployment update strategy type (RollingUpdate or Recreate)",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [],
+          "title": "updateStrategy",
+          "type": "object"
+        },
+        "volumeMounts": {
+          "description": "Extra volume mounts to add to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts"
+        },
+        "volumes": {
+          "description": "Extra volumes to add to Hoppscotch deployment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes"
+        }
+      },
+      "required": [
+        "image",
+        "containerPorts",
+        "readinessProbe",
+        "updateStrategy",
+        "pdb",
+        "autoscaling",
+        "service",
+        "networkPolicy",
+        "ingress",
+        "persistence",
+        "metrics"
+      ],
+      "title": "aio"
+    },
+    "backend": {
+      "additionalProperties": false,
+      "description": "Hoppscotch Backend Parameters",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity for Hoppscotch pods assignment",
+          "required": [],
+          "title": "affinity"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable autoscaling for Hoppscotch deployment",
+              "required": [],
+              "title": "enabled"
+            },
+            "maxReplicas": {
+              "default": "100",
+              "description": "Maximum number of Hoppscotch replicas",
+              "required": [],
+              "title": "maxReplicas"
+            },
+            "minReplicas": {
+              "default": "1",
+              "description": "Minimum number of Hoppscotch replicas",
+              "required": [],
+              "title": "minReplicas"
+            },
+            "targetCPUUtilizationPercentage": {
+              "default": "80",
+              "description": "Target CPU utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetCPUUtilizationPercentage"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "default": "80",
+              "description": "Target memory utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetMemoryUtilizationPercentage"
+            }
+          },
+          "required": [],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "containerPorts": {
+          "additionalProperties": false,
+          "properties": {
+            "http": {
+              "default": "80",
+              "description": "Hoppscotch HTTP container port",
+              "required": [],
+              "title": "http"
+            },
+            "https": {
+              "default": "443",
+              "description": "Hoppscotch HTTPS container port",
+              "required": [],
+              "title": "https"
+            }
+          },
+          "required": [],
+          "title": "containerPorts",
+          "type": "object"
+        },
+        "customLivenessProbe": {
+          "additionalProperties": false,
+          "description": "Custom liveness probe that overrides the default one",
+          "required": [],
+          "title": "customLivenessProbe"
+        },
+        "customReadinessProbe": {
+          "additionalProperties": false,
+          "description": "Custom readiness probe that overrides the default one",
+          "required": [],
+          "title": "customReadinessProbe"
+        },
+        "customStartupProbe": {
+          "additionalProperties": false,
+          "description": "Custom startup probe that overrides the default one",
+          "required": [],
+          "title": "customStartupProbe"
+        },
+        "extraEnvVars": {
+          "description": "Array of extra environment variables to be added to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnvVars"
+        },
+        "extraEnvVarsCM": {
+          "default": "",
+          "description": "Name of existing ConfigMap containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsCM"
+        },
+        "extraEnvVarsSecret": {
+          "default": "",
+          "description": "Name of existing Secret containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsSecret"
+        },
+        "image": {
+          "additionalProperties": false,
+          "properties": {
+            "pullPolicy": {
+              "default": "IfNotPresent",
+              "description": "Hoppscotch image pull policy",
+              "required": [],
+              "title": "pullPolicy"
+            },
+            "repository": {
+              "default": "hoppscotch/hoppscotch-backend",
+              "description": "Hoppscotch image repository",
+              "required": [],
+              "title": "repository"
+            },
+            "tag": {
+              "default": "",
+              "description": "Hoppscotch image tag",
+              "required": [],
+              "title": "tag"
+            }
+          },
+          "required": [],
+          "title": "image",
+          "type": "object"
+        },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Ingress annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "apiVersion": {
+              "default": "",
+              "description": "Ingress API version",
+              "required": [],
+              "title": "apiVersion"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable ingress for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraHosts": {
+              "description": "Extra hostnames for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraHosts"
+            },
+            "extraPaths": {
+              "description": "Extra paths for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPaths"
+            },
+            "extraRules": {
+              "description": "Extra ingress rules",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraRules"
+            },
+            "extraTls": {
+              "description": "Extra TLS configurations for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraTls"
+            },
+            "hostname": {
+              "default": "hoppscotch-frontend.local",
+              "description": "Ingress hostname",
+              "required": [],
+              "title": "hostname"
+            },
+            "ingressClassName": {
+              "default": "",
+              "description": "Ingress class name",
+              "required": [],
+              "title": "ingressClassName"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path"
+            },
+            "pathType": {
+              "default": "ImplementationSpecific",
+              "description": "Ingress path type",
+              "required": [],
+              "title": "pathType"
+            },
+            "secrets": {
+              "description": "TLS secrets for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "secrets"
+            },
+            "selfSigned": {
+              "default": "false",
+              "description": "Create self-signed TLS certificates",
+              "required": [],
+              "title": "selfSigned"
+            },
+            "tls": {
+              "default": "false",
+              "description": "Enable TLS for ingress",
+              "required": [],
+              "title": "tls"
+            }
+          },
+          "required": [],
+          "title": "ingress",
+          "type": "object"
+        },
+        "metrics": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable metrics collection for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "serviceMonitor": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor annotations",
+                  "required": [],
+                  "title": "annotations"
+                },
+                "enabled": {
+                  "default": "false",
+                  "description": "Enable ServiceMonitor for Prometheus monitoring",
+                  "required": [],
+                  "title": "enabled"
+                },
+                "honorLabels": {
+                  "default": "false",
+                  "description": "Honor labels from target",
+                  "required": [],
+                  "title": "honorLabels"
+                },
+                "interval": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape interval",
+                  "required": [],
+                  "title": "interval"
+                },
+                "jobLabel": {
+                  "default": "",
+                  "description": "ServiceMonitor job label",
+                  "required": [],
+                  "title": "jobLabel"
+                },
+                "labels": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor labels",
+                  "required": [],
+                  "title": "labels"
+                },
+                "metricsRelabelings": {
+                  "description": "ServiceMonitor metrics relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "metricsRelabelings"
+                },
+                "namespace": {
+                  "default": "",
+                  "description": "Namespace for ServiceMonitor (defaults to release namespace)",
+                  "required": [],
+                  "title": "namespace"
+                },
+                "relabelings": {
+                  "description": "ServiceMonitor relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "relabelings"
+                },
+                "scrapeTimeout": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape timeout",
+                  "required": [],
+                  "title": "scrapeTimeout"
+                },
+                "selector": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor selector",
+                  "required": [],
+                  "title": "selector"
+                },
+                "tlsConfig": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor TLS configuration",
+                  "required": [],
+                  "title": "tlsConfig"
+                }
+              },
+              "required": [],
+              "title": "serviceMonitor",
+              "type": "object"
+            }
+          },
+          "required": [
+            "serviceMonitor"
+          ],
+          "title": "metrics",
+          "type": "object"
+        },
+        "networkPolicy": {
+          "additionalProperties": false,
+          "properties": {
+            "addExternalClientAccess": {
+              "default": "true",
+              "description": "Add external client access to NetworkPolicy",
+              "required": [],
+              "title": "addExternalClientAccess"
+            },
+            "allowExternal": {
+              "default": "true",
+              "description": "Allow external traffic to Hoppscotch pods",
+              "required": [],
+              "title": "allowExternal"
+            },
+            "allowExternalEgress": {
+              "default": "true",
+              "description": "Allow external egress traffic from Hoppscotch pods",
+              "required": [],
+              "title": "allowExternalEgress"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable NetworkPolicy for Hoppscotch pods",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraEgress": {
+              "description": "Extra egress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraEgress"
+            },
+            "extraIngress": {
+              "description": "Extra ingress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraIngress"
+            },
+            "ingressNSMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSMatchLabels"
+            },
+            "ingressNSPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSPodMatchLabels"
+            },
+            "ingressPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressPodMatchLabels"
+            }
+          },
+          "required": [],
+          "title": "networkPolicy",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node labels for Hoppscotch pods assignment",
+          "required": [],
+          "title": "nodeSelector"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "default": "false",
+              "description": "Create PodDisruptionBudget for Hoppscotch deployment",
+              "required": [],
+              "title": "create"
+            },
+            "maxUnavailable": {
+              "default": "",
+              "description": "Maximum number of unavailable pods during disruptions",
+              "required": [],
+              "title": "maxUnavailable"
+            },
+            "minAvailable": {
+              "default": "",
+              "description": "Minimum number of available pods during disruptions",
+              "required": [],
+              "title": "minAvailable"
+            }
+          },
+          "required": [],
+          "title": "pdb",
+          "type": "object"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "properties": {
+            "accessModes": {
+              "description": "Access modes for persistent volume",
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "accessModes"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Annotations for persistent volume claim",
+              "required": [],
+              "title": "annotations"
+            },
+            "dataSource": {
+              "additionalProperties": false,
+              "description": "Data source for persistent volume",
+              "required": [],
+              "title": "dataSource"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable persistent storage for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Use existing persistent volume claim",
+              "required": [],
+              "title": "existingClaim"
+            },
+            "mountPath": {
+              "default": "/hoppscotch/data",
+              "description": "Mount path for persistent volume",
+              "required": [],
+              "title": "mountPath"
+            },
+            "selector": {
+              "additionalProperties": false,
+              "description": "Selector for persistent volume",
+              "required": [],
+              "title": "selector"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size of persistent volume",
+              "required": [],
+              "title": "size"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistent volume",
+              "required": [],
+              "title": "storageClass"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Subpath within persistent volume",
+              "required": [],
+              "title": "subPath"
+            }
+          },
+          "required": [],
+          "title": "persistence",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Annotations to add to Hoppscotch pods",
+          "required": [],
+          "title": "podAnnotations"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Labels to add to Hoppscotch pods",
+          "required": [],
+          "title": "podLabels"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch pods",
+          "required": [],
+          "title": "podSecurityContext"
+        },
+        "readinessProbe": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable readiness probe",
+              "required": [],
+              "title": "enabled"
+            },
+            "failureThreshold": {
+              "default": "3",
+              "description": "Failure threshold for readiness probe",
+              "required": [],
+              "title": "failureThreshold"
+            },
+            "initialDelaySeconds": {
+              "default": "0",
+              "description": "Initial delay seconds for readiness probe",
+              "required": [],
+              "title": "initialDelaySeconds"
+            },
+            "periodSeconds": {
+              "default": "10",
+              "description": "Period seconds for readiness probe",
+              "required": [],
+              "title": "periodSeconds"
+            },
+            "successThreshold": {
+              "default": "1",
+              "description": "Success threshold for readiness probe",
+              "required": [],
+              "title": "successThreshold"
+            },
+            "timeoutSeconds": {
+              "default": "1",
+              "description": "Timeout seconds for readiness probe",
+              "required": [],
+              "title": "timeoutSeconds"
+            }
+          },
+          "required": [],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "replicaCount": {
+          "default": "1",
+          "description": "Number of Hoppscotch replicas",
+          "required": [],
+          "title": "replicaCount"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Set container resources for Hoppscotch (overrides resourcesPreset)",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)",
+          "required": [],
+          "title": "resourcesPreset"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch containers",
+          "required": [],
+          "title": "securityContext"
+        },
+        "service": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Service annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "clusterIP": {
+              "default": "",
+              "description": "Static cluster IP address (optional)",
+              "required": [],
+              "title": "clusterIP"
+            },
+            "externalTrafficPolicy": {
+              "default": "Cluster",
+              "description": "External traffic policy (Cluster or Local)",
+              "required": [],
+              "title": "externalTrafficPolicy"
+            },
+            "extraPorts": {
+              "description": "Extra service ports",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPorts"
+            },
+            "loadBalancerIP": {
+              "default": "",
+              "description": "Load balancer IP address (when service type is LoadBalancer)",
+              "required": [],
+              "title": "loadBalancerIP"
+            },
+            "loadBalancerSourceRanges": {
+              "description": "Load balancer source IP ranges (when service type is LoadBalancer)",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "loadBalancerSourceRanges"
+            },
+            "nodePorts": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "",
+                  "description": "NodePort for HTTP (when service type is NodePort)",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "",
+                  "description": "NodePort for HTTPS (when service type is NodePort)",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "nodePorts",
+              "type": "object"
+            },
+            "ports": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "80",
+                  "description": "Service HTTP port",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "443",
+                  "description": "Service HTTPS port",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "ports",
+              "type": "object"
+            },
+            "sessionAffinity": {
+              "default": "None",
+              "description": "Session affinity (None or ClientIP)",
+              "required": [],
+              "title": "sessionAffinity"
+            },
+            "sessionAffinityConfig": {
+              "additionalProperties": false,
+              "description": "Session affinity configuration",
+              "required": [],
+              "title": "sessionAffinityConfig"
+            },
+            "type": {
+              "default": "ClusterIP",
+              "description": "Kubernetes service type",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [
+            "ports",
+            "nodePorts"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations"
+        },
+        "topologySpreadConstraints": {
+          "description": "Topology spread constraints for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "topologySpreadConstraints"
+        },
+        "updateStrategy": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RollingUpdate",
+              "description": "Deployment update strategy type (RollingUpdate or Recreate)",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [],
+          "title": "updateStrategy",
+          "type": "object"
+        },
+        "volumeMounts": {
+          "description": "Extra volume mounts to add to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts"
+        },
+        "volumes": {
+          "description": "Extra volumes to add to Hoppscotch deployment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes"
+        }
+      },
+      "required": [
+        "image",
+        "containerPorts",
+        "readinessProbe",
+        "updateStrategy",
+        "pdb",
+        "autoscaling",
+        "service",
+        "networkPolicy",
+        "ingress",
+        "persistence",
+        "metrics"
+      ],
+      "title": "backend"
+    },
+    "clickhouse": {
+      "additionalProperties": false,
+      "description": "# ClickHouse Parameters",
+      "properties": {
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "existingSecret": {
+              "default": "",
+              "description": "Existing secret containing ClickHouse credentials",
+              "required": [],
+              "title": "existingSecret"
+            },
+            "password": {
+              "default": "",
+              "description": "ClickHouse password",
+              "required": [],
+              "title": "password"
+            },
+            "username": {
+              "default": "",
+              "description": "ClickHouse username",
+              "required": [],
+              "title": "username"
+            }
+          },
+          "required": [],
+          "title": "auth",
+          "type": "object"
+        },
+        "enabled": {
+          "default": "false",
+          "description": "Enable ClickHouse subchart",
+          "required": [],
+          "title": "enabled"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "ClickHouse resource limits/requests",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "ClickHouse resource preset",
+          "required": [],
+          "title": "resourcesPreset"
+        }
+      },
+      "required": [
+        "auth"
+      ],
+      "title": "clickhouse",
+      "type": "object"
+    },
+    "clusterDomain": {
+      "default": "cluster.local",
+      "description": "Kubernetes cluster domain name",
+      "required": [],
+      "title": "clusterDomain"
+    },
+    "commonAnnotations": {
+      "additionalProperties": false,
+      "description": "Annotations to add to all deployed objects",
+      "required": [],
+      "title": "commonAnnotations"
+    },
+    "commonLabels": {
+      "additionalProperties": false,
+      "description": "Labels to add to all deployed objects",
+      "required": [],
+      "title": "commonLabels"
+    },
+    "defaultInitContainers": {
+      "additionalProperties": false,
+      "description": "Default Init Containers Parameters",
+      "properties": {
+        "waitForDatabase": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable init container that waits for database to be ready",
+              "required": [],
+              "title": "enabled"
+            }
+          },
+          "required": [],
+          "title": "waitForDatabase",
+          "type": "object"
+        },
+        "waitForMigrations": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable init container that waits for migrations to complete",
+              "required": [],
+              "title": "enabled"
+            }
+          },
+          "required": [],
+          "title": "waitForMigrations",
+          "type": "object"
+        }
+      },
+      "required": [
+        "waitForDatabase",
+        "waitForMigrations"
+      ],
+      "title": "defaultInitContainers"
+    },
+    "deploymentMode": {
+      "default": "aio",
+      "description": "Deployment mode for Hoppscotch (aio (all-in-one) or distributed)",
+      "required": [],
+      "title": "deploymentMode"
+    },
+    "existingSecret": {
+      "default": "",
+      "description": "Name of existing secret containing Hoppscotch secrets",
+      "required": [],
+      "title": "existingSecret"
+    },
+    "externalClickhouse": {
+      "additionalProperties": false,
+      "properties": {
+        "existingSecret": {
+          "default": "",
+          "description": "Existing secret containing external ClickHouse credentials",
+          "required": [],
+          "title": "existingSecret"
+        },
+        "existingSecretPasswordKey": {
+          "default": "",
+          "description": "Key in existing secret containing password",
+          "required": [],
+          "title": "existingSecretPasswordKey"
+        },
+        "host": {
+          "default": "",
+          "description": "External ClickHouse host",
+          "required": [],
+          "title": "host"
+        },
+        "password": {
+          "default": "",
+          "description": "External ClickHouse password",
+          "required": [],
+          "title": "password"
+        },
+        "port": {
+          "default": "8123",
+          "description": "External ClickHouse port",
+          "required": [],
+          "title": "port"
+        },
+        "user": {
+          "default": "",
+          "description": "External ClickHouse username",
+          "required": [],
+          "title": "user"
+        }
+      },
+      "required": [],
+      "title": "externalClickhouse",
+      "type": "object"
+    },
+    "externalDatabase": {
+      "additionalProperties": false,
+      "properties": {
+        "database": {
+          "default": "",
+          "description": "External PostgreSQL database name",
+          "required": [],
+          "title": "database"
+        },
+        "existingSecret": {
+          "default": "",
+          "description": "Existing secret containing external PostgreSQL credentials",
+          "required": [],
+          "title": "existingSecret"
+        },
+        "existingSecretPasswordKey": {
+          "default": "",
+          "description": "Key in existing secret containing password",
+          "required": [],
+          "title": "existingSecretPasswordKey"
+        },
+        "existingSecretSqlConnectionKey": {
+          "default": "",
+          "description": "Key in existing secret containing SQL connection string",
+          "required": [],
+          "title": "existingSecretSqlConnectionKey"
+        },
+        "host": {
+          "default": "",
+          "description": "External PostgreSQL host",
+          "required": [],
+          "title": "host"
+        },
+        "password": {
+          "default": "",
+          "description": "External PostgreSQL password",
+          "required": [],
+          "title": "password"
+        },
+        "port": {
+          "default": "5432",
+          "description": "External PostgreSQL port",
+          "required": [],
+          "title": "port"
+        },
+        "sqlConnection": {
+          "default": "",
+          "description": "External PostgreSQL full connection string (overrides other settings)",
+          "required": [],
+          "title": "sqlConnection"
+        },
+        "user": {
+          "default": "",
+          "description": "External PostgreSQL username",
+          "required": [],
+          "title": "user"
+        }
+      },
+      "required": [],
+      "title": "externalDatabase",
+      "type": "object"
+    },
+    "externalRedis": {
+      "additionalProperties": false,
+      "properties": {
+        "existingSecret": {
+          "default": "",
+          "description": "Existing secret containing external Redis credentials",
+          "required": [],
+          "title": "existingSecret"
+        },
+        "existingSecretPasswordKey": {
+          "default": "",
+          "description": "Key in existing secret containing password",
+          "required": [],
+          "title": "existingSecretPasswordKey"
+        },
+        "host": {
+          "default": "",
+          "description": "External Redis host",
+          "required": [],
+          "title": "host"
+        },
+        "password": {
+          "default": "",
+          "description": "External Redis password",
+          "required": [],
+          "title": "password"
+        },
+        "port": {
+          "default": "6379",
+          "description": "External Redis port",
+          "required": [],
+          "title": "port"
+        }
+      },
+      "required": [],
+      "title": "externalRedis",
+      "type": "object"
+    },
+    "extraDeploy": {
+      "description": "Array of extra objects to deploy with the release",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraDeploy"
+    },
+    "frontend": {
+      "additionalProperties": false,
+      "description": "Hoppscotch Frontend Parameters",
+      "properties": {
+        "affinity": {
+          "additionalProperties": false,
+          "description": "Affinity for Hoppscotch pods assignment",
+          "required": [],
+          "title": "affinity"
+        },
+        "autoscaling": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable autoscaling for Hoppscotch deployment",
+              "required": [],
+              "title": "enabled"
+            },
+            "maxReplicas": {
+              "default": "100",
+              "description": "Maximum number of Hoppscotch replicas",
+              "required": [],
+              "title": "maxReplicas"
+            },
+            "minReplicas": {
+              "default": "1",
+              "description": "Minimum number of Hoppscotch replicas",
+              "required": [],
+              "title": "minReplicas"
+            },
+            "targetCPUUtilizationPercentage": {
+              "default": "80",
+              "description": "Target CPU utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetCPUUtilizationPercentage"
+            },
+            "targetMemoryUtilizationPercentage": {
+              "default": "80",
+              "description": "Target memory utilization percentage for autoscaling",
+              "required": [],
+              "title": "targetMemoryUtilizationPercentage"
+            }
+          },
+          "required": [],
+          "title": "autoscaling",
+          "type": "object"
+        },
+        "containerPorts": {
+          "additionalProperties": false,
+          "properties": {
+            "http": {
+              "default": "80",
+              "description": "Hoppscotch HTTP container port",
+              "required": [],
+              "title": "http"
+            },
+            "https": {
+              "default": "443",
+              "description": "Hoppscotch HTTPS container port",
+              "required": [],
+              "title": "https"
+            }
+          },
+          "required": [],
+          "title": "containerPorts",
+          "type": "object"
+        },
+        "customLivenessProbe": {
+          "additionalProperties": false,
+          "description": "Custom liveness probe that overrides the default one",
+          "required": [],
+          "title": "customLivenessProbe"
+        },
+        "customReadinessProbe": {
+          "additionalProperties": false,
+          "description": "Custom readiness probe that overrides the default one",
+          "required": [],
+          "title": "customReadinessProbe"
+        },
+        "customStartupProbe": {
+          "additionalProperties": false,
+          "description": "Custom startup probe that overrides the default one",
+          "required": [],
+          "title": "customStartupProbe"
+        },
+        "extraEnvVars": {
+          "description": "Array of extra environment variables to be added to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnvVars"
+        },
+        "extraEnvVarsCM": {
+          "default": "",
+          "description": "Name of existing ConfigMap containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsCM"
+        },
+        "extraEnvVarsSecret": {
+          "default": "",
+          "description": "Name of existing Secret containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsSecret"
+        },
+        "image": {
+          "additionalProperties": false,
+          "properties": {
+            "pullPolicy": {
+              "default": "IfNotPresent",
+              "description": "Hoppscotch image pull policy",
+              "required": [],
+              "title": "pullPolicy"
+            },
+            "repository": {
+              "default": "hoppscotch/hoppscotch-frontend",
+              "description": "Hoppscotch image repository",
+              "required": [],
+              "title": "repository"
+            },
+            "tag": {
+              "default": "",
+              "description": "Hoppscotch image tag",
+              "required": [],
+              "title": "tag"
+            }
+          },
+          "required": [],
+          "title": "image",
+          "type": "object"
+        },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Ingress annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "apiVersion": {
+              "default": "",
+              "description": "Ingress API version",
+              "required": [],
+              "title": "apiVersion"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable ingress for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraHosts": {
+              "description": "Extra hostnames for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraHosts"
+            },
+            "extraPaths": {
+              "description": "Extra paths for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPaths"
+            },
+            "extraRules": {
+              "description": "Extra ingress rules",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraRules"
+            },
+            "extraTls": {
+              "description": "Extra TLS configurations for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraTls"
+            },
+            "hostname": {
+              "default": "hoppscotch-frontend.local",
+              "description": "Ingress hostname",
+              "required": [],
+              "title": "hostname"
+            },
+            "ingressClassName": {
+              "default": "",
+              "description": "Ingress class name",
+              "required": [],
+              "title": "ingressClassName"
+            },
+            "path": {
+              "default": "/",
+              "description": "Ingress path",
+              "required": [],
+              "title": "path"
+            },
+            "pathType": {
+              "default": "ImplementationSpecific",
+              "description": "Ingress path type",
+              "required": [],
+              "title": "pathType"
+            },
+            "secrets": {
+              "description": "TLS secrets for ingress",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "secrets"
+            },
+            "selfSigned": {
+              "default": "false",
+              "description": "Create self-signed TLS certificates",
+              "required": [],
+              "title": "selfSigned"
+            },
+            "tls": {
+              "default": "false",
+              "description": "Enable TLS for ingress",
+              "required": [],
+              "title": "tls"
+            }
+          },
+          "required": [],
+          "title": "ingress",
+          "type": "object"
+        },
+        "metrics": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "false",
+              "description": "Enable metrics collection for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "serviceMonitor": {
+              "additionalProperties": false,
+              "properties": {
+                "annotations": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor annotations",
+                  "required": [],
+                  "title": "annotations"
+                },
+                "enabled": {
+                  "default": "false",
+                  "description": "Enable ServiceMonitor for Prometheus monitoring",
+                  "required": [],
+                  "title": "enabled"
+                },
+                "honorLabels": {
+                  "default": "false",
+                  "description": "Honor labels from target",
+                  "required": [],
+                  "title": "honorLabels"
+                },
+                "interval": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape interval",
+                  "required": [],
+                  "title": "interval"
+                },
+                "jobLabel": {
+                  "default": "",
+                  "description": "ServiceMonitor job label",
+                  "required": [],
+                  "title": "jobLabel"
+                },
+                "labels": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor labels",
+                  "required": [],
+                  "title": "labels"
+                },
+                "metricsRelabelings": {
+                  "description": "ServiceMonitor metrics relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "metricsRelabelings"
+                },
+                "namespace": {
+                  "default": "",
+                  "description": "Namespace for ServiceMonitor (defaults to release namespace)",
+                  "required": [],
+                  "title": "namespace"
+                },
+                "relabelings": {
+                  "description": "ServiceMonitor relabelings",
+                  "items": {
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "relabelings"
+                },
+                "scrapeTimeout": {
+                  "default": "",
+                  "description": "ServiceMonitor scrape timeout",
+                  "required": [],
+                  "title": "scrapeTimeout"
+                },
+                "selector": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor selector",
+                  "required": [],
+                  "title": "selector"
+                },
+                "tlsConfig": {
+                  "additionalProperties": false,
+                  "description": "ServiceMonitor TLS configuration",
+                  "required": [],
+                  "title": "tlsConfig"
+                }
+              },
+              "required": [],
+              "title": "serviceMonitor",
+              "type": "object"
+            }
+          },
+          "required": [
+            "serviceMonitor"
+          ],
+          "title": "metrics",
+          "type": "object"
+        },
+        "networkPolicy": {
+          "additionalProperties": false,
+          "properties": {
+            "addExternalClientAccess": {
+              "default": "true",
+              "description": "Add external client access to NetworkPolicy",
+              "required": [],
+              "title": "addExternalClientAccess"
+            },
+            "allowExternal": {
+              "default": "true",
+              "description": "Allow external traffic to Hoppscotch pods",
+              "required": [],
+              "title": "allowExternal"
+            },
+            "allowExternalEgress": {
+              "default": "true",
+              "description": "Allow external egress traffic from Hoppscotch pods",
+              "required": [],
+              "title": "allowExternalEgress"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable NetworkPolicy for Hoppscotch pods",
+              "required": [],
+              "title": "enabled"
+            },
+            "extraEgress": {
+              "description": "Extra egress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraEgress"
+            },
+            "extraIngress": {
+              "description": "Extra ingress rules for NetworkPolicy",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraIngress"
+            },
+            "ingressNSMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSMatchLabels"
+            },
+            "ingressNSPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Namespace pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressNSPodMatchLabels"
+            },
+            "ingressPodMatchLabels": {
+              "additionalProperties": false,
+              "description": "Pod selector labels for ingress rules",
+              "required": [],
+              "title": "ingressPodMatchLabels"
+            }
+          },
+          "required": [],
+          "title": "networkPolicy",
+          "type": "object"
+        },
+        "nodeSelector": {
+          "additionalProperties": false,
+          "description": "Node labels for Hoppscotch pods assignment",
+          "required": [],
+          "title": "nodeSelector"
+        },
+        "pdb": {
+          "additionalProperties": false,
+          "properties": {
+            "create": {
+              "default": "false",
+              "description": "Create PodDisruptionBudget for Hoppscotch deployment",
+              "required": [],
+              "title": "create"
+            },
+            "maxUnavailable": {
+              "default": "",
+              "description": "Maximum number of unavailable pods during disruptions",
+              "required": [],
+              "title": "maxUnavailable"
+            },
+            "minAvailable": {
+              "default": "",
+              "description": "Minimum number of available pods during disruptions",
+              "required": [],
+              "title": "minAvailable"
+            }
+          },
+          "required": [],
+          "title": "pdb",
+          "type": "object"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "properties": {
+            "accessModes": {
+              "description": "Access modes for persistent volume",
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "accessModes"
+            },
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Annotations for persistent volume claim",
+              "required": [],
+              "title": "annotations"
+            },
+            "dataSource": {
+              "additionalProperties": false,
+              "description": "Data source for persistent volume",
+              "required": [],
+              "title": "dataSource"
+            },
+            "enabled": {
+              "default": "false",
+              "description": "Enable persistent storage for Hoppscotch",
+              "required": [],
+              "title": "enabled"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": "Use existing persistent volume claim",
+              "required": [],
+              "title": "existingClaim"
+            },
+            "mountPath": {
+              "default": "/hoppscotch/data",
+              "description": "Mount path for persistent volume",
+              "required": [],
+              "title": "mountPath"
+            },
+            "selector": {
+              "additionalProperties": false,
+              "description": "Selector for persistent volume",
+              "required": [],
+              "title": "selector"
+            },
+            "size": {
+              "default": "8Gi",
+              "description": "Size of persistent volume",
+              "required": [],
+              "title": "size"
+            },
+            "storageClass": {
+              "default": "",
+              "description": "Storage class for persistent volume",
+              "required": [],
+              "title": "storageClass"
+            },
+            "subPath": {
+              "default": "",
+              "description": "Subpath within persistent volume",
+              "required": [],
+              "title": "subPath"
+            }
+          },
+          "required": [],
+          "title": "persistence",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": false,
+          "description": "Annotations to add to Hoppscotch pods",
+          "required": [],
+          "title": "podAnnotations"
+        },
+        "podLabels": {
+          "additionalProperties": false,
+          "description": "Labels to add to Hoppscotch pods",
+          "required": [],
+          "title": "podLabels"
+        },
+        "podSecurityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch pods",
+          "required": [],
+          "title": "podSecurityContext"
+        },
+        "readinessProbe": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable readiness probe",
+              "required": [],
+              "title": "enabled"
+            },
+            "failureThreshold": {
+              "default": "3",
+              "description": "Failure threshold for readiness probe",
+              "required": [],
+              "title": "failureThreshold"
+            },
+            "initialDelaySeconds": {
+              "default": "0",
+              "description": "Initial delay seconds for readiness probe",
+              "required": [],
+              "title": "initialDelaySeconds"
+            },
+            "periodSeconds": {
+              "default": "10",
+              "description": "Period seconds for readiness probe",
+              "required": [],
+              "title": "periodSeconds"
+            },
+            "successThreshold": {
+              "default": "1",
+              "description": "Success threshold for readiness probe",
+              "required": [],
+              "title": "successThreshold"
+            },
+            "timeoutSeconds": {
+              "default": "1",
+              "description": "Timeout seconds for readiness probe",
+              "required": [],
+              "title": "timeoutSeconds"
+            }
+          },
+          "required": [],
+          "title": "readinessProbe",
+          "type": "object"
+        },
+        "replicaCount": {
+          "default": "1",
+          "description": "Number of Hoppscotch replicas",
+          "required": [],
+          "title": "replicaCount"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Set container resources for Hoppscotch (overrides resourcesPreset)",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)",
+          "required": [],
+          "title": "resourcesPreset"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "description": "Security context for Hoppscotch containers",
+          "required": [],
+          "title": "securityContext"
+        },
+        "service": {
+          "additionalProperties": false,
+          "properties": {
+            "annotations": {
+              "additionalProperties": false,
+              "description": "Service annotations",
+              "required": [],
+              "title": "annotations"
+            },
+            "clusterIP": {
+              "default": "",
+              "description": "Static cluster IP address (optional)",
+              "required": [],
+              "title": "clusterIP"
+            },
+            "externalTrafficPolicy": {
+              "default": "Cluster",
+              "description": "External traffic policy (Cluster or Local)",
+              "required": [],
+              "title": "externalTrafficPolicy"
+            },
+            "extraPorts": {
+              "description": "Extra service ports",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "extraPorts"
+            },
+            "loadBalancerIP": {
+              "default": "",
+              "description": "Load balancer IP address (when service type is LoadBalancer)",
+              "required": [],
+              "title": "loadBalancerIP"
+            },
+            "loadBalancerSourceRanges": {
+              "description": "Load balancer source IP ranges (when service type is LoadBalancer)",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "loadBalancerSourceRanges"
+            },
+            "nodePorts": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "",
+                  "description": "NodePort for HTTP (when service type is NodePort)",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "",
+                  "description": "NodePort for HTTPS (when service type is NodePort)",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "nodePorts",
+              "type": "object"
+            },
+            "ports": {
+              "additionalProperties": false,
+              "properties": {
+                "http": {
+                  "default": "80",
+                  "description": "Service HTTP port",
+                  "required": [],
+                  "title": "http"
+                },
+                "https": {
+                  "default": "443",
+                  "description": "Service HTTPS port",
+                  "required": [],
+                  "title": "https"
+                }
+              },
+              "required": [],
+              "title": "ports",
+              "type": "object"
+            },
+            "sessionAffinity": {
+              "default": "None",
+              "description": "Session affinity (None or ClientIP)",
+              "required": [],
+              "title": "sessionAffinity"
+            },
+            "sessionAffinityConfig": {
+              "additionalProperties": false,
+              "description": "Session affinity configuration",
+              "required": [],
+              "title": "sessionAffinityConfig"
+            },
+            "type": {
+              "default": "ClusterIP",
+              "description": "Kubernetes service type",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [
+            "ports",
+            "nodePorts"
+          ],
+          "title": "service",
+          "type": "object"
+        },
+        "tolerations": {
+          "description": "Tolerations for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "tolerations"
+        },
+        "topologySpreadConstraints": {
+          "description": "Topology spread constraints for Hoppscotch pods assignment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "topologySpreadConstraints"
+        },
+        "updateStrategy": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RollingUpdate",
+              "description": "Deployment update strategy type (RollingUpdate or Recreate)",
+              "required": [],
+              "title": "type"
+            }
+          },
+          "required": [],
+          "title": "updateStrategy",
+          "type": "object"
+        },
+        "volumeMounts": {
+          "description": "Extra volume mounts to add to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumeMounts"
+        },
+        "volumes": {
+          "description": "Extra volumes to add to Hoppscotch deployment",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "volumes"
+        }
+      },
+      "required": [
+        "image",
+        "containerPorts",
+        "readinessProbe",
+        "updateStrategy",
+        "pdb",
+        "autoscaling",
+        "service",
+        "networkPolicy",
+        "ingress",
+        "persistence",
+        "metrics"
+      ],
+      "title": "frontend"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "description": "String to override the fully qualified name",
+      "required": [],
+      "title": "fullnameOverride"
+    },
+    "global": {
+      "additionalProperties": false,
+      "properties": {
+        "defaultStorageClass": {
+          "default": "",
+          "description": "Global default storage class for persistent volumes",
+          "required": [],
+          "title": "defaultStorageClass"
+        },
+        "imagePullSecrets": {
+          "description": "Global Docker registry secret names as an array",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "imagePullSecrets"
+        },
+        "imageRegistry": {
+          "default": "",
+          "description": "Global Docker image registry",
+          "required": [],
+          "title": "imageRegistry"
+        },
+        "security": {
+          "additionalProperties": false,
+          "properties": {
+            "allowInsecureImages": {
+              "default": "false",
+              "description": "Allows skipping image verification",
+              "required": [],
+              "title": "allowInsecureImages"
+            }
+          },
+          "required": [],
+          "title": "security",
+          "type": "object"
+        }
+      },
+      "required": [
+        "security"
+      ],
+      "title": "global",
+      "type": "object"
+    },
+    "hoppscotch": {
+      "additionalProperties": false,
+      "description": "Hoppscotch Application Parameters",
+      "properties": {
+        "backend": {
+          "additionalProperties": false,
+          "properties": {
+            "aioAlternatePort": {
+              "default": "80",
+              "description": "Alternate port for AIO container endpoint when using subpath access mode",
+              "required": [],
+              "title": "aioAlternatePort"
+            },
+            "allowSecureCookies": {
+              "default": "true",
+              "description": "Allow secure cookies (recommended for HTTPS deployments)",
+              "required": [],
+              "title": "allowSecureCookies"
+            },
+            "auth": {
+              "additionalProperties": false,
+              "properties": {
+                "allowedProviders": {
+                  "description": "List of allowed authentication providers (email, google, github, microsoft, oidc, saml)",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "required": [],
+                        "type": "string"
+                      }
+                    ],
+                    "required": []
+                  },
+                  "required": [],
+                  "title": "allowedProviders"
+                },
+                "github": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "callbackUrl": {
+                      "default": "",
+                      "description": "GitHub OAuth callback URL",
+                      "required": [],
+                      "title": "callbackUrl"
+                    },
+                    "clientId": {
+                      "default": "",
+                      "description": "GitHub OAuth client ID",
+                      "required": [],
+                      "title": "clientId"
+                    },
+                    "clientSecret": {
+                      "default": "",
+                      "description": "GitHub OAuth client secret",
+                      "required": [],
+                      "title": "clientSecret"
+                    },
+                    "scope": {
+                      "description": "GitHub OAuth scopes to request",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "required": [],
+                            "type": "string"
+                          }
+                        ],
+                        "required": []
+                      },
+                      "required": [],
+                      "title": "scope"
+                    }
+                  },
+                  "required": [],
+                  "title": "github",
+                  "type": "object"
+                },
+                "githubEnterprise": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "authorizationUrl": {
+                      "default": "",
+                      "description": "GitHub Enterprise authorization URL",
+                      "required": [],
+                      "title": "authorizationUrl"
+                    },
+                    "enabled": {
+                      "default": "false",
+                      "description": "Enable GitHub Enterprise authentication. Enterprise Edition required.",
+                      "required": [],
+                      "title": "enabled"
+                    },
+                    "tokenUrl": {
+                      "default": "",
+                      "description": "GitHub Enterprise token URL",
+                      "required": [],
+                      "title": "tokenUrl"
+                    },
+                    "userEmailUrl": {
+                      "default": "",
+                      "description": "GitHub Enterprise user email URL",
+                      "required": [],
+                      "title": "userEmailUrl"
+                    },
+                    "userProfileUrl": {
+                      "default": "",
+                      "description": "GitHub Enterprise user profile URL",
+                      "required": [],
+                      "title": "userProfileUrl"
+                    }
+                  },
+                  "required": [],
+                  "title": "githubEnterprise",
+                  "type": "object"
+                },
+                "google": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "callbackUrl": {
+                      "default": "",
+                      "description": "Google OAuth callback URL",
+                      "required": [],
+                      "title": "callbackUrl"
+                    },
+                    "clientId": {
+                      "default": "",
+                      "description": "Google OAuth client ID",
+                      "required": [],
+                      "title": "clientId"
+                    },
+                    "clientSecret": {
+                      "default": "",
+                      "description": "Google OAuth client secret",
+                      "required": [],
+                      "title": "clientSecret"
+                    },
+                    "scope": {
+                      "description": "Google OAuth scopes to request",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "required": [],
+                            "type": "string"
+                          },
+                          {
+                            "required": [],
+                            "type": "string"
+                          }
+                        ],
+                        "required": []
+                      },
+                      "required": [],
+                      "title": "scope"
+                    }
+                  },
+                  "required": [],
+                  "title": "google",
+                  "type": "object"
+                },
+                "microsoft": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "callbackUrl": {
+                      "default": "",
+                      "description": "Microsoft OAuth callback URL",
+                      "required": [],
+                      "title": "callbackUrl"
+                    },
+                    "clientId": {
+                      "default": "",
+                      "description": "Microsoft OAuth client ID",
+                      "required": [],
+                      "title": "clientId"
+                    },
+                    "clientSecret": {
+                      "default": "",
+                      "description": "Microsoft OAuth client secret",
+                      "required": [],
+                      "title": "clientSecret"
+                    },
+                    "scope": {
+                      "default": "user.read",
+                      "description": "Microsoft OAuth scopes to request",
+                      "required": [],
+                      "title": "scope"
+                    },
+                    "tenant": {
+                      "default": "",
+                      "description": "Microsoft OAuth tenant ID (common for multi-tenant apps)",
+                      "required": [],
+                      "title": "tenant"
+                    }
+                  },
+                  "required": [],
+                  "title": "microsoft",
+                  "type": "object"
+                },
+                "oidc": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "authorizationUrl": {
+                      "default": "",
+                      "description": "OIDC authorization URL",
+                      "required": [],
+                      "title": "authorizationUrl"
+                    },
+                    "callbackUrl": {
+                      "default": "",
+                      "description": "OIDC callback URL",
+                      "required": [],
+                      "title": "callbackUrl"
+                    },
+                    "clientId": {
+                      "default": "",
+                      "description": "OIDC client ID",
+                      "required": [],
+                      "title": "clientId"
+                    },
+                    "clientSecret": {
+                      "default": "",
+                      "description": "OIDC client secret",
+                      "required": [],
+                      "title": "clientSecret"
+                    },
+                    "issuer": {
+                      "default": "",
+                      "description": "OIDC issuer URL",
+                      "required": [],
+                      "title": "issuer"
+                    },
+                    "providerName": {
+                      "default": "",
+                      "description": "OIDC provider display name",
+                      "required": [],
+                      "title": "providerName"
+                    },
+                    "scope": {
+                      "description": "OIDC scopes to request",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "required": [],
+                            "type": "string"
+                          },
+                          {
+                            "required": [],
+                            "type": "string"
+                          },
+                          {
+                            "required": [],
+                            "type": "string"
+                          }
+                        ],
+                        "required": []
+                      },
+                      "required": [],
+                      "title": "scope"
+                    },
+                    "tokenUrl": {
+                      "default": "",
+                      "description": "OIDC token URL",
+                      "required": [],
+                      "title": "tokenUrl"
+                    },
+                    "userInfoUrl": {
+                      "default": "",
+                      "description": "OIDC user info URL",
+                      "required": [],
+                      "title": "userInfoUrl"
+                    }
+                  },
+                  "required": [],
+                  "title": "oidc",
+                  "type": "object"
+                },
+                "saml": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "audience": {
+                      "default": "",
+                      "description": "SAML audience identifier",
+                      "required": [],
+                      "title": "audience"
+                    },
+                    "callbackUrl": {
+                      "default": "",
+                      "description": "SAML callback URL",
+                      "required": [],
+                      "title": "callbackUrl"
+                    },
+                    "cert": {
+                      "default": "",
+                      "description": "SAML certificate for signature verification",
+                      "required": [],
+                      "title": "cert"
+                    },
+                    "entryPoint": {
+                      "default": "",
+                      "description": "SAML identity provider entry point URL",
+                      "required": [],
+                      "title": "entryPoint"
+                    },
+                    "issuer": {
+                      "default": "",
+                      "description": "SAML issuer identifier. Enterprise Edition required.",
+                      "required": [],
+                      "title": "issuer"
+                    },
+                    "wantAssertionsSigned": {
+                      "default": "true",
+                      "description": "Require signed SAML assertions",
+                      "required": [],
+                      "title": "wantAssertionsSigned"
+                    },
+                    "wantResponseSigned": {
+                      "default": "false",
+                      "description": "Require signed SAML responses",
+                      "required": [],
+                      "title": "wantResponseSigned"
+                    }
+                  },
+                  "required": [],
+                  "title": "saml",
+                  "type": "object"
+                }
+              },
+              "required": [
+                "google",
+                "github",
+                "githubEnterprise",
+                "microsoft",
+                "oidc",
+                "saml"
+              ],
+              "title": "auth",
+              "type": "object"
+            },
+            "authToken": {
+              "additionalProperties": false,
+              "properties": {
+                "accessTokenValidity": {
+                  "default": "86400000",
+                  "description": "Validity of access token for authentication (in milliseconds)",
+                  "required": [],
+                  "title": "accessTokenValidity"
+                },
+                "jwtSecret": {
+                  "default": "",
+                  "description": "Secret key for JWT token generation and validation (auto-generated if empty)",
+                  "required": [],
+                  "title": "jwtSecret"
+                },
+                "magicLinkTokenValidity": {
+                  "default": "3",
+                  "description": "Duration of magic link token validity for sign-in (in days)",
+                  "required": [],
+                  "title": "magicLinkTokenValidity"
+                },
+                "refreshTokenValidity": {
+                  "default": "604800000",
+                  "description": "Validity of refresh token for authentication (in milliseconds)",
+                  "required": [],
+                  "title": "refreshTokenValidity"
+                },
+                "sessionSecret": {
+                  "default": "",
+                  "description": "Secret key for session management (auto-generated if empty)",
+                  "required": [],
+                  "title": "sessionSecret"
+                },
+                "tokenSaltComplexity": {
+                  "default": "10",
+                  "description": "Complexity of the SALT used for hashing (higher = more secure)",
+                  "required": [],
+                  "title": "tokenSaltComplexity"
+                }
+              },
+              "required": [],
+              "title": "authToken",
+              "type": "object"
+            },
+            "clickhouse": {
+              "additionalProperties": false,
+              "properties": {
+                "allowAuditLogs": {
+                  "default": "false",
+                  "description": "Enable audit logs collection to ClickHouse. Enterprise Edition required.",
+                  "required": [],
+                  "title": "allowAuditLogs"
+                }
+              },
+              "required": [],
+              "title": "clickhouse",
+              "type": "object"
+            },
+            "dataEncryptionKey": {
+              "default": "",
+              "description": "32-character key for encrypting sensitive data stored in database (auto-generated if empty)",
+              "required": [],
+              "title": "dataEncryptionKey"
+            },
+            "enterpriseLicenseKey": {
+              "default": "",
+              "description": "Enterprise license key for Hoppscotch Enterprise features",
+              "required": [],
+              "title": "enterpriseLicenseKey"
+            },
+            "horizontalScalingEnabled": {
+              "default": "false",
+              "description": "Enable horizontal scaling with Redis for state management. Enterprise Edition required.",
+              "required": [],
+              "title": "horizontalScalingEnabled"
+            },
+            "mailer": {
+              "additionalProperties": false,
+              "properties": {
+                "addressFrom": {
+                  "default": "no-reply@example.com",
+                  "description": "Email address to use as sender",
+                  "required": [],
+                  "title": "addressFrom"
+                },
+                "smtpEnabled": {
+                  "default": "true",
+                  "description": "Enable SMTP mailer for email delivery",
+                  "required": [],
+                  "title": "smtpEnabled"
+                },
+                "smtpHost": {
+                  "default": "",
+                  "description": "SMTP host (used when useCustomConfigs is true)",
+                  "required": [],
+                  "title": "smtpHost"
+                },
+                "smtpPassword": {
+                  "default": "",
+                  "description": "SMTP password (used when useCustomConfigs is true)",
+                  "required": [],
+                  "title": "smtpPassword"
+                },
+                "smtpPort": {
+                  "default": "587",
+                  "description": "SMTP port (used when useCustomConfigs is true)",
+                  "required": [],
+                  "title": "smtpPort"
+                },
+                "smtpSecure": {
+                  "default": "true",
+                  "description": "Use secure connection for SMTP (used when useCustomConfigs is true)",
+                  "required": [],
+                  "title": "smtpSecure"
+                },
+                "smtpUrl": {
+                  "default": "smtps://user:pass@smtp.example.com",
+                  "description": "SMTP URL for email delivery (used when useCustomConfigs is false)",
+                  "required": [],
+                  "title": "smtpUrl"
+                },
+                "smtpUser": {
+                  "default": "",
+                  "description": "SMTP username (used when useCustomConfigs is true)",
+                  "required": [],
+                  "title": "smtpUser"
+                },
+                "tlsRejectUnauthorized": {
+                  "default": "true",
+                  "description": "Reject unauthorized TLS connections",
+                  "required": [],
+                  "title": "tlsRejectUnauthorized"
+                },
+                "useCustomConfigs": {
+                  "default": "false",
+                  "description": "Use custom SMTP configuration instead of SMTP URL",
+                  "required": [],
+                  "title": "useCustomConfigs"
+                }
+              },
+              "required": [],
+              "title": "mailer",
+              "type": "object"
+            },
+            "rateLimit": {
+              "additionalProperties": false,
+              "properties": {
+                "max": {
+                  "default": "100",
+                  "description": "Maximum number of requests per IP within TTL window",
+                  "required": [],
+                  "title": "max"
+                },
+                "ttl": {
+                  "default": "60",
+                  "description": "Time window for rate limiting (in seconds)",
+                  "required": [],
+                  "title": "ttl"
+                }
+              },
+              "required": [],
+              "title": "rateLimit",
+              "type": "object"
+            },
+            "redirectUrl": {
+              "default": "",
+              "description": "Fallback URL for debugging when redirects fail",
+              "required": [],
+              "title": "redirectUrl"
+            },
+            "whitelistedOrigins": {
+              "description": "List of origins allowed to interact with the app through cross-origin requests",
+              "items": {
+                "required": []
+              },
+              "required": [],
+              "title": "whitelistedOrigins"
+            }
+          },
+          "required": [
+            "authToken",
+            "auth",
+            "mailer",
+            "rateLimit",
+            "clickhouse"
+          ],
+          "title": "backend",
+          "type": "object"
+        },
+        "frontend": {
+          "additionalProperties": false,
+          "properties": {
+            "adminUrl": {
+              "default": "",
+              "description": "URL where the Hoppscotch admin dashboard will be accessible from",
+              "required": [],
+              "title": "adminUrl"
+            },
+            "appPrivacyPolicyLink": {
+              "default": "",
+              "description": "Link to Privacy Policy page (optional)",
+              "required": [],
+              "title": "appPrivacyPolicyLink"
+            },
+            "appTosLink": {
+              "default": "",
+              "description": "Link to Terms of Service page (optional)",
+              "required": [],
+              "title": "appTosLink"
+            },
+            "backendApiUrl": {
+              "default": "",
+              "description": "URL for REST API endpoint within the Hoppscotch instance",
+              "required": [],
+              "title": "backendApiUrl"
+            },
+            "backendGqlUrl": {
+              "default": "",
+              "description": "URL for GraphQL endpoint within the Hoppscotch instance",
+              "required": [],
+              "title": "backendGqlUrl"
+            },
+            "backendWsUrl": {
+              "default": "",
+              "description": "URL for WebSocket endpoint within the Hoppscotch instance",
+              "required": [],
+              "title": "backendWsUrl"
+            },
+            "baseUrl": {
+              "default": "",
+              "description": "Base URL where the Hoppscotch frontend will be accessible from",
+              "required": [],
+              "title": "baseUrl"
+            },
+            "enableSubpathBasedAccess": {
+              "default": "true",
+              "description": "Enable subpath based access (required for desktop app support)",
+              "required": [],
+              "title": "enableSubpathBasedAccess"
+            },
+            "localProxyServerEnabled": {
+              "default": "false",
+              "description": "Enable local proxy server for routing API requests (requires subpath access). Enterprise Edition required.",
+              "required": [],
+              "title": "localProxyServerEnabled"
+            },
+            "proxyAppUrl": {
+              "default": "",
+              "description": "URL of proxy server for routing API requests (optional). Enterprise Edition required.",
+              "required": [],
+              "title": "proxyAppUrl"
+            },
+            "shortcodeBaseUrl": {
+              "default": "",
+              "description": "URL used to generate shortcodes for sharing, can be the same as baseUrl",
+              "required": [],
+              "title": "shortcodeBaseUrl"
+            }
+          },
+          "required": [],
+          "title": "frontend",
+          "type": "object"
+        }
+      },
+      "required": [
+        "frontend",
+        "backend"
+      ],
+      "title": "hoppscotch"
+    },
+    "migrations": {
+      "additionalProperties": false,
+      "description": "Hoppscotch Migrations Parameters",
+      "properties": {
+        "enabled": {
+          "default": "true",
+          "description": "Enable database migrations job",
+          "required": [],
+          "title": "enabled"
+        },
+        "extraEnvVars": {
+          "description": "Array of extra environment variables to be added to Hoppscotch containers",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "extraEnvVars"
+        },
+        "extraEnvVarsCM": {
+          "default": "",
+          "description": "Name of existing ConfigMap containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsCM"
+        },
+        "extraEnvVarsSecret": {
+          "default": "",
+          "description": "Name of existing Secret containing extra environment variables",
+          "required": [],
+          "title": "extraEnvVarsSecret"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "description": "Set container resources for Hoppscotch (overrides resourcesPreset)",
+          "required": [],
+          "title": "resources"
+        },
+        "resourcesPreset": {
+          "default": "nano",
+          "description": "Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)",
+          "required": [],
+          "title": "resourcesPreset"
+        }
+      },
+      "required": [],
+      "title": "migrations"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "String to override the chart name",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "namespaceOverride": {
+      "default": "",
+      "description": "String to override the namespace",
+      "required": [],
+      "title": "namespaceOverride"
+    },
+    "postgresql": {
+      "additionalProperties": false,
+      "description": "Database Parameters",
+      "properties": {
+        "architecture": {
+          "default": "standalone",
+          "description": "PostgreSQL architecture (standalone or replication)",
+          "required": [],
+          "title": "architecture"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "database": {
+              "default": "",
+              "description": "PostgreSQL application database name",
+              "required": [],
+              "title": "database"
+            },
+            "enablePostgresUser": {
+              "default": "true",
+              "description": "Enable PostgreSQL default postgres user",
+              "required": [],
+              "title": "enablePostgresUser"
+            },
+            "existingSecret": {
+              "default": "",
+              "description": "Existing secret containing PostgreSQL credentials",
+              "required": [],
+              "title": "existingSecret"
+            },
+            "password": {
+              "default": "",
+              "description": "PostgreSQL application password",
+              "required": [],
+              "title": "password"
+            },
+            "username": {
+              "default": "",
+              "description": "PostgreSQL application username",
+              "required": [],
+              "title": "username"
+            }
+          },
+          "required": [],
+          "title": "auth",
+          "type": "object"
+        },
+        "enabled": {
+          "default": "false",
+          "description": "Enable PostgreSQL subchart",
+          "required": [],
+          "title": "enabled"
+        },
+        "primary": {
+          "additionalProperties": false,
+          "properties": {
+            "resources": {
+              "additionalProperties": false,
+              "description": "PostgreSQL primary resource limits/requests",
+              "required": [],
+              "title": "resources"
+            },
+            "resourcesPreset": {
+              "default": "nano",
+              "description": "PostgreSQL primary resource preset",
+              "required": [],
+              "title": "resourcesPreset"
+            }
+          },
+          "required": [],
+          "title": "primary",
+          "type": "object"
+        }
+      },
+      "required": [
+        "auth",
+        "primary"
+      ],
+      "title": "postgresql"
+    },
+    "rbac": {
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "default": "false",
+          "description": "Create RBAC resources for Hoppscotch",
+          "required": [],
+          "title": "create"
+        },
+        "rules": {
+          "description": "RBAC rules for Hoppscotch",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "rules"
+        }
+      },
+      "required": [],
+      "title": "rbac",
+      "type": "object"
+    },
+    "redis": {
+      "additionalProperties": false,
+      "description": "Redis Parameters",
+      "properties": {
+        "architecture": {
+          "default": "standalone",
+          "description": "Redis architecture (standalone or replication)",
+          "required": [],
+          "title": "architecture"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable Redis authentication",
+              "required": [],
+              "title": "enabled"
+            },
+            "existingSecret": {
+              "default": "",
+              "description": "Existing secret containing Redis credentials",
+              "required": [],
+              "title": "existingSecret"
+            },
+            "password": {
+              "default": "",
+              "description": "Redis password",
+              "required": [],
+              "title": "password"
+            }
+          },
+          "required": [],
+          "title": "auth",
+          "type": "object"
+        },
+        "enabled": {
+          "default": "false",
+          "description": "Enable Redis subchart",
+          "required": [],
+          "title": "enabled"
+        },
+        "master": {
+          "additionalProperties": false,
+          "properties": {
+            "resources": {
+              "additionalProperties": false,
+              "description": "Redis master resource limits/requests",
+              "required": [],
+              "title": "resources"
+            },
+            "resourcesPreset": {
+              "default": "nano",
+              "description": "Redis master resource preset",
+              "required": [],
+              "title": "resourcesPreset"
+            }
+          },
+          "required": [],
+          "title": "master",
+          "type": "object"
+        }
+      },
+      "required": [
+        "auth",
+        "master"
+      ],
+      "title": "redis"
+    },
+    "serviceAccount": {
+      "additionalProperties": false,
+      "description": "Other Parameters",
+      "properties": {
+        "annotations": {
+          "additionalProperties": false,
+          "description": "Service account annotations",
+          "required": [],
+          "title": "annotations"
+        },
+        "automountServiceAccountToken": {
+          "default": "true",
+          "description": "Auto-mount service account token",
+          "required": [],
+          "title": "automountServiceAccountToken"
+        },
+        "create": {
+          "default": "false",
+          "description": "Create service account for Hoppscotch",
+          "required": [],
+          "title": "create"
+        },
+        "name": {
+          "default": "",
+          "description": "Service account name (auto-generated if not specified)",
+          "required": [],
+          "title": "name"
+        }
+      },
+      "required": [],
+      "title": "serviceAccount"
+    }
+  },
+  "required": [
+    "global",
+    "rbac",
+    "externalDatabase",
+    "externalRedis",
+    "clickhouse",
+    "externalClickhouse"
+  ],
+  "type": "object"
+}

@@ -113,6 +113,13 @@ Generate the redirect URL for the backend based on deployment mode and ingress c
 {{- end -}}
 
 {{/*
+Backend service name
+*/}}
+{{- define "hoppscotch.backend.serviceName" -}}
+  {{- printf "%s-backend" (include "hoppscotch.fullname" .) -}}
+{{- end -}}
+
+{{/*
 Generate whitelisted origins for the backend based on ingress configuration
 */}}
 {{- define "hoppscotch.backend.whitelistedOrigins" -}}
@@ -123,7 +130,9 @@ Generate whitelisted origins for the backend based on ingress configuration
     {{- $frontendBaseUrl := urlParse (include "hoppscotch.frontend.baseUrl" .) -}}
     {{- if ne $frontendBaseUrl.host "" -}}
       {{- $origins = append $origins (printf "%s://%s" $frontendBaseUrl.scheme $frontendBaseUrl.host) -}}
-      {{- $origins = append $origins (printf "app://%s" $frontendBaseUrl.host) -}}
+      {{- $appHost := (regexReplaceAll "[.]" $frontendBaseUrl.host "_") -}}
+      {{- $origins = append $origins (printf "app://%s" $appHost) -}}
+      {{- $origins = append $origins (printf "http://app.%s" $appHost) -}}
     {{- end -}}
     {{- $backendBaseUrl := urlParse (include "hoppscotch.backend.baseUrl" .) -}}
     {{- if ne $backendBaseUrl.host "" -}}

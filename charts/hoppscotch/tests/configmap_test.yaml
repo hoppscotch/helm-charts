@@ -605,7 +605,7 @@ tests:
           path: data.REDIRECT_URL
           value: https://frontend.example.com
 
-  - it: should generate backend white listed origins when deployment mode is aio and ingress is enabled
+  - it: should generate backend whitelisted origins when deployment mode is aio and ingress is enabled
     template: configmap.yaml
     set:
       deploymentMode: aio
@@ -621,9 +621,9 @@ tests:
           kind: ConfigMap
       - equal:
           path: data.WHITELISTED_ORIGINS
-          value: https://example.com,app://example.com
+          value: https://example.com,app://example_com,http://app.example_com
 
-  - it: should generate backend white listed origins when deployment mode is aio and ingress is not enabled
+  - it: should generate backend whitelisted origins when deployment mode is aio and ingress is not enabled
     template: configmap.yaml
     set:
       deploymentMode: aio
@@ -641,7 +641,7 @@ tests:
           path: data.WHITELISTED_ORIGINS
           value: ""
 
-  - it: should generate backend white listed origins when deployment mode is distributed and ingress is enabled
+  - it: should generate backend whitelisted origins when deployment mode is distributed and ingress is enabled
     template: configmap.yaml
     set:
       deploymentMode: distributed
@@ -667,7 +667,7 @@ tests:
       - equal:
           path: data.WHITELISTED_ORIGINS
           # yamllint disable-line rule:line-length
-          value: https://frontend.example.com,app://frontend.example.com,https://backend.example.com,https://admin.example.com
+          value: https://frontend.example.com,app://frontend_example_com,http://app.frontend_example_com,https://backend.example.com,https://admin.example.com
 
   - it: should generate frontend admin URL when deployment mode is aio and ingress is enabled
     template: configmap.yaml

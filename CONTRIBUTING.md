@@ -81,6 +81,38 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 - Update chart documentation
 - Include examples when appropriate
 
+## Commit Messages
+
+- Use [Conventional Commits](https://www.conventionalcommits.org/). See commit scopes and types below.
+- Be concise and descriptive Commit messages should be 50 characters or less.
+- Use the imperative mood. Commit messages should follow this rule: if applied, this commit will `commit message`.
+- Write for inclusion in the CHANGELOG. Commit messages should be written with the CHANGELOG in mind.
+- Squash commits so they represent a single logical change. A new feature or bug fix should be a single commit.
+
+The following commit scopes are recognized:
+
+| Scope        | Title                 | Description                                |
+| ------------ | --------------------- | ------------------------------------------ |
+| `hoppscotch` | Hoppscotch            | Changes to the Hoppscotch chart            |
+| `shc`        | Hoppscotch Community  | Changes to the Hoppscotch Community chart  |
+| `she`        | Hoppscotch Enterprise | Changes to the Hoppscotch Enterprise chart |
+
+The following commit types are recognized:
+
+| Type       | Title       | Description                                                   |
+| ---------- | ----------- | ------------------------------------------------------------- |
+| `feat`     | Features    | A new feature for the user                                    |
+| `fix`      | Bug Fix     | A bug fix                                                     |
+| `docs`     | Docs        | Documentation only changes                                    |
+| `style`    | Styles      | Changes that do not affect the meaning of the code            |
+| `refactor` | Refactor    | A code change that neither fixes a bug nor adds a feature     |
+| `perf`     | Performance | A code change that improves performance                       |
+| `test`     | Tests       | Adding missing tests or correcting existing tests             |
+| `build`    | Builds      | Changes that affect the build system or external dependencies |
+| `ci`       | CI          | Changes to CI configuration files and scripts                 |
+| `chore`    | Chores      | Other changes that don't modify src or test files             |
+| `revert`   | Reverts     | Reverts a previous commit                                     |
+
 ## Community
 
 - Join our Discord server

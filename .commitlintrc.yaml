@@ -1,0 +1,6 @@
+extends:
+  - "@commitlint/config-conventional"
+scope-enum:
+  - hoppscotch
+  - shc
+  - she

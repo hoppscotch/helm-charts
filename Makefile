@@ -50,7 +50,7 @@ fmt-yaml-fix: ## Fix YAML files formatting
 	prettier -w **/*.yaml
 
 .PHONY: helm-docs
-helm-docs: ## Generate Helm docs
+helm-docs: helm-schema ## Generate Helm docs
 	@echo "Generating Helm docs"
 	helm-docs --sort-values-order=file
 	$(MAKE) fmt-markdown-fix
@@ -59,6 +59,21 @@ helm-docs: ## Generate Helm docs
 helm-install: kind-create-cluster ## Install chart
 	@echo "Installing ${CHART_NAME} chart"
 	helm install ${CHART_NAME} charts/${CHART_NAME} -n ${CHART_NAMESPACE} --values=${CHART_VALUES} --create-namespace --wait
+
+.PHONY: helm-package
+helm-package: clean ## Package Helm charts
+	@echo "Packaging Helm charts"
+	cr package charts/${CHART_NAME}
+
+.PHONY: helm-schema
+helm-schema: ## Generate Helm schema
+	@echo "Generating Helm schema"
+	helm-schema -c charts/${CHART_NAME} -n -p -r
+
+.PHONY: helm-test
+helm-test: ## Run chart tests
+	@echo "Running ${CHART_NAME} chart tests"
+	helm test ${CHART_NAME} --namespace ${CHART_NAMESPACE}
 
 .PHONY: helm-template
 helm-template: clean ## Render chart templates
@@ -122,9 +137,13 @@ install-deps-linux: ## Install dependencies for Linux
 	@echo "Installing helm-unittest"
 	@if ! helm plugin list | grep -q 'unittest'; then \
 		helm plugin install https://github.com/helm-unittest/helm-unittest; \
-	fi
+	else \
+		echo "Warning: helm-unittest plugin is already installed"; \
+	fixw
 	@echo "Installing helm-docs"
 	go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+	@echo "Installing helm-schema"
+	go install github.com/dadav/helm-schema/cmd/helm-schema@latest
 	@echo "Installing kind"
 	go install sigs.k8s.io/kind@latest
 	@echo "Installing markdownlint-cli"
@@ -145,6 +164,14 @@ install-deps-macos: ## Install dependencies for MacOS
 		echo "Error: Homebrew is not installed" 1>&2; \
 		exit 1; \
 	fi
+	@if ! command -v go &> /dev/null; then \
+		echo "Error: Go is not installed" 1>&2; \
+		exit 1; \
+	fi
+	@if ! command -v npm &> /dev/null; then \
+		echo "Error: NPM is not installed" 1>&2; \
+		exit 1; \
+	fi
 	brew update
 	brew install chart-releaser
 	brew install chart-testing
@@ -156,6 +183,7 @@ install-deps-macos: ## Install dependencies for MacOS
 		echo "Warning: helm-unittest plugin is already installed"; \
 	fi
 	brew install norwoodj/tap/helm-docs
+	go install github.com/dadav/helm-schema/cmd/helm-schema@latest
 	brew install kind
 	brew install markdownlint-cli
 	brew install prettier
@@ -186,7 +214,12 @@ kind-delete-cluster: ## Delete the kind cluster
 	fi
 
 .PHONY: lint
-lint: lint-helm lint-markdown lint-shell lint-yaml ## Run all linters
+lint: lint-commit lint-helm lint-markdown lint-shell lint-yaml ## Run all linters
+
+.PHONY: lint-commit
+lint-commit: ## Lint commit messages
+	@echo "Linting commit messages"
+	npx commitlint --from-last-tag --verbose
 
 .PHONY: lint-helm
 lint-helm: ## Lint Helm charts
@@ -196,7 +229,7 @@ lint-helm: ## Lint Helm charts
 .PHONY: lint-markdown
 lint-markdown: ## Lint Markdown files
 	@echo "Linting Markdown files"
-	markdownlint '**/*.md'
+	markdownlint -d '**/*.md'
 
 .PHONY: lint-shell
 lint-shell: ## Lint shell scripts
@@ -208,11 +241,6 @@ lint-yaml: ## Lint YAML files
 	@echo "Linting YAML files"
 	yamllint .
 
-.PHONY: package
-package: clean ## Package Helm charts
-	@echo "Packaging Helm charts"
-	cr package charts/${CHART_NAME}
-
 .PHONY: pre-commit
 pre-commit: fmt lint test-unit ## Run pre-commit hooks
 
@@ -220,6 +248,9 @@ pre-commit: fmt lint test-unit ## Run pre-commit hooks
 test-e2e: ## Run end-to-end tests
 	@echo "Running end-to-end tests for ${CHART_NAME} chart"
 	${TEST_E2E_DIR}/test-e2e.sh --charts=charts/${CHART_NAME} --debug
+
+.PHONY: test-integration
+test-integration: helm-test ## Run integration tests
 
 .PHONY: test-unit
 test-unit: ## Run unit tests
