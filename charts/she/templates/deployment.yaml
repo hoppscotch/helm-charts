@@ -6,82 +6,73 @@ metadata:
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-enterprise
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- with .Values.enterprise.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.enterprise.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-enterprise
   strategy:
-    type: RollingUpdate
+    type: {{ .Values.enterprise.deployment.strategy.type | default "RollingUpdate" }}
+    {{- if eq (.Values.enterprise.deployment.strategy.type | default "RollingUpdate") "RollingUpdate" }}
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: {{ .Values.enterprise.deployment.strategy.rollingUpdate.maxSurge | default 1 }}
+      maxUnavailable: {{ .Values.enterprise.deployment.strategy.rollingUpdate.maxUnavailable | default 0 }}
+    {{- end }}
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}-enterprise
+        {{- include "hoppscotch.labels" . | nindent 8 }}
+        {{- with .Values.enterprise.deployment.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         rollme: {{ randAlphaNum 5 | quote }}
+        {{- if .Values.enterprise.deployment.openshift.enabled }}
+        # OpenShift security annotations
+        openshift.io/scc: {{ .Values.enterprise.deployment.openshift.scc | default "restricted-v2" }}
+        {{- end }}
+        {{- with .Values.enterprise.deployment.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name | default (printf "%s-sa" .Release.Name) }}
-      initContainers:
-      {{- if not .Values.enterprise.config.database.external }}
-      - name: wait-for-postgres
-        image: postgres:15-alpine
-        resources:
-          {{- toYaml .Values.enterprise.initContainers.resources | nindent 10 }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
-              sleep 2
-            done
+      {{- if .Values.serviceAccount.automountServiceAccountToken }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- end }}
-      - name: wait-for-migration
-        image: bitnami/kubectl:latest
-        resources:
-          {{- toYaml .Values.enterprise.initContainers.resources | nindent 10 }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            echo "Waiting for migration to complete..."
-            while true; do
-              echo "Running kubectl command to check job status..."
-              if [ "$(kubectl get job {{ .Release.Name }}-db-migration -o jsonpath='{.status.succeeded}')" = "1" ]; then
-                echo "Migration completed."
-                break
-              fi
-              echo "Migration not yet completed. Retrying in 2 seconds..."
-              sleep 2
-            done
-      containers:
-        - name: enterprise
-          image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"
-          imagePullPolicy: {{ .Values.enterprise.image.pullPolicy }}
-          ports:
-          {{- if .Values.enterprise.config.enterprise.enableSubpathBasedAccess }}
-            - containerPort: {{ .Values.service.ports.subpath.targetPort }}
-              name: {{ .Values.service.ports.subpath.name }}
-          {{- else }}
-            - containerPort: {{ .Values.service.ports.backend.targetPort }}
-              name: {{ .Values.service.ports.backend.name }}
-            - containerPort: {{ .Values.service.ports.frontend.targetPort }}
-              name: {{ .Values.service.ports.frontend.name }}
-            - containerPort: {{ .Values.service.ports.admin.targetPort }}
-              name: {{ .Values.service.ports.admin.name }}
-          {{- end }}
-          envFrom:
-            - configMapRef:
-                name: {{ .Release.Name }}-enterprise-config
-            - secretRef:
-                name: {{ .Release.Name }}-enterprise-secrets
-          resources:
-            {{- toYaml .Values.enterprise.resources | nindent 12 }}
-      {{- if .Values.enterprise.config.affinityEnabled }}
+
+      # Security context for pod
+      {{- if or .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.securityContext }}
+      securityContext:
+        {{- if .Values.enterprise.deployment.openshift.enabled }}
+        # OpenShift assigns random UID, we need to be flexible
+        runAsNonRoot: true
+        # Don't specify runAsUser - let OpenShift assign it
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
+        {{- with .Values.enterprise.deployment.securityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+
+      {{- with .Values.enterprise.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enterprise.deployment.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.enterprise.config.affinityEnabled .Values.enterprise.deployment.affinity }}
       affinity:
+        {{- if .Values.enterprise.config.affinityEnabled }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
@@ -93,4 +84,376 @@ spec:
                       {{- range $node := $nodeHostnames }}
                       - "{{ $node }}"
                       {{- end }}
+        {{- end }}
+        {{- with .Values.enterprise.deployment.affinity }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+
+      initContainers:
+      {{- if not .Values.enterprise.config.database.external }}
+        - name: wait-for-postgres
+          image: {{ .Values.enterprise.deployment.waitForPostgres.image | default "postgres:15-alpine" }}
+          resources:
+          {{- toYaml .Values.enterprise.initContainers.resources | nindent 10 }}
+          # Container security context
+        {{- if or .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.waitForPostgres.securityContext }}
+          securityContext:
+          {{- if .Values.enterprise.deployment.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .Values.enterprise.deployment.waitForPostgres.securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+              until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+      {{- end }}
+
+      {{- if .Values.enterprise.deployment.waitForMigration.enabled }}
+        - name: wait-for-migration
+          image: {{ .Values.enterprise.deployment.waitForMigration.image | default "bitnami/kubectl:latest" }}
+          resources:
+          {{- toYaml .Values.enterprise.initContainers.resources | nindent 10 }}
+          # Container security context
+        {{- if or .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.waitForMigration.securityContext }}
+          securityContext:
+          {{- if .Values.enterprise.deployment.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .Values.enterprise.deployment.waitForMigration.securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for migration to complete..."
+              while true; do
+                echo "Running kubectl command to check job status..."
+                if [ "$(kubectl get job {{ .Release.Name }}-db-migration -o jsonpath='{.status.succeeded}')" = "1" ]; then
+                  echo "Migration completed."
+                  break
+                fi
+                echo "Migration not yet completed. Retrying in 2 seconds..."
+                sleep 2
+              done
+      {{- end }}
+
+      {{- if .Values.enterprise.deployment.extraInitContainers }}
+        {{- range .Values.enterprise.deployment.extraInitContainers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+        {{- if or $.Values.enterprise.deployment.openshift.enabled .securityContext }}
+          securityContext:
+          {{- if $.Values.enterprise.deployment.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- with .command }}
+          command:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .args }}
+          args:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .env }}
+          env:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .envFrom }}
+          envFrom:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .resources }}
+          resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+
+      containers:
+        - name: enterprise
+          image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"
+          imagePullPolicy: {{ .Values.enterprise.image.pullPolicy }}
+
+          # Container security context
+          {{- if or .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.containerSecurityContext }}
+          securityContext:
+            {{- if .Values.enterprise.deployment.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            # OpenShift-compatible read-only root filesystem (optional)
+            {{- if .Values.enterprise.deployment.openshift.readOnlyRootFilesystem }}
+            readOnlyRootFilesystem: true
+            {{- end }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.containerSecurityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+
+          ports:
+          {{- if .Values.enterprise.config.enterprise.enableSubpathBasedAccess }}
+            - containerPort: {{ .Values.service.ports.subpath.targetPort }}
+              name: {{ .Values.service.ports.subpath.name }}
+              protocol: {{ .Values.service.ports.subpath.protocol | default "TCP" }}
+          {{- else }}
+            - containerPort: {{ .Values.service.ports.backend.targetPort }}
+              name: {{ .Values.service.ports.backend.name }}
+              protocol: {{ .Values.service.ports.backend.protocol | default "TCP" }}
+            - containerPort: {{ .Values.service.ports.frontend.targetPort }}
+              name: {{ .Values.service.ports.frontend.name }}
+              protocol: {{ .Values.service.ports.frontend.protocol | default "TCP" }}
+            - containerPort: {{ .Values.service.ports.admin.targetPort }}
+              name: {{ .Values.service.ports.admin.name }}
+              protocol: {{ .Values.service.ports.admin.protocol | default "TCP" }}
+          {{- end }}
+
+          # Environment variables
+          env:
+            {{- if .Values.enterprise.deployment.openshift.enabled }}
+            # OpenShift-specific environment variables
+            - name: OPENSHIFT_BUILD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPENSHIFT_BUILD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- end }}
+            {{- if .Values.enterprise.deployment.extraEnvVars }}
+            {{- range .Values.enterprise.deployment.extraEnvVars }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+            {{- end }}
+            {{- end }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-enterprise-config
+            - secretRef:
+                name: {{ .Release.Name }}-enterprise-secrets
+            {{- if .Values.enterprise.deployment.extraEnvFrom }}
+            {{- range .Values.enterprise.deployment.extraEnvFrom }}
+            - {{ if .configMapRef }}configMapRef{{ else if .secretRef }}secretRef{{ end }}:
+                {{- if .configMapRef }}
+                {{- toYaml .configMapRef | nindent 16 }}
+                {{- else if .secretRef }}
+                {{- toYaml .secretRef | nindent 16 }}
+                {{- end }}
+            {{- end }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.enterprise.resources | nindent 12 }}
+
+          # Health checks
+          {{- if .Values.enterprise.deployment.livenessProbe.enabled }}
+          livenessProbe:
+            {{- with .Values.enterprise.deployment.livenessProbe.httpGet }}
+            httpGet:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.livenessProbe.exec }}
+            exec:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.livenessProbe.tcpSocket }}
+            tcpSocket:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.enterprise.deployment.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.enterprise.deployment.livenessProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.enterprise.deployment.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.enterprise.deployment.livenessProbe.failureThreshold | default 3 }}
+            successThreshold: {{ .Values.enterprise.deployment.livenessProbe.successThreshold | default 1 }}
+          {{- end }}
+
+          {{- if .Values.enterprise.deployment.readinessProbe.enabled }}
+          readinessProbe:
+            {{- with .Values.enterprise.deployment.readinessProbe.httpGet }}
+            httpGet:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.readinessProbe.exec }}
+            exec:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.readinessProbe.tcpSocket }}
+            tcpSocket:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.enterprise.deployment.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.enterprise.deployment.readinessProbe.periodSeconds | default 5 }}
+            timeoutSeconds: {{ .Values.enterprise.deployment.readinessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.enterprise.deployment.readinessProbe.failureThreshold | default 3 }}
+            successThreshold: {{ .Values.enterprise.deployment.readinessProbe.successThreshold | default 1 }}
+          {{- end }}
+
+          {{- if .Values.enterprise.deployment.startupProbe.enabled }}
+          startupProbe:
+            {{- with .Values.enterprise.deployment.startupProbe.httpGet }}
+            httpGet:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.startupProbe.exec }}
+            exec:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            {{- with .Values.enterprise.deployment.startupProbe.tcpSocket }}
+            tcpSocket:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.enterprise.deployment.startupProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.enterprise.deployment.startupProbe.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.enterprise.deployment.startupProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.enterprise.deployment.startupProbe.failureThreshold | default 30 }}
+            successThreshold: {{ .Values.enterprise.deployment.startupProbe.successThreshold | default 1 }}
+          {{- end }}
+
+          # Volume mounts
+          {{- if or .Values.enterprise.deployment.volumeMounts (and .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.openshift.readOnlyRootFilesystem) }}
+          volumeMounts:
+            {{- if and .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.openshift.readOnlyRootFilesystem }}
+            # OpenShift-required writable directories (only if read-only root filesystem)
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: cache-volume
+              mountPath: /app/.cache
+            - name: logs-volume
+              mountPath: /app/logs
+            - name: uploads-volume
+              mountPath: /app/uploads
+            {{- end }}
+            {{- if .Values.enterprise.deployment.volumeMounts }}
+            {{- toYaml .Values.enterprise.deployment.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- end }}
+
+        {{- if .Values.enterprise.deployment.extraContainers }}
+        {{- range .Values.enterprise.deployment.extraContainers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          {{- if or $.Values.enterprise.deployment.openshift.enabled .securityContext }}
+          securityContext:
+            {{- if $.Values.enterprise.deployment.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            {{- end }}
+            {{- with .securityContext }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- with .command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+
+      # Volumes
+      {{- if or .Values.enterprise.deployment.volumes (and .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.openshift.readOnlyRootFilesystem) }}
+      volumes:
+        {{- if and .Values.enterprise.deployment.openshift.enabled .Values.enterprise.deployment.openshift.readOnlyRootFilesystem }}
+        # OpenShift-required writable volumes (only if read-only root filesystem)
+        - name: tmp-volume
+          emptyDir: {}
+        - name: cache-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: uploads-volume
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.enterprise.deployment.volumes }}
+        {{- toYaml .Values.enterprise.deployment.volumes | nindent 8 }}
+        {{- end }}
+      {{- end }}
+
+      {{- with .Values.enterprise.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
       {{- end }}

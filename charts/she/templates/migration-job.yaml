@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-db-migration
+    {{- include "hoppscotch.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.enterprise.migration.upgradeEnabled }}
     "helm.sh/hook": post-install,post-upgrade
@@ -13,41 +14,363 @@ metadata:
     "helm.sh/hook": post-install
     {{- end }}
     "helm.sh/hook-weight": "1"  # run after database
+    {{- if .Values.enterprise.migration.openshift.enabled }}
+    # OpenShift security annotations
+    openshift.io/scc: {{ .Values.enterprise.migration.openshift.scc | default "restricted-v2" }}
+    {{- end }}
+    {{- with .Values.enterprise.migration.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
+  {{- if .Values.enterprise.migration.activeDeadlineSeconds }}
+  activeDeadlineSeconds: {{ .Values.enterprise.migration.activeDeadlineSeconds }}
+  {{- end }}
+  {{- if .Values.enterprise.migration.backoffLimit }}
+  backoffLimit: {{ .Values.enterprise.migration.backoffLimit }}
+  {{- end }}
   template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-db-migration
+        {{- include "hoppscotch.labels" . | nindent 8 }}
+      {{- with .Values.enterprise.migration.podLabels }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.enterprise.migration.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.enterprise.migration.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: {{ .Values.enterprise.migration.restartPolicy | default "OnFailure" }}
+      {{- with .Values.enterprise.migration.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enterprise.migration.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enterprise.migration.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Service account configuration
+      {{- if .Values.enterprise.migration.serviceAccount.create }}
+      serviceAccountName: {{ .Values.enterprise.migration.serviceAccount.name | default (printf "%s-migration" .Release.Name) }}
+      {{- else }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default "default" }}
+      {{- end }}
+      {{- if .Values.enterprise.migration.serviceAccount.automountToken }}
+      automountServiceAccountToken: {{ .Values.enterprise.migration.serviceAccount.automountToken }}
+      {{- end }}
+      # Security context for pod
+      {{- if or .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.securityContext }}
+      securityContext:
+        {{- if .Values.enterprise.migration.openshift.enabled }}
+        # OpenShift assigns random UID, we need to be flexible
+        runAsNonRoot: true
+        # Don't specify runAsUser - let OpenShift assign it
+        seccompProfile:
+          type: RuntimeDefault
+        {{- end }}
+        {{- with .Values.enterprise.migration.securityContext }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
       {{- if not .Values.enterprise.config.database.external }}
       initContainers:
-      - name: wait-for-postgres
-        image: postgres:15-alpine
-        resources:
+        - name: wait-for-postgres
+          image: {{ .Values.enterprise.migration.waitForPostgres.image | default "postgres:15-alpine" }}
+          resources:
           {{- toYaml .Values.enterprise.initContainers.resources | nindent 10 }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            echo "Waiting for PostgreSQL..."
-            until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
-              sleep 2
-            done
-            echo "PostgreSQL is ready"
+          # Container security context
+        {{- if or .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.waitForPostgres.securityContext }}
+          securityContext:
+          {{- if .Values.enterprise.migration.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .Values.enterprise.migration.waitForPostgres.securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+              until pg_isready -h {{ .Release.Name }}-postgresql -p 5432 -U {{ .Values.enterprise.config.postgresql.username }}; do
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+      {{- if .Values.enterprise.migration.extraInitContainers }}
+        {{- range .Values.enterprise.migration.extraInitContainers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+        {{- if or $.Values.enterprise.migration.openshift.enabled .securityContext }}
+          securityContext:
+          {{- if $.Values.enterprise.migration.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- with .command }}
+          command:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .args }}
+          args:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .env }}
+          env:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .resources }}
+          resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
       {{- end }}
       containers:
-      - name: db-migration
-        image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"
-        resources:
+        - name: db-migration
+          image: "{{ .Values.enterprise.image.repository }}:{{ .Values.enterprise.image.tag }}"
+          imagePullPolicy: {{ .Values.enterprise.image.pullPolicy | default "IfNotPresent" }}
+          resources:
           {{- toYaml .Values.enterprise.migration.resources | nindent 10 }}
-        command:
-          - /bin/sh
-          - -c
-          - |
-            echo "Running database migrations..."
-            pnpx prisma migrate deploy
-        env:
-          - name: DATABASE_URL
-            {{- if .Values.enterprise.config.database.external }}
-            value: {{ .Values.enterprise.config.database.url | quote }}
-            {{- else }}
-            value: "postgresql://{{ .Values.enterprise.config.postgresql.username }}:{{ .Values.enterprise.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.enterprise.config.postgresql.database }}?schema=public"
+          # Container security context
+        {{- if or .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.containerSecurityContext }}
+          securityContext:
+          {{- if .Values.enterprise.migration.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+            # OpenShift-compatible read-only root filesystem (optional)
+          {{- if .Values.enterprise.migration.openshift.readOnlyRootFilesystem }}
+            readOnlyRootFilesystem: true
+          {{- end }}
+          {{- end }}
+          {{- with .Values.enterprise.migration.containerSecurityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Running database migrations..."
+            {{- if .Values.enterprise.migration.proxy.enabled }}
+              # Configure proxy settings
+              export HTTP_PROXY={{ .Values.enterprise.migration.proxy.httpProxy | quote }}
+              export http_proxy={{ .Values.enterprise.migration.proxy.httpProxy | quote }}
+              export HTTPS_PROXY={{ .Values.enterprise.migration.proxy.httpsProxy | quote }}
+              export https_proxy={{ .Values.enterprise.migration.proxy.httpsProxy | quote }}
+              export NO_PROXY={{ .Values.enterprise.migration.proxy.noProxy | quote }}
+              export no_proxy={{ .Values.enterprise.migration.proxy.noProxy | quote }}
             {{- end }}
+
+            {{- if .Values.enterprise.migration.environment.home }}
+              export HOME={{ .Values.enterprise.migration.environment.home }}
+            {{- else if .Values.enterprise.migration.openshift.enabled }}
+              # OpenShift-compatible home directory
+              export HOME=/tmp
+            {{- end }}
+
+            {{- if .Values.enterprise.migration.openshift.enabled }}
+              # OpenShift-specific environment setup
+              export TMPDIR=/tmp
+              export NODE_ENV=${NODE_ENV:-production}
+              # Ensure write permissions for OpenShift
+              mkdir -p /tmp/.npm /tmp/.config /tmp/.cache
+              chmod 755 /tmp/.npm /tmp/.config /tmp/.cache
+            {{- end }}
+
+            {{- if .Values.enterprise.migration.prisma.enabled }}
+              # Prisma specific configurations
+            {{- if .Values.enterprise.migration.prisma.checksumIgnoreMissing }}
+              export PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=true
+            {{- end }}
+            {{- if .Values.enterprise.migration.prisma.enginesMirror }}
+              export PRISMA_ENGINES_MIRROR={{ .Values.enterprise.migration.prisma.enginesMirror }}
+            {{- end }}
+            {{- if .Values.enterprise.migration.openshift.enabled }}
+              # OpenShift-compatible Prisma cache
+              export PRISMA_QUERY_ENGINE_BINARY_PATH=/tmp/.prisma
+              export PRISMA_SCHEMA_ENGINE_BINARY_PATH=/tmp/.prisma
+              export PRISMA_INTROSPECTION_ENGINE_BINARY_PATH=/tmp/.prisma
+              export PRISMA_FMT_BINARY_PATH=/tmp/.prisma
+            {{- end }}
+            {{- end }}
+
+            {{- if .Values.enterprise.migration.npm.enabled }}
+              # NPM configurations
+            {{- if .Values.enterprise.migration.npm.registry }}
+              npm config set registry {{ .Values.enterprise.migration.npm.registry }}
+            {{- end }}
+            {{- if .Values.enterprise.migration.openshift.enabled }}
+              # OpenShift-compatible NPM cache
+              npm config set cache /tmp/.npm
+              npm config set prefix /tmp/.npm-global
+            {{- end }}
+            {{- range .Values.enterprise.migration.npm.extraConfigs }}
+              npm config set {{ .key }} {{ .value }}
+            {{- end }}
+            {{- end }}
+
+            {{- if .Values.enterprise.migration.preCommands }}
+              # Pre-migration commands
+            {{- range .Values.enterprise.migration.preCommands }}
+            {{ . }}
+            {{- end }}
+            {{- end }}
+
+              # Run migration command
+            {{- if .Values.enterprise.migration.customCommand }}
+            {{ .Values.enterprise.migration.customCommand }}
+            {{- else }}
+              pnpx prisma migrate deploy
+            {{- end }}
+
+            {{- if .Values.enterprise.migration.postCommands }}
+              # Post-migration commands
+            {{- range .Values.enterprise.migration.postCommands }}
+            {{ . }}
+            {{- end }}
+            {{- end }}
+          env:
+            - name: DATABASE_URL
+            {{- if .Values.enterprise.config.database.external }}
+            {{- if .Values.enterprise.config.database.secret.enabled }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.enterprise.config.database.secret.name }}
+                  key: {{ .Values.enterprise.config.database.secret.key | default "url" }}
+            {{- else }}
+              value: {{ .Values.enterprise.config.database.url | quote }}
+            {{- end }}
+            {{- else }}
+              value: "postgresql://{{ .Values.enterprise.config.postgresql.username }}:{{ .Values.enterprise.config.postgresql.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.enterprise.config.postgresql.database }}?schema=public"
+            {{- end }}
+          {{- if .Values.enterprise.migration.openshift.enabled }}
+            # OpenShift-specific environment variables
+            - name: OPENSHIFT_BUILD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPENSHIFT_BUILD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          {{- end }}
+          {{- if .Values.enterprise.migration.extraEnvVars }}
+          {{- range .Values.enterprise.migration.extraEnvVars }}
+            - name: {{ .name }}
+            {{- if .value }}
+              value: {{ .value | quote }}
+            {{- else if .valueFrom }}
+              valueFrom:
+              {{- toYaml .valueFrom | nindent 14 }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+        {{- if or .Values.enterprise.migration.volumeMounts (and .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.openshift.readOnlyRootFilesystem) }}
+          volumeMounts:
+          {{- if and .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.openshift.readOnlyRootFilesystem }}
+            # OpenShift-required writable directories (only if read-only root filesystem)
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: cache-volume
+              mountPath: /app/.cache
+            - name: npm-cache-volume
+              mountPath: /app/.npm
+            - name: prisma-cache-volume
+              mountPath: /app/.prisma
+          {{- end }}
+          {{- if .Values.enterprise.migration.volumeMounts }}
+          {{- toYaml .Values.enterprise.migration.volumeMounts | nindent 10 }}
+          {{- end }}
+        {{- end }}
+      {{- if .Values.enterprise.migration.extraContainers }}
+        {{- range .Values.enterprise.migration.extraContainers }}
+        - name: {{ .name }}
+          image: {{ .image }}
+        {{- if or $.Values.enterprise.migration.openshift.enabled .securityContext }}
+          securityContext:
+          {{- if $.Values.enterprise.migration.openshift.enabled }}
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          {{- end }}
+          {{- with .securityContext }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- with .command }}
+          command:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .args }}
+          args:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .env }}
+          env:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .resources }}
+          resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .volumeMounts }}
+          volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.enterprise.migration.volumes (and .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.openshift.readOnlyRootFilesystem) }}
+      volumes:
+        {{- if and .Values.enterprise.migration.openshift.enabled .Values.enterprise.migration.openshift.readOnlyRootFilesystem }}
+        # OpenShift-required writable volumes (only if read-only root filesystem)
+        - name: tmp-volume
+          emptyDir: {}
+        - name: cache-volume
+          emptyDir: {}
+        - name: npm-cache-volume
+          emptyDir: {}
+        - name: prisma-cache-volume
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.enterprise.migration.volumes }}
+        {{- toYaml .Values.enterprise.migration.volumes | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.enterprise.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

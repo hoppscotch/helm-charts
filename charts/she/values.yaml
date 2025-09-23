@@ -1,3 +1,4 @@
+# values.yaml - Kubernetes & OpenShift Compatible
 # Global settings for the application
 global:
   externalIP: "0.0.0.0" # Example: "192.168.1.1"
@@ -10,6 +11,8 @@ enterprise:
     repository: hoppscotch/hoppscotch-enterprise
     tag: latest # Example: "v1.0.0"
     pullPolicy: IfNotPresent
+    pullSecrets: []
+
   # Main application resources (for deployment.yaml)
   resources:
     limits:
@@ -18,6 +21,145 @@ enterprise:
     requests:
       cpu: "250m"
       memory: "256Mi"
+
+  # Deployment-specific configuration
+  deployment:
+    # Deployment strategy
+    strategy:
+      type: RollingUpdate  # RollingUpdate or Recreate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+
+    # Pod configuration
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {}
+
+    # Node scheduling
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+    # OpenShift-specific configuration (OPTIONAL)
+    openshift:
+      enabled: false  # Set to true for OpenShift deployments
+      scc: "restricted-v2"  # Security Context Constraint
+      readOnlyRootFilesystem: false  # Set to true for enhanced security
+
+    # Security contexts (applied conditionally based on OpenShift or standard K8s)
+    securityContext:
+      # Standard Kubernetes settings (will be enhanced if OpenShift is enabled)
+      runAsNonRoot: true
+      fsGroup: 1001
+      # runAsUser: 1001  # Only used in standard K8s, ignored in OpenShift
+
+    containerSecurityContext:
+      # Standard Kubernetes settings (will be enhanced if OpenShift is enabled)
+      allowPrivilegeEscalation: false
+      # runAsUser: 1001  # Only used in standard K8s, ignored in OpenShift
+
+    # Health checks
+    livenessProbe:
+      enabled: true
+      httpGet:
+        path: /health
+        port: 3170
+        scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+
+    readinessProbe:
+      enabled: true
+      httpGet:
+        path: /ready
+        port: 3170
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+      successThreshold: 1
+
+    startupProbe:
+      enabled: false  # Set to true if application has slow startup
+      httpGet:
+        path: /health
+        port: 3170
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
+      successThreshold: 1
+
+    # Wait for migration configuration
+    waitForMigration:
+      enabled: true  # Set to false to disable waiting for migration
+      image: "bitnami/kubectl:latest"
+      securityContext: {}
+
+    # Wait for PostgreSQL configuration
+    waitForPostgres:
+      image: "postgres:15-alpine"
+      securityContext: {}
+
+    # Extra environment variables
+    extraEnvVars: []
+      # Example:
+      # - name: "CUSTOM_VAR"
+      #   value: "custom_value"
+      # - name: "SECRET_VAR"
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: my-secret
+    #       key: secret-key
+
+    # Extra environment from (configMaps/secrets)
+    extraEnvFrom: []
+      # Example:
+      # - configMapRef:
+      #     name: extra-config
+      # - secretRef:
+    #     name: extra-secrets
+
+    # Volume mounts and volumes
+    volumeMounts: []
+      # Example:
+      # - name: config-volume
+      #   mountPath: /app/config
+      #   readOnly: true
+    # Note: OpenShift volumes are added automatically when openshift.enabled=true and readOnlyRootFilesystem=true
+
+    volumes: []
+      # Example:
+      # - name: config-volume
+      #   configMap:
+      #     name: app-config
+    # Note: OpenShift volumes are added automatically when openshift.enabled=true and readOnlyRootFilesystem=true
+
+    # Extra containers (sidecars)
+    extraContainers: []
+      # Example:
+      # - name: logging-sidecar
+      #   image: fluentd:latest
+      #   resources:
+      #     limits:
+      #       cpu: 100m
+      #       memory: 128Mi
+      #   volumeMounts:
+      #     - name: logs-volume
+    #       mountPath: /var/log
+
+    # Extra init containers
+    extraInitContainers: []
+      # Example:
+      # - name: config-init
+      #   image: busybox:latest
+    #   command: ["sh", "-c", "echo 'Initializing config'"]
 
   # Init containers configuration (used by both deployment and migration job)
   initContainers:
@@ -32,6 +174,50 @@ enterprise:
 
   migration:
     upgradeEnabled: false # If true, the migration job will run on every helm upgrade
+
+    # Basic job configuration
+    restartPolicy: OnFailure
+    activeDeadlineSeconds: 600  # 10 minutes timeout
+    backoffLimit: 3
+
+    # Pod configuration
+    podLabels: {}
+    podAnnotations: {}
+    annotations: {}
+
+    # Node scheduling
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+    # OpenShift-specific configuration (OPTIONAL)
+    openshift:
+      enabled: false  # Set to true for OpenShift deployments
+      scc: "restricted-v2"  # Security Context Constraint (restricted-v2, anyuid, privileged)
+      readOnlyRootFilesystem: false  # Set to true for enhanced security (creates additional volumes)
+
+    # Security contexts (applied conditionally based on OpenShift or standard K8s)
+    securityContext:
+      # Standard Kubernetes settings (will be enhanced if OpenShift is enabled)
+      runAsNonRoot: true
+      fsGroup: 1001
+      # runAsUser: 1001  # Only used in standard K8s, ignored in OpenShift
+
+    containerSecurityContext:
+      # Standard Kubernetes settings (will be enhanced if OpenShift is enabled)
+      allowPrivilegeEscalation: false
+      # runAsUser: 1001  # Only used in standard K8s, ignored in OpenShift
+      # Additional OpenShift-specific settings are added automatically when openshift.enabled=true
+
+    # Service Account
+    serviceAccount:
+      create: false  # Set to true to create a dedicated service account
+      name: ""  # Will use generated name if empty
+      automountToken: false  # Recommended for security
+      annotations: {}
+        # Example OpenShift annotations:
+      # serviceaccounts.openshift.io/oauth-redirectreference.jenkins: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"jenkins"}}'
+
     # Resources for the migration job container
     resources:
       limits:
@@ -41,10 +227,111 @@ enterprise:
         cpu: "150m"
         memory: "128Mi"
 
+    # Proxy configuration (configurable)
+    proxy:
+      enabled: false  # Set to true to enable proxy
+      httpProxy: "http://webproxy.comp.db.de:8080"
+      httpsProxy: "http://webproxy.comp.db.de:8080"
+      noProxy: "127.0.0.1,localhost,cluster.local,db.de,signintra.com,intranet.deutschebahn.com,intranet-test.deutschebahn.com,intranet.dbschenker.com,service.deutschebahn.com,dbplanet.deutschebahn.com,169.254.169.254,amazonaws.com,.svc,.svc.cluster.local"
+
+    # Environment variables
+    environment:
+      home: ""  # Leave empty to use OpenShift-compatible /tmp when OpenShift is enabled
+
+    # Prisma configuration (configurable)
+    prisma:
+      enabled: true  # Set to false to disable Prisma-specific settings
+      checksumIgnoreMissing: true
+      enginesMirror: "https://bahnhub.tech.rz.db.de/artifactory/prisma-binaries-generic-remote/"
+
+    # NPM configuration (configurable)
+    npm:
+      enabled: false  # Set to true to enable NPM configuration
+      registry: "https://bahnhub.tech.rz.db.de/artifactory/api/npm/default-npm-3rdparty/"
+      extraConfigs: []
+        # - key: "registry"
+        #   value: "https://custom-registry.com"
+        # - key: "strict-ssl"
+      #   value: "false"
+
+    # Custom commands (fully configurable)
+    preCommands: []
+      # Example pre-commands:
+      # - "echo 'Starting migration process'"
+      # - "ls -la /app"
+      # - "whoami"
+    # OpenShift-specific commands are added automatically when openshift.enabled=true
+
+    postCommands: []
+      # Example post-commands:
+      # - "echo 'Migration completed successfully'"
+      # - "npm run seed"
+    # - "curl -X POST https://monitoring.example.com/webhook"
+
+    # Custom migration command (override default)
+    customCommand: ""  # If set, replaces "pnpx prisma migrate deploy"
+
+    # Extra environment variables
+    extraEnvVars: []
+      # Example:
+      # - name: "CUSTOM_VAR"
+      #   value: "custom_value"
+      # - name: "SECRET_VAR"
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: my-secret
+    #       key: secret-key
+
+    # Volume mounts and volumes
+    volumeMounts: []
+      # Example:
+      # - name: config-volume
+      #   mountPath: /app/config
+      #   readOnly: true
+    # Note: OpenShift volumes are added automatically when openshift.enabled=true and readOnlyRootFilesystem=true
+
+    volumes: []
+      # Example:
+      # - name: config-volume
+      #   configMap:
+      #     name: migration-config
+    # Note: OpenShift volumes are added automatically when openshift.enabled=true and readOnlyRootFilesystem=true
+
+    # Extra containers (sidecars)
+    extraContainers: []
+      # Example:
+      # - name: backup-container
+      #   image: postgres:15-alpine
+      #   command: ["pg_dump", "..."]
+      #   securityContext:  # OpenShift-compatible security context added automatically
+      #     allowPrivilegeEscalation: false
+    #     runAsNonRoot: true
+
+    # Extra init containers
+    extraInitContainers: []
+      # Example:
+      # - name: schema-validator
+      #   image: custom/validator:latest
+      #   command: ["validate-schema"]
+      #   securityContext:  # OpenShift-compatible security context added automatically
+      #     allowPrivilegeEscalation: false
+    #     runAsNonRoot: true
+
+    # Wait for PostgreSQL configuration
+    waitForPostgres:
+      image: "postgres:15-alpine"
+      securityContext: {} # OpenShift-compatible security context added automatically
+
   config:
     database:
       external: false # Flag to use external DB, if false, it will use the internal postgresql created by the helm chart
       url: "postgres://user:password@hostname:port/database?sslmode=require"
+      # Secret-based database URL configuration
+      secret:
+        enabled: false
+        name: ""
+        key: "url"
+
     postgresql:
       image: postgres:15
       persistence:
@@ -54,11 +341,18 @@ enterprise:
       password: hoppscotch123
       resources:
         requests:
-          cpu: "1"
-          memory: "1Gi"
+          cpu: "500m"
+          memory: "512Mi"
         limits:
           cpu: "1"
-          memory: "2Gi"
+          memory: "1Gi"
+      # Security contexts (enhanced automatically for OpenShift when enabled)
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 999
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
 
     mailer:
       enable: false
@@ -95,6 +389,20 @@ enterprise:
         password: redispassword
         persistence:
           size: 5Gi
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        # Security contexts (enhanced automatically for OpenShift when enabled)
+        securityContext:
+          runAsNonRoot: true
+          fsGroup: 999
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
 
     authjwt:
       sessionSecret: "dummySessionSecret"
@@ -176,6 +484,20 @@ enterprise:
         password: "password"
         persistence:
           size: 10Gi
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        # Security contexts (enhanced automatically for OpenShift when enabled)
+        securityContext:
+          runAsNonRoot: true
+          fsGroup: 101
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
 
     enterprise:
       licenseKey: "dummyLicenseKey"
@@ -189,20 +511,21 @@ enterprise:
 serviceAccount:
   # Name of the ServiceAccount; if not set, defaults to "{{ .Release.Name }}-sa"
   name: ""
-  # Annotations for the ServiceAccount (e.g., for AWS IRSA)
+  # Annotations for the ServiceAccount
   annotations: {}
-  # Example for AWS IRSA:
-  # eks.amazonaws.com/role-arn: "arn:aws:iam::${aws_account_id}:role/devops-${stage}-hoppscotch"
+    # Example OpenShift service account annotations (only applied when OpenShift is detected):
+  # serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"primary-route"}}'
+  automountServiceAccountToken: false
 
 # Service configuration
 service:
   apiVersion: v1
   name: hoppscotch-enterprise
   app: hoppscotch-enterprise
-  # Dynamically set based on ingress
-  type: "{{ .Values.service.ingress.enabled | ternary \"ClusterIP\" \"LoadBalancer\" }}"
+  # Dynamically set based on ingress/route
+  type: "{{ if .Values.service.ingress.enabled }}ClusterIP{{ else if .Values.service.route.enabled }}ClusterIP{{ else }}LoadBalancer{{ end }}"
   # Only set externalTrafficPolicy for LoadBalancer
-  externalTrafficPolicy: "{{ .Values.service.ingress.enabled | ternary \"\" \"Cluster\" }}"
+  externalTrafficPolicy: "{{ if or .Values.service.ingress.enabled .Values.service.route.enabled }}{{ else }}Cluster{{ end }}"
 
   ports:
     backend:
@@ -228,7 +551,27 @@ service:
   selector:
     app: hoppscotch-enterprise
 
-  # Ingress Configuration
+  # OpenShift Route Configuration (OPTIONAL - only used when enabled)
+  route:
+    enabled: false  # Set to true for OpenShift Routes
+    host: frontend.example.com
+    adminHost: admin.example.com
+    backendHost: backend.example.com
+    path: "/"
+    annotations: {}
+      # Example OpenShift route annotations:
+      # haproxy.router.openshift.io/timeout: "30s"
+    # haproxy.router.openshift.io/rate-limit-connections: "true"
+    tls:
+      enabled: false
+      termination: edge  # edge, reencrypt, passthrough
+      insecureEdgeTerminationPolicy: Redirect  # Allow, Redirect, None
+      # Certificate and key for reencrypt/passthrough
+      # certificate: ""
+      # key: ""
+      # caCertificate: ""
+
+  # Ingress Configuration (for standard Kubernetes environments)
   ingress:
     enabled: true
     mainHost: frontend.example.com
@@ -243,13 +586,282 @@ service:
       # alb.ingress.kubernetes.io/security-groups: "sg-12345678"
       # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:region:account-id:certificate/cert-id"
 
-  annotations:  # Define service annotations here if needed. For example, to configure a load balancer:
-    example.com/dummy: ""
+  annotations: {}
+    # Example service annotations:
     # service.kubernetes.io/load-balancer-type: "External"
-
-    # Remove the empty braces ({}) and add your annotations as key-value pairs.
+    # Example OpenShift service annotations:
+  # service.alpha.openshift.io/dependencies: '[{"name": "postgresql", "kind": "Service"}]'
 
   # TLS Configuration
   tls:
     enabled: false
     secretName: hoppscotch-tls
+
+# OpenShift-specific configurations (OPTIONAL - only applied when OpenShift features are enabled)
+openshift:
+  # Global OpenShift enablement (can be overridden per component)
+  enabled: false  # Set to true to enable OpenShift-specific features globally
+
+  # Security Context Constraints (only created when openshift.enabled=true)
+  scc:
+    # Create custom SCC (optional)
+    create: false
+    name: hoppscotch-scc
+    # SCC permissions
+    allowHostDirVolumePlugin: false
+    allowHostIPC: false
+    allowHostNetwork: false
+    allowHostPID: false
+    allowHostPorts: false
+    allowPrivilegedContainer: false
+    allowedCapabilities: []
+    defaultAddCapabilities: []
+    requiredDropCapabilities:
+      - ALL
+    allowedFlexVolumes: []
+    fsGroup:
+      type: MustRunAs
+      ranges:
+        - min: 1000
+          max: 2000
+    runAsUser:
+      type: MustRunAsRange
+      uidRangeMin: 1000
+      uidRangeMax: 2000
+    seLinuxContext:
+      type: MustRunAs
+    supplementalGroups:
+      type: MustRunAs
+      ranges:
+        - min: 1000
+          max: 2000
+    volumes:
+      - configMap
+      - downwardAPI
+      - emptyDir
+      - persistentVolumeClaim
+      - projected
+      - secret
+
+  # Network Policies (only applied when openshift.enabled=true)
+  networkPolicy:
+    enabled: false
+    ingress:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: kube-system
+          - namespaceSelector:
+              matchLabels:
+                name: openshift-ingress
+    egress:
+      - to: []
+        ports:
+          - protocol: TCP
+            port: 5432  # PostgreSQL
+          - protocol: TCP
+            port: 6379  # Redis
+          - protocol: TCP
+            port: 8123  # ClickHouse
+
+# ========================================
+# CONFIGURATION EXAMPLES
+# ========================================
+
+# Example 1: Standard Kubernetes Deployment
+# enterprise:
+#   migration:
+#     openshift:
+#       enabled: false  # Use standard Kubernetes
+#     proxy:
+#       enabled: false
+#     serviceAccount:
+#       create: false
+#     securityContext:
+#       runAsUser: 1001  # Fixed user ID for standard K8s
+#       runAsNonRoot: true
+#       fsGroup: 1001
+#     containerSecurityContext:
+#       allowPrivilegeEscalation: false
+#       runAsUser: 1001
+# service:
+#   ingress:
+#     enabled: true
+#     className: nginx
+#   route:
+#     enabled: false
+
+# Example 2: OpenShift Development Environment
+# enterprise:
+#   migration:
+#     openshift:
+#       enabled: true
+#       scc: "restricted-v2"
+#       readOnlyRootFilesystem: false
+#     proxy:
+#       enabled: false
+#     serviceAccount:
+#       create: true
+#     resources:
+#       limits:
+#         cpu: 200m
+#         memory: 256Mi
+#       requests:
+#         cpu: 100m
+#         memory: 128Mi
+# service:
+#   route:
+#     enabled: true
+#     host: hoppscotch-dev.apps.cluster.example.com
+#   ingress:
+#     enabled: false
+
+# Example 3: OpenShift Production
+# enterprise:
+#   migration:
+#     openshift:
+#       enabled: true
+#       scc: "restricted-v2"
+#       readOnlyRootFilesystem: true  # Enhanced security
+#     proxy:
+#       enabled: true
+#       httpProxy: "http://webproxy.comp.db.de:8080"
+#       httpsProxy: "http://webproxy.comp.db.de:8080"
+#       noProxy: "127.0.0.1,localhost,cluster.local,db.de,signintra.com,intranet.deutschebahn.com,.svc,.svc.cluster.local"
+#     prisma:
+#       enabled: true
+#       checksumIgnoreMissing: true
+#       enginesMirror: "https://bahnhub.tech.rz.db.de/artifactory/prisma-binaries-generic-remote/"
+#     npm:
+#       enabled: true
+#       registry: "https://bahnhub.tech.rz.db.de/artifactory/api/npm/default-npm-3rdparty/"
+#     preCommands:
+#       - "echo 'OpenShift DB Production migration starting'"
+#       - "npm audit --audit-level high"
+#     postCommands:
+#       - "echo 'Migration completed successfully'"
+#       - "curl -X POST https://monitoring.db.de/migration-webhook"
+#     serviceAccount:
+#       create: true
+#       annotations:
+#         serviceaccounts.openshift.io/oauth-redirectreference.hoppscotch: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"hoppscotch-frontend"}}'
+#     resources:
+#       limits:
+#         cpu: 1000m
+#         memory: 1Gi
+#       requests:
+#         cpu: 200m
+#         memory: 256Mi
+#     extraEnvVars:
+#       - name: "OPENSHIFT_ENVIRONMENT"
+#         value: "production"
+#       - name: "DB_ENVIRONMENT"
+#         value: "production"
+#       - name: "MIGRATION_LOG_LEVEL"
+#         value: "info"
+# service:
+#   route:
+#     enabled: true
+#     host: hoppscotch.apps.cluster.db.de
+#     adminHost: hoppscotch-admin.apps.cluster.db.de
+#     backendHost: hoppscotch-api.apps.cluster.db.de
+#     tls:
+#       enabled: true
+#       termination: edge
+#       insecureEdgeTerminationPolicy: Redirect
+#     annotations:
+#       haproxy.router.openshift.io/timeout: "60s"
+#       haproxy.router.openshift.io/rate-limit-connections: "true"
+#   ingress:
+#     enabled: false
+# openshift:
+#   enabled: true
+#   networkPolicy:
+#     enabled: true
+#   scc:
+#     create: true
+#     name: hoppscotch-restricted
+
+# Example 4: OpenShift Deployment with High Security
+# enterprise:
+#   deployment:
+#     openshift:
+#       enabled: true
+#       scc: "restricted-v2"
+#       readOnlyRootFilesystem: true  # Enhanced security
+#     livenessProbe:
+#       enabled: true
+#       httpGet:
+#         path: /health
+#         port: 3170
+#     readinessProbe:
+#       enabled: true
+#       httpGet:
+#         path: /ready
+#         port: 3170
+#     startupProbe:
+#       enabled: true  # For slow startup applications
+#       httpGet:
+#         path: /health
+#         port: 3170
+#       failureThreshold: 60  # Allow 10 minutes for startup
+#     extraEnvVars:
+#       - name: "OPENSHIFT_ENVIRONMENT"
+#         value: "production"
+#     volumes:
+#       - name: app-config
+#         configMap:
+#           name: hoppscotch-config
+#           defaultMode: 0644
+#     volumeMounts:
+#       - name: app-config
+#         mountPath: /app/config
+#         readOnly: true
+# service:
+#   route:
+#     enabled: true
+#     tls:
+#       enabled: true
+#       termination: edge
+
+# Example 5: Standard Kubernetes with Sidecars
+# enterprise:
+#   deployment:
+#     openshift:
+#       enabled: false
+#     securityContext:
+#       runAsUser: 1001
+#       runAsNonRoot: true
+#       fsGroup: 1001
+#     containerSecurityContext:
+#       allowPrivilegeEscalation: false
+#       runAsUser: 1001
+#       capabilities:
+#         drop:
+#         - ALL
+#     extraContainers:
+#       - name: logging-sidecar
+#         image: fluentd:v1.14
+#         resources:
+#           limits:
+#             cpu: 100m
+#             memory: 128Mi
+#           requests:
+#             cpu: 50m
+#             memory: 64Mi
+#         volumeMounts:
+#           - name: logs-volume
+#             mountPath: /var/log
+#       - name: metrics-exporter
+#         image: prom/node-exporter:latest
+#         ports:
+#           - containerPort: 9100
+#             name: metrics
+#     volumes:
+#       - name: logs-volume
+#         emptyDir: {}
+# service:
+#   ingress:
+#     enabled: true
+#     annotations:
+#       nginx.ingress.kubernetes.io/rewrite-target: /
