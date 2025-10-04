@@ -50,7 +50,6 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 ## Development Setup
 
 1. Install required tools:
-
    - Kubernetes cluster (local or cloud)
    - Helm 3.x
    - kubectl

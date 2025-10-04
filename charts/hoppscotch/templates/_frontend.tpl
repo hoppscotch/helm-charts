@@ -64,6 +64,13 @@ Frontend backend WebSocket URL based on deployment mode and ingress configuratio
 {{- end -}}
 
 {{/*
+Frontend service name
+*/}}
+{{- define "hoppscotch.frontend.serviceName" -}}
+  {{- printf "%s-frontend" (include "hoppscotch.fullname" .) -}}
+{{- end -}}
+
+{{/*
 Frontend backend WebSocket URL based on deployment mode and ingress configuration
 */}}
 {{- define "hoppscotch.frontend.shortcodeBaseUrl" -}}

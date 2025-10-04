@@ -1761,6 +1761,10 @@ postgresql:
   # -- Enable PostgreSQL subchart
   # @section -- Database Parameters
   enabled: false
+  image:
+    # -- PostgreSQL image repository
+    # @section -- Database Parameters
+    repository: bitnamilegacy/postgresql
   auth:
     # -- Enable PostgreSQL default postgres user
     # @section -- Database Parameters
@@ -1787,6 +1791,16 @@ postgresql:
     # -- PostgreSQL primary resource limits/requests
     # @section -- Database Parameters
     resources: {}
+  volumePermissions:
+    image:
+      # -- Volume Permissions image repository
+      # @section -- Database Parameters
+      repository: bitnamilegacy/os-shell
+  metrics:
+    image:
+      # -- PostgreSQL Prometheus Exporter image repository
+      # @section -- Database Parameters
+      repository: bitnamilegacy/postgres-exporter
 
 externalDatabase:
   # -- External PostgreSQL host
@@ -1823,6 +1837,10 @@ redis:
   # -- Enable Redis subchart
   # @section -- Redis Parameters
   enabled: false
+  image:
+    # -- Redis image repository
+    # @section -- Redis Parameters
+    repository: bitnamilegacy/redis
   auth:
     # -- Enable Redis authentication
     # @section -- Redis Parameters
@@ -1843,6 +1861,31 @@ redis:
     # -- Redis master resource limits/requests
     # @section -- Redis Parameters
     resources: {}
+  sentinel:
+    image:
+      # -- Redis Sentinel image repository
+      # @section -- Redis Parameters
+      repository: bitnamilegacy/redis-sentinel
+  metrics:
+    image:
+      # -- Redis Exporter image repository
+      # @section -- Redis Parameters
+      repository: bitnamilegacy/redis-exporter
+  volumePermissions:
+    image:
+      # -- Volume Permissions image repository
+      # @section -- Redis Parameters
+      repository: bitnamilegacy/os-shell
+  kubectl:
+    image:
+      # -- Kubectl image repository
+      # @section -- Redis Parameters
+      repository: bitnamilegacy/kubectl
+  sysctl:
+    image:
+      # -- Sysctl image repository
+      # @section -- Redis Parameters
+      repository: bitnamilegacy/os-shell
 
 externalRedis:
   # -- External Redis host
@@ -1867,6 +1910,16 @@ clickhouse:
   # -- Enable ClickHouse subchart
   # @section -- ClickHouse Parameters
   enabled: false
+  defaultInitContainers:
+    volumePermissions:
+      image:
+        # -- Volume Permissions image repository
+        # @section -- ClickHouse Parameters
+        repository: bitnamilegacy/os-shell
+  image:
+    # -- ClickHouse image repository
+    # @section -- ClickHouse Parameters
+    repository: bitnamilegacy/clickhouse
   auth:
     # -- ClickHouse username
     # @section -- ClickHouse Parameters
@@ -1883,6 +1936,11 @@ clickhouse:
   # -- ClickHouse resource limits/requests
   # @section -- ClickHouse Parameters
   resources: {}
+  keeper:
+    image:
+      # -- ClickHouse Keeper image repository
+      # @section -- ClickHouse Parameters
+      repository: bitnamilegacy/clickhouse-keeper
 
 externalClickhouse:
   # -- External ClickHouse host

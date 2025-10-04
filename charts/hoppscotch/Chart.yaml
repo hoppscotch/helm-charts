@@ -16,10 +16,10 @@ dependencies:
     condition: postgresql.enabled
     repository: oci://registry-1.docker.io/bitnamicharts
   - name: redis
-    version: 20.x.x
+    version: 22.x.x
     condition: redis.enabled
     repository: oci://registry-1.docker.io/bitnamicharts
   - name: clickhouse
-    version: 8.x.x
+    version: 9.x.x
     condition: clickhouse.enabled
     repository: oci://registry-1.docker.io/bitnamicharts

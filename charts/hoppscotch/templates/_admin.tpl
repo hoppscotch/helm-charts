@@ -9,3 +9,10 @@ Admin base URL based on deployment mode and ingress configuration
     {{- include "hoppscotch.ingressBaseUrl" .Values.admin.ingress -}}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Admin service name
+*/}}
+{{- define "hoppscotch.admin.serviceName" -}}
+  {{- printf "%s-admin" (include "hoppscotch.fullname" .) -}}
+{{- end -}}

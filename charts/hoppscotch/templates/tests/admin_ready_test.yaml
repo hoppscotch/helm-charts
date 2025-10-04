@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "hoppscotch.fullname" . }}-admin-ready-test
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.15.0
+      args:
+        - -v
+        - -s
+        - {{ include "hoppscotch.tests.adminServiceBaseUrl" . }}
+  restartPolicy: Never

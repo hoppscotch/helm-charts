@@ -158,7 +158,6 @@ enterprise:
 ### Database Deployment Options
 
 1. **Self-hosted Databases**
-
    - Set `external: false` for automatic deployment
    - Databases are deployed as StatefulSets with persistent storage
    - Configuration managed through values.yaml

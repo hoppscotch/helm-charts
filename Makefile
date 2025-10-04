@@ -22,12 +22,12 @@ fmt-fix: fmt-markdown-fix fmt-shell-fix fmt-yaml-fix ## Fix all files formatting
 .PHONY: fmt-markdown
 fmt-markdown: ## Check Markdown files formatting
 	@echo "Checking Markdown files formatting"
-	prettier -c **/*.md
+	prettier -c "**/*.md"
 
 .PHONY: fmt-markdown-fix
 fmt-markdown-fix: ## Fix Markdown files formatting
 	@echo "Fixing Markdown files formatting"
-	prettier -w **/*.md
+	prettier -w "**/*.md"
 
 .PHONY: fmt-shell
 fmt-shell: ## Check shell scripts formatting
@@ -42,12 +42,17 @@ fmt-shell-fix: ## Fix shell scripts formatting
 .PHONY: fmt-yaml
 fmt-yaml: ## Check YAML files formatting
 	@echo "Checking YAML files formatting"
-	prettier -c **/*.yaml
+	prettier -c "**/*.yaml"
 
 .PHONY: fmt-yaml-fix
 fmt-yaml-fix: ## Fix YAML files formatting
 	@echo "Fixing YAML files formatting"
-	prettier -w **/*.yaml
+	prettier -w "**/*.yaml"
+
+.PHONY: helm-deps-update
+helm-deps-update: ## Update chart dependencies
+	@echo "Updating ${CHART_NAME} chart dependencies"
+	helm dependency update charts/${CHART_NAME}
 
 .PHONY: helm-docs
 helm-docs: ## Generate Helm docs
@@ -59,6 +64,16 @@ helm-docs: ## Generate Helm docs
 helm-install: kind-create-cluster ## Install chart
 	@echo "Installing ${CHART_NAME} chart"
 	helm install ${CHART_NAME} charts/${CHART_NAME} -n ${CHART_NAMESPACE} --values=${CHART_VALUES} --create-namespace --wait
+
+.PHONY: helm-package
+helm-package: clean ## Package Helm charts
+	@echo "Packaging Helm charts"
+	cr package charts/${CHART_NAME}
+
+.PHONY: helm-test
+helm-test: ## Run chart tests
+	@echo "Running ${CHART_NAME} chart tests"
+	helm test ${CHART_NAME} --namespace ${CHART_NAMESPACE}
 
 .PHONY: helm-template
 helm-template: clean ## Render chart templates
@@ -122,6 +137,8 @@ install-deps-linux: ## Install dependencies for Linux
 	@echo "Installing helm-unittest"
 	@if ! helm plugin list | grep -q 'unittest'; then \
 		helm plugin install https://github.com/helm-unittest/helm-unittest; \
+	else \
+		echo "Warning: helm-unittest plugin is already installed"; \
 	fi
 	@echo "Installing helm-docs"
 	go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
@@ -196,7 +213,7 @@ lint-helm: ## Lint Helm charts
 .PHONY: lint-markdown
 lint-markdown: ## Lint Markdown files
 	@echo "Linting Markdown files"
-	markdownlint '**/*.md'
+	markdownlint -d "**/*.md"
 
 .PHONY: lint-shell
 lint-shell: ## Lint shell scripts
@@ -208,11 +225,6 @@ lint-yaml: ## Lint YAML files
 	@echo "Linting YAML files"
 	yamllint .
 
-.PHONY: package
-package: clean ## Package Helm charts
-	@echo "Packaging Helm charts"
-	cr package charts/${CHART_NAME}
-
 .PHONY: pre-commit
 pre-commit: fmt lint test-unit ## Run pre-commit hooks
 
@@ -220,6 +232,9 @@ pre-commit: fmt lint test-unit ## Run pre-commit hooks
 test-e2e: ## Run end-to-end tests
 	@echo "Running end-to-end tests for ${CHART_NAME} chart"
 	${TEST_E2E_DIR}/test-e2e.sh --charts=charts/${CHART_NAME} --debug
+
+.PHONY: test-integration
+test-integration: helm-test ## Run integration tests
 
 .PHONY: test-unit
 test-unit: ## Run unit tests

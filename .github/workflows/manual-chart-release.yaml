@@ -4,33 +4,33 @@ on:
   workflow_dispatch:
     inputs:
       chart_version:
-        description: 'New chart version (e.g., 0.2.0)'
+        description: "New chart version (e.g., 0.2.0)"
         required: true
         type: string
       app_version:
-        description: 'App version compatibility (e.g., 2025.8.1)'
+        description: "App version compatibility (e.g., 2025.8.1)"
         required: true
         type: string
       release_type:
-        description: 'Type of release'
+        description: "Type of release"
         required: true
         type: choice
-        default: 'minor'
+        default: "minor"
         options:
           - patch
           - minor
           - major
           - hotfix
       release_notes:
-        description: 'Release notes (what changed in the chart)'
+        description: "Release notes (what changed in the chart)"
         required: false
         type: string
-        default: 'Manual chart release'
+        default: "Manual chart release"
       chart_name:
-        description: 'Chart name to release'
+        description: "Chart name to release"
         required: true
         type: choice
-        default: 'hoppscotch'
+        default: "hoppscotch"
         options:
           - hoppscotch
           - she
