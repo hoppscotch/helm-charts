@@ -2,10 +2,8 @@ suite: AIO PVC
 templates:
   - aio/deployment.yaml
   - aio/pvc.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate PVC when deployment mode is aio and persistence is enabled
     template: aio/pvc.yaml

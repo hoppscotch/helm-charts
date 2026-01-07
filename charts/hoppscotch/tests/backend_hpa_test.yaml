@@ -2,10 +2,8 @@ suite: Backend HPA
 templates:
   - backend/deployment.yaml
   - backend/hpa.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate HPA when deployment mode is distributed and autoscaling is enabled
     template: backend/hpa.yaml

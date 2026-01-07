@@ -1,24 +1,24 @@
 suite: Resources Presets
 templates:
   - aio/deployment.yaml
-  - configmap.yaml
-  - secrets.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
-  - it: should apply nano resource preset by default
+  - it: should apply small resource preset by default
     template: aio/deployment.yaml
     asserts:
       - equal:
           path: spec.template.spec.containers[0].resources.limits.cpu
-          value: "150m"
+          value: "500m"
       - equal:
           path: spec.template.spec.containers[0].resources.limits.memory
-          value: "192Mi"
+          value: "512Mi"
       - equal:
           path: spec.template.spec.containers[0].resources.requests.cpu
-          value: "100m"
+          value: "250m"
       - equal:
           path: spec.template.spec.containers[0].resources.requests.memory
-          value: "128Mi"
+          value: "256Mi"
 
   - it: should apply medium resource preset when specified
     template: aio/deployment.yaml

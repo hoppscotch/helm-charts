@@ -2,10 +2,8 @@ suite: AIO PDB
 templates:
   - aio/deployment.yaml
   - aio/pdb.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate PDB when deployment mode is aio and PDB is enabled
     template: aio/pdb.yaml

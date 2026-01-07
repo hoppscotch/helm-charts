@@ -2,10 +2,8 @@ suite: Frontend Service Monitor
 templates:
   - frontend/deployment.yaml
   - frontend/servicemonitor.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate ServiceMonitor when deployment mode is distributed and metrics are enabled
     template: frontend/servicemonitor.yaml

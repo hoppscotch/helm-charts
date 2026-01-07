@@ -1,9 +1,7 @@
 suite: Migrations Job
 templates:
   - migrations/job.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/secret.yaml
 tests:
   - it: should exist when migrations are enabled
     template: migrations/job.yaml
@@ -124,6 +122,40 @@ tests:
             imagePullPolicy: IfNotPresent
           any: true
 
+  - it: should use aio image pull policy when deployment mode is aio
+    template: migrations/job.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          pullPolicy: Always
+      migrations:
+        enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
+  - it: should use backend image pull policy when deployment mode is not aio
+    template: migrations/job.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        image:
+          pullPolicy: Always
+      migrations:
+        enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
   - it: should append the release revision to the job name
     template: migrations/job.yaml
     release:
@@ -138,3 +170,94 @@ tests:
       - equal:
           path: metadata.name
           value: release-name-hoppscotch-migrations-1
+
+  - it: should set node selector when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        nodeSelector:
+          app: hoppscotch
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.nodeSelector.app
+          value: hoppscotch
+
+  - it: should set affinity when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        affinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - hoppscotch
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.affinity
+          value:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - hoppscotch
+
+  - it: should set tolerations when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        tolerations:
+          - key: app
+            operator: Equal
+            value: hoppscotch
+            effect: NoSchedule
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.tolerations
+          value:
+            - key: app
+              operator: Equal
+              value: hoppscotch
+              effect: NoSchedule
+
+  - it: should set topology spread constraints when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app: hoppscotch
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.topologySpreadConstraints
+          value:
+            - maxSkew: 1
+              topologyKey: topology.kubernetes.io/zone
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  app: hoppscotch

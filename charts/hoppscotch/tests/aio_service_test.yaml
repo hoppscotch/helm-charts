@@ -2,10 +2,8 @@ suite: AIO Service
 templates:
   - aio/deployment.yaml
   - aio/service.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate service when deployment mode is aio
     template: aio/service.yaml

@@ -1,10 +1,8 @@
 suite: AIO Deployment
 templates:
   - aio/deployment.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate deployment when deployment mode is aio
     template: aio/deployment.yaml
@@ -338,3 +336,85 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].ports[3].containerPort
           value: 3100
+
+  - it: should set container image
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          repository: hoppscotch/hoppscotch
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: hoppscotch/hoppscotch:latest
+
+  - it: should set container image tag to chart app version when tag is not specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          repository: hoppscotch/hoppscotch
+          tag: ""
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^hoppscotch/hoppscotch:[0-9]+\.[0-9]+\.[0-9]+$
+
+  - it: should set container image with global registry when specified
+    template: aio/deployment.yaml
+    set:
+      global:
+        imageRegistry: global-registry.example.com
+      deploymentMode: aio
+      aio:
+        image:
+          repository: hoppscotch/hoppscotch
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: global-registry.example.com/hoppscotch/hoppscotch:latest
+
+  - it: should set container image with component registry when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          registry: component-registry.example.com
+          repository: hoppscotch/hoppscotch
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: component-registry.example.com/hoppscotch/hoppscotch:latest
+
+  - it: should set container image pull policy when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          pullPolicy: Always
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
