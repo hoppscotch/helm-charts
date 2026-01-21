@@ -2,10 +2,8 @@ suite: Backend Service
 templates:
   - backend/deployment.yaml
   - backend/service.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate service when deployment mode is distributed
     template: backend/service.yaml

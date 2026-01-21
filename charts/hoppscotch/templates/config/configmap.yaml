@@ -12,7 +12,7 @@ metadata:
   {{- end }}
 data:
   ACCESS_TOKEN_VALIDITY: {{ .Values.hoppscotch.backend.authToken.accessTokenValidity | quote }}
-  ALLOW_AUDIT_LOGS: {{ .Values.hoppscotch.backend.clickhouse.allowAuditLogs | quote }}
+  ALLOW_AUDIT_LOGS: {{ or .Values.hoppscotch.backend.allowAuditLogs .Values.hoppscotch.backend.clickhouse.allowAuditLogs | quote }}
   ALLOW_SECURE_COOKIES: {{ .Values.hoppscotch.backend.allowSecureCookies | quote }}
   CLICKHOUSE_HOST: {{ include "hoppscotch.secret.clickhouseHost" . | quote }}
   {{- if eq .Values.deploymentMode "aio" }}

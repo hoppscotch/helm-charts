@@ -1,10 +1,8 @@
 suite: Frontend Deployment
 templates:
   - frontend/deployment.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate deployment when deployment mode is distributed
     template: frontend/deployment.yaml
@@ -235,3 +233,85 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].startupProbe.httpGet.port
           value: 8080
+
+  - it: should set container image
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        image:
+          repository: hoppscotch/hoppscotch-frontend
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: hoppscotch/hoppscotch-frontend:latest
+
+  - it: should set container image tag to chart app version when tag is not specified
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        image:
+          repository: hoppscotch/hoppscotch-frontend
+          tag: ""
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^hoppscotch/hoppscotch-frontend:[0-9]+\.[0-9]+\.[0-9]+$
+
+  - it: should set container image with global registry when specified
+    template: frontend/deployment.yaml
+    set:
+      global:
+        imageRegistry: global-registry.example.com
+      deploymentMode: distributed
+      frontend:
+        image:
+          repository: hoppscotch/hoppscotch-frontend
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: global-registry.example.com/hoppscotch/hoppscotch-frontend:latest
+
+  - it: should set container image with component registry when specified
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        image:
+          registry: component-registry.example.com
+          repository: hoppscotch/hoppscotch-frontend
+          tag: latest
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: component-registry.example.com/hoppscotch/hoppscotch-frontend:latest
+
+  - it: should set container image pull policy when specified
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        image:
+          pullPolicy: Always
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always

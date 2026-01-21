@@ -6,8 +6,8 @@ set -o pipefail
 
 CLUSTER_CREATED=false
 CLUSTER_NAME=$(mktemp -u "chart-testing-XXXXXXXXXX" | tr "[:upper:]" "[:lower:]")
-CT_VERSION=v3.13.0
-K8S_VERSION=v1.33.1
+CT_VERSION=v3.14.0
+K8S_VERSION=v1.35.0
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 
 RED='\033[0;31m'

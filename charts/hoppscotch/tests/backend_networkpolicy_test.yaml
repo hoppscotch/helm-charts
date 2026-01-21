@@ -1,12 +1,10 @@
 suite: Backend Network Policy
 templates:
   - backend/networkpolicy.yaml
-  - configmap.yaml
+  - config/configmap.yaml
   - deployment.yaml
-  - secrets.yaml
+  - config/secret.yaml
   - service.yaml
-values:
-  - ../values.yaml
 tests:
   - it: should generate network policy when deployment mode is distributed and network policy is enabled
     template: backend/networkpolicy.yaml

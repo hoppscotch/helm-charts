@@ -2,10 +2,8 @@ suite: Frontend PVC
 templates:
   - frontend/deployment.yaml
   - frontend/pvc.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate PVC when deployment mode is distributed and persistence is enabled
     template: frontend/pvc.yaml

@@ -301,8 +301,13 @@ hoppscotch:
     # @section -- Hoppscotch Application Parameters
     enterpriseLicenseKey: ""
 
+    # -- Enable audit logs collection to ClickHouse. Enterprise Edition required.
+    # @section -- Hoppscotch Application Parameters
+    allowAuditLogs: false
+
+    # @ignored
     clickhouse:
-      # -- Enable audit logs collection to ClickHouse. Enterprise Edition required.
+      # -- Enable audit logs collection to ClickHouse. Enterprise Edition required. Deprecated: use `hoppscotch.backend.allowAuditLogs` instead.
       # @section -- Hoppscotch Application Parameters
       allowAuditLogs: false
 
@@ -390,9 +395,9 @@ aio:
   # @section -- Hoppscotch AIO Container Parameters
   extraEnvVarsSecret: ""
 
-  # -- Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)
+  # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
   # @section -- Hoppscotch AIO Container Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- Set container resources for Hoppscotch (overrides resourcesPreset)
   # @section -- Hoppscotch AIO Container Parameters
   resources: {}
@@ -751,9 +756,9 @@ frontend:
   # @section -- Hoppscotch Frontend Container Parameters
   extraEnvVarsSecret: ""
 
-  # -- Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)
+  # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
   # @section -- Hoppscotch Frontend Container Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- Set container resources for Hoppscotch (overrides resourcesPreset)
   # @section -- Hoppscotch Frontend Container Parameters
   resources: {}
@@ -1088,9 +1093,9 @@ backend:
   # @section -- Hoppscotch Backend Container Parameters
   extraEnvVarsSecret: ""
 
-  # -- Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)
+  # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
   # @section -- Hoppscotch Backend Container Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- Set container resources for Hoppscotch (overrides resourcesPreset)
   # @section -- Hoppscotch Backend Container Parameters
   resources: {}
@@ -1425,9 +1430,9 @@ admin:
   # @section -- Hoppscotch Admin Container Parameters
   extraEnvVarsSecret: ""
 
-  # -- Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)
+  # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
   # @section -- Hoppscotch Admin Container Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- Set container resources for Hoppscotch (overrides resourcesPreset)
   # @section -- Hoppscotch Admin Container Parameters
   resources: {}
@@ -1711,12 +1716,28 @@ migrations:
   # @section -- Hoppscotch Migrations Container Parameters
   extraEnvVarsSecret: ""
 
-  # -- Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge)
+  # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
   # @section -- Hoppscotch Migrations Container Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- Set container resources for Hoppscotch (overrides resourcesPreset)
   # @section -- Hoppscotch Migrations Container Parameters
   resources: {}
+
+  # -- Node labels for Hoppscotch pods assignment
+  # @section -- Hoppscotch Migrations Container Parameters
+  nodeSelector: {}
+
+  # -- Tolerations for Hoppscotch pods assignment
+  # @section -- Hoppscotch Migrations Container Parameters
+  tolerations: []
+
+  # -- Affinity for Hoppscotch pods assignment
+  # @section -- Hoppscotch Migrations Container Parameters
+  affinity: {}
+
+  # -- Topology spread constraints for Hoppscotch pods assignment
+  # @section -- Hoppscotch Migrations Container Parameters
+  topologySpreadConstraints: []
 
 # @section -- Default Init Containers Parameters
 
@@ -1726,10 +1747,41 @@ defaultInitContainers:
     # @section -- Default Init Containers Parameters
     enabled: true
 
+    image:
+      # -- Wait for database image repository
+      # @section -- Default Init Containers Parameters
+      repository: postgres
+      # -- Wait for database image pull policy
+      # @section -- Default Init Containers Parameters
+      pullPolicy: IfNotPresent
+      # -- Wait for database image tag
+      # @section -- Default Init Containers Parameters
+      tag: 16-alpine
+
+    # -- Array of extra environment variables to be added to wait for database containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVars: []
+    # -- Name of the existing ConfigMap containing extra environment variables to be added to wait for database containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVarsCM: ""
+    # -- Name of existing Secret containing extra environment variables to be added to wait for database containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVarsSecret: ""
+
   waitForMigrations:
     # -- Enable init container that waits for migrations to complete
     # @section -- Default Init Containers Parameters
     enabled: true
+
+    # -- Array of extra environment variables to be added to wait for migrations containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVars: []
+    # -- Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVarsCM: ""
+    # -- Name of existing Secret containing extra environment variables to be added to wait for migrations containers
+    # @section -- Default Init Containers Parameters
+    extraEnvVarsSecret: ""
 
 # @section -- Other Parameters
 
@@ -1781,13 +1833,17 @@ postgresql:
     # -- Existing secret containing PostgreSQL credentials
     # @section -- Database Parameters
     existingSecret: ""
+    secretKeys:
+      # -- Key in existing secret containing username
+      # @section -- Database Parameters
+      userPasswordKey: ""
   # -- PostgreSQL architecture (standalone or replication)
   # @section -- Database Parameters
   architecture: standalone
   primary:
     # -- PostgreSQL primary resource preset
     # @section -- Database Parameters
-    resourcesPreset: "nano"
+    resourcesPreset: small
     # -- PostgreSQL primary resource limits/requests
     # @section -- Database Parameters
     resources: {}
@@ -1851,13 +1907,16 @@ redis:
     # -- Existing secret containing Redis credentials
     # @section -- Redis Parameters
     existingSecret: ""
+    # -- Key in existing secret containing password
+    # @section -- Redis Parameters
+    existingSecretPasswordKey: ""
   # -- Redis architecture (standalone or replication)
   # @section -- Redis Parameters
   architecture: standalone
   master:
     # -- Redis master resource preset
     # @section -- Redis Parameters
-    resourcesPreset: "nano"
+    resourcesPreset: small
     # -- Redis master resource limits/requests
     # @section -- Redis Parameters
     resources: {}
@@ -1930,9 +1989,12 @@ clickhouse:
     # -- Existing secret containing ClickHouse credentials
     # @section -- ClickHouse Parameters
     existingSecret: ""
+    # -- Key in existing secret containing password
+    # @section -- ClickHouse Parameters
+    existingSecretKey: ""
   # -- ClickHouse resource preset
   # @section -- ClickHouse Parameters
-  resourcesPreset: "nano"
+  resourcesPreset: small
   # -- ClickHouse resource limits/requests
   # @section -- ClickHouse Parameters
   resources: {}

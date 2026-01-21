@@ -3,10 +3,8 @@ templates:
   - backend/deployment.yaml
   - backend/ingress.yaml
   - backend/service.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate ingress when deployment mode is distributed
     template: backend/ingress.yaml

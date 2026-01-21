@@ -2,10 +2,8 @@ suite: AIO Ingress
 templates:
   - aio/deployment.yaml
   - aio/ingress.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate Ingress when deployment mode is aio and ingress is enabled
     template: aio/ingress.yaml

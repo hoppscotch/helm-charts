@@ -44,14 +44,16 @@ Generate Google auth callback URL based on deployment mode and ingress configura
 {{- end }}
 
 {{/*
-Backend image based on deployment mode
+Backend image based on deployment mode. This named template is used by migrations and wait for migrations containers to
+ensure the correct image is selected consistent with the deployment mode.
 */}}
 {{- define "hoppscotch.backend.image" -}}
   {{- include "hoppscotch.image" (dict "component" ((eq .Values.deploymentMode "aio") | ternary .Values.aio .Values.backend) "context" .) -}}
 {{- end -}}
 
 {{/*
-Backend image pull policy based on deployment mode
+Backend image pull policy based on deployment mode. This named template is used by migrations and wait for migrations
+containers to ensure the correct image is pulled consistent with the deployment mode.
 */}}
 {{- define "hoppscotch.backend.imagePullPolicy" -}}
   {{- (eq .Values.deploymentMode "aio") | ternary .Values.aio.image.pullPolicy .Values.backend.image.pullPolicy -}}

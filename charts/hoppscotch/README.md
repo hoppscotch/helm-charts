@@ -1,7 +1,7 @@
 # Hoppscotch Helm Chart
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
-![AppVersion: 2025.7.1](https://img.shields.io/badge/AppVersion-2025.7.1-informational?style=flat-square)
+![Version: 0.2.6](https://img.shields.io/badge/Version-0.2.6-informational?style=flat-square)
+![AppVersion: 2025.12.1](https://img.shields.io/badge/AppVersion-2025.12.1-informational?style=flat-square)
 
 Hoppscotch is a lightweight, web-based API development suite. It was built from the ground up with ease of use and
 accessibility in mind providing all the functionality needed for developers with minimalist, unobtrusive UI.
@@ -9,7 +9,8 @@ accessibility in mind providing all the functionality needed for developers with
 ## TL;DR
 
 ```bash
-helm install hoppscotch http://hoppscotch.github.io/helm-charts/hoppscotch
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+helm install hoppscotch hoppscotch/hoppscotch
 ```
 
 ## Introduction
@@ -28,18 +29,37 @@ This chart bootstraps a [Hoppscotch](https://github.com/hoppscotch/hoppscotch) d
 To install the chart with the release name `hoppscotch`:
 
 ```bash
+# Add the Hoppscotch Helm repository
 helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
-helm install hoppscotch hoppscotch/hoppscotch
+
+# Install the Hoppscotch chart
+helm install hoppscotch hoppscotch/hoppscotch \
+--namespace hoppscotch \
+--create-namespace \
+--set aio.ingress.enabled=true \
+--set aio.ingress.ingressClassName=nginx \
+--set aio.ingress.hostname=hoppscotch.local \
+--set postgresql.enabled=true \
+--set postgresql.auth.username=hoppscotch \
+--set postgresql.auth.password=hoppscotch \
+--set postgresql.auth.database=hoppscotch
 ```
 
-## Deployment Modes
+**Note**: Replace `nginx` and `hoppscotch.local` with the ingress controller class and hostname of your choice.
+
+See [Configuration and Installation Details](#configuration-and-installation-details) and [Parameters](#parameters) for
+more information on configuration options.
+
+## Configuration and Installation Details
+
+### Deployment Modes
 
 Hoppscotch supports two deployment modes:
 
 - **All-In-One** Using the All-In-One container which includes all services in a single container
 - **Distributed** Using individual containers for each service
 
-### Using All-in-One Container
+#### Using All-in-One Container
 
 To deploy Hoppscotch using the AIO container, set the `deploymentMode` to `aio` in your values file:
 
@@ -52,7 +72,7 @@ The AIO container supports two access modes:
 - **Subpath Access**: Services are accessible via subpaths on a single port (80)
 - **Multiport Access**: Each service is accessible on its own port
 
-#### Subpath Access
+##### Subpath Access
 
 When using AIO with subpath access, services can be accessed on port 80 from the following subpaths:
 
@@ -72,7 +92,7 @@ hoppscotch:
     enableSubpathBasedAccess: true
 ```
 
-#### Multiport Access
+##### Multiport Access
 
 When using AIO with multiport access, services can be accessed on the following ports:
 
@@ -92,7 +112,7 @@ hoppscotch:
     enableSubpathBasedAccess: false
 ```
 
-### Using Individual Containers
+#### Using Individual Containers
 
 To deploy Hoppscotch using individual containers for each service, set the `deploymentMode` to `distributed` in your
 values file:
@@ -112,7 +132,7 @@ Services can be accessed on the following ports:
 
 Note: Only multiport access is supported in distributed mode.
 
-## Enterprise Edition
+### Enterprise Edition
 
 Hoppscotch offers an Enterprise Edition with additional features and support. To enable Enterprise Edition, you must set
 your enterprise license key and configure containers to use the enterprise images:
@@ -142,7 +162,7 @@ admin:
     repository: hoppscotch/hoppscotch-admin-enterprise
 ```
 
-## Auto-Generating Config URLs
+### Auto-Generating Config URLs
 
 The chart automatically sets configuration URLs for the frontend, backend, and admin services based on the deployment
 mode and ingress configuration.
@@ -193,9 +213,9 @@ aio:
 
 See below the specific environment variables that are auto-generated.
 
-### AIO Auto-Generated Config URLs
+#### AIO Auto-Generated Config URLs
 
-#### AIO Frontend
+##### AIO Frontend
 
 | Key                     | Value                                                                 |
 | ----------------------- | --------------------------------------------------------------------- |
@@ -206,7 +226,7 @@ See below the specific environment variables that are auto-generated.
 | VITE_BASE_URL           | `https://${aio.ingress.hostname}/${aio.ingress.path}`                 |
 | VITE_SHORTCODE_BASE_URL | `https://${aio.ingress.hostname}/${aio.ingress.path}`                 |
 
-#### AIO Backend
+##### AIO Backend
 
 <!-- markdownlint-disable MD013 MD034 -->
 
@@ -222,9 +242,9 @@ See below the specific environment variables that are auto-generated.
 
 <!-- markdownlint-enable MD013 MD034 -->
 
-### Distributed Auto-Generated Config URLs
+#### Distributed Auto-Generated Config URLs
 
-#### Distributed Frontend
+##### Distributed Frontend
 
 | Key                     | Value                                                                 |
 | ----------------------- | --------------------------------------------------------------------- |
@@ -235,7 +255,7 @@ See below the specific environment variables that are auto-generated.
 | VITE_BASE_URL           | `https://${backend.ingress.hostname}/${backend.ingress.path}`         |
 | VITE_SHORTCODE_BASE_URL | `https://${backend.ingress.hostname}/${backend.ingress.path}`         |
 
-#### Distributed Backend
+##### Distributed Backend
 
 <!-- markdownlint-disable MD013 MD034 -->
 
@@ -251,7 +271,7 @@ See below the specific environment variables that are auto-generated.
 
 <!-- markdownlint-enable MD013 MD034 -->
 
-## Auto-Generating Secrets
+### Auto-Generating Secrets
 
 The chart automatically generates secrets if not provided. These auto-generated secrets will be persisted and reused on
 subsequent upgrades.
@@ -266,7 +286,7 @@ hoppscotch:
       dataEncryptionKey: "" # Random 32-character alphanumeric string used if not provided
 ```
 
-## Overriding Config Values
+### Overriding Config Values
 
 You can override config values using an existing secret, extra env vars, extra configmap, or extra secret. The order of
 precedence of these methods is as follows (from highest to lowest):
@@ -279,7 +299,7 @@ precedence of these methods is as follows (from highest to lowest):
 Extra env vars, secret, and configmap must be specified in container parameter sections (e.g. `aio`, `frontend`,
 `backend`, `admin`)
 
-Note: Config order of precedence is driven by Kubernetes, not this chart. See
+Note: Config order of precedence is driven by Kubernetes. See
 [Environment Variables in Kubernetes Pod](https://www.baeldung.com/ops/kubernetes-pod-environment-variables#1-order-of-precedence)
 for more info.
 
@@ -320,10 +340,10 @@ To use an existing secret:
 existingSecret: my-existing-secret
 ```
 
-Note: The existing secret must contain all required keys. See [templates/secrets.yaml](templates/secrets.yaml) for more
-info.
+Note: The existing secret must contain all required keys. See
+[templates/config/secret.yaml](templates/config/secret.yaml) for more info.
 
-## Waiting for Database Readiness
+### Waiting for Database Readiness
 
 Hoppscotch pods that connect to the database will wait for the database to be ready before starting. This is
 accomplished by using the `wait-for-db` and `wait-for-migrations` default init containers.
@@ -350,7 +370,7 @@ defaultInitContainers:
   waitForMigrations: false
 ```
 
-## Running Database Migrations
+### Running Database Migrations
 
 Database migrations are run automatically after installs and upgrades. The chart includes a migrations job that runs the
 following command:
@@ -480,450 +500,463 @@ unique for each release. This allows the job to be run multiple times without co
 | hoppscotch.backend.rateLimit.ttl                          | int    | `60`                                   | Time window for rate limiting (in seconds)                                                                 |
 | hoppscotch.backend.rateLimit.max                          | int    | `100`                                  | Maximum number of requests per IP within TTL window                                                        |
 | hoppscotch.backend.enterpriseLicenseKey                   | string | `""`                                   | Enterprise license key for Hoppscotch Enterprise features                                                  |
-| hoppscotch.backend.clickhouse.allowAuditLogs              | bool   | `false`                                | Enable audit logs collection to ClickHouse. Enterprise Edition required.                                   |
+| hoppscotch.backend.allowAuditLogs                         | bool   | `false`                                | Enable audit logs collection to ClickHouse. Enterprise Edition required.                                   |
 | hoppscotch.backend.horizontalScalingEnabled               | bool   | `false`                                | Enable horizontal scaling with Redis for state management. Enterprise Edition required.                    |
 
 ### Hoppscotch AIO Container Parameters
 
-| Key                                               | Type   | Default                    | Description                                                                                                          |
-| ------------------------------------------------- | ------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| aio.image.repository                              | string | `"hoppscotch/hoppscotch"`  | Hoppscotch image repository                                                                                          |
-| aio.image.pullPolicy                              | string | `"IfNotPresent"`           | Hoppscotch image pull policy                                                                                         |
-| aio.image.tag                                     | string | `""`                       | Hoppscotch image tag                                                                                                 |
-| aio.replicaCount                                  | int    | `1`                        | Number of Hoppscotch replicas                                                                                        |
-| aio.containerPorts.http                           | int    | `80`                       | Hoppscotch HTTP container port                                                                                       |
-| aio.containerPorts.https                          | int    | `443`                      | Hoppscotch HTTPS container port                                                                                      |
-| aio.containerPorts.frontend                       | int    | `3000`                     | Hoppscotch frontend container port (for multiport access mode)                                                       |
-| aio.containerPorts.desktop                        | int    | `3200`                     | Hoppscotch desktop container port (for multiport access mode)                                                        |
-| aio.containerPorts.backend                        | int    | `3170`                     | Hoppscotch backend container port (for multiport access mode)                                                        |
-| aio.containerPorts.admin                          | int    | `3100`                     | Hoppscotch admin container port (for multiport access mode)                                                          |
-| aio.readinessProbe.enabled                        | bool   | `true`                     | Enable readiness probe                                                                                               |
-| aio.readinessProbe.initialDelaySeconds            | int    | `0`                        | Initial delay seconds for readiness probe                                                                            |
-| aio.readinessProbe.periodSeconds                  | int    | `10`                       | Period seconds for readiness probe                                                                                   |
-| aio.readinessProbe.timeoutSeconds                 | int    | `1`                        | Timeout seconds for readiness probe                                                                                  |
-| aio.readinessProbe.failureThreshold               | int    | `3`                        | Failure threshold for readiness probe                                                                                |
-| aio.readinessProbe.successThreshold               | int    | `1`                        | Success threshold for readiness probe                                                                                |
-| aio.customLivenessProbe                           | object | `{}`                       | Custom liveness probe that overrides the default one                                                                 |
-| aio.customReadinessProbe                          | object | `{}`                       | Custom readiness probe that overrides the default one                                                                |
-| aio.customStartupProbe                            | object | `{}`                       | Custom startup probe that overrides the default one                                                                  |
-| aio.extraEnvVars                                  | list   | `[]`                       | Array of extra environment variables to be added to Hoppscotch containers                                            |
-| aio.extraEnvVarsCM                                | string | `""`                       | Name of existing ConfigMap containing extra environment variables                                                    |
-| aio.extraEnvVarsSecret                            | string | `""`                       | Name of existing Secret containing extra environment variables                                                       |
-| aio.resourcesPreset                               | string | `"nano"`                   | Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge) |
-| aio.resources                                     | object | `{}`                       | Set container resources for Hoppscotch (overrides resourcesPreset)                                                   |
-| aio.podAnnotations                                | object | `{}`                       | Annotations to add to Hoppscotch pods                                                                                |
-| aio.podLabels                                     | object | `{}`                       | Labels to add to Hoppscotch pods                                                                                     |
-| aio.podSecurityContext                            | object | `{}`                       | Security context for Hoppscotch pods                                                                                 |
-| aio.securityContext                               | object | `{}`                       | Security context for Hoppscotch containers                                                                           |
-| aio.updateStrategy.type                           | string | `"RollingUpdate"`          | Deployment update strategy type (RollingUpdate or Recreate)                                                          |
-| aio.pdb.create                                    | bool   | `false`                    | Create PodDisruptionBudget for Hoppscotch deployment                                                                 |
-| aio.pdb.minAvailable                              | string | `""`                       | Minimum number of available pods during disruptions                                                                  |
-| aio.pdb.maxUnavailable                            | string | `""`                       | Maximum number of unavailable pods during disruptions                                                                |
-| aio.autoscaling.enabled                           | bool   | `false`                    | Enable autoscaling for Hoppscotch deployment                                                                         |
-| aio.autoscaling.minReplicas                       | int    | `1`                        | Minimum number of Hoppscotch replicas                                                                                |
-| aio.autoscaling.maxReplicas                       | int    | `100`                      | Maximum number of Hoppscotch replicas                                                                                |
-| aio.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                       | Target CPU utilization percentage for autoscaling                                                                    |
-| aio.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                       | Target memory utilization percentage for autoscaling                                                                 |
-| aio.nodeSelector                                  | object | `{}`                       | Node labels for Hoppscotch pods assignment                                                                           |
-| aio.tolerations                                   | list   | `[]`                       | Tolerations for Hoppscotch pods assignment                                                                           |
-| aio.affinity                                      | object | `{}`                       | Affinity for Hoppscotch pods assignment                                                                              |
-| aio.topologySpreadConstraints                     | list   | `[]`                       | Topology spread constraints for Hoppscotch pods assignment                                                           |
-| aio.volumes                                       | list   | `[]`                       | Extra volumes to add to Hoppscotch deployment                                                                        |
-| aio.volumeMounts                                  | list   | `[]`                       | Extra volume mounts to add to Hoppscotch containers                                                                  |
-| aio.service.type                                  | string | `"ClusterIP"`              | Kubernetes service type                                                                                              |
-| aio.service.ports.http                            | int    | `80`                       | Service HTTP port                                                                                                    |
-| aio.service.ports.https                           | int    | `443`                      | Service HTTPS port                                                                                                   |
-| aio.service.ports.frontend                        | int    | `3000`                     | Frontend service HTTP port (when multiport access is enabled)                                                        |
-| aio.service.ports.desktop                         | int    | `3200`                     | Desktop service HTTP port (when multiport access is enabled)                                                         |
-| aio.service.ports.backend                         | int    | `3170`                     | Backend service HTTP port (when multiport access is enabled)                                                         |
-| aio.service.ports.admin                           | int    | `3100`                     | Admin service HTTP port (when multiport access is enabled)                                                           |
-| aio.service.clusterIP                             | string | `""`                       | Static cluster IP address (optional)                                                                                 |
-| aio.service.nodePorts.http                        | string | `""`                       | NodePort for HTTP (when service type is NodePort)                                                                    |
-| aio.service.nodePorts.https                       | string | `""`                       | NodePort for HTTPS (when service type is NodePort)                                                                   |
-| aio.service.nodePorts.frontend                    | string | `""`                       | NodePort for frontend (when service type is NodePort and multiport access is enabled)                                |
-| aio.service.nodePorts.desktop                     | string | `""`                       | NodePort for desktop (when service type is NodePort and multiport access is enabled)                                 |
-| aio.service.nodePorts.backend                     | string | `""`                       | NodePort for backend (when service type is NodePort and multiport access is enabled)                                 |
-| aio.service.nodePorts.admin                       | string | `""`                       | NodePort for admin (when service type is NodePort and multiport access is enabled)                                   |
-| aio.service.loadBalancerIP                        | string | `""`                       | Load balancer IP address (when service type is LoadBalancer)                                                         |
-| aio.service.loadBalancerSourceRanges              | list   | `[]`                       | Load balancer source IP ranges (when service type is LoadBalancer)                                                   |
-| aio.service.externalTrafficPolicy                 | string | `"Cluster"`                | External traffic policy (Cluster or Local)                                                                           |
-| aio.service.annotations                           | object | `{}`                       | Service annotations                                                                                                  |
-| aio.service.sessionAffinity                       | string | `"None"`                   | Session affinity (None or ClientIP)                                                                                  |
-| aio.service.sessionAffinityConfig                 | object | `{}`                       | Session affinity configuration                                                                                       |
-| aio.service.extraPorts                            | list   | `[]`                       | Extra service ports                                                                                                  |
-| aio.networkPolicy.enabled                         | bool   | `false`                    | Enable NetworkPolicy for Hoppscotch pods                                                                             |
-| aio.networkPolicy.allowExternal                   | bool   | `true`                     | Allow external traffic to Hoppscotch pods                                                                            |
-| aio.networkPolicy.allowExternalEgress             | bool   | `true`                     | Allow external egress traffic from Hoppscotch pods                                                                   |
-| aio.networkPolicy.addExternalClientAccess         | bool   | `true`                     | Add external client access to NetworkPolicy                                                                          |
-| aio.networkPolicy.extraIngress                    | list   | `[]`                       | Extra ingress rules for NetworkPolicy                                                                                |
-| aio.networkPolicy.extraEgress                     | list   | `[]`                       | Extra egress rules for NetworkPolicy                                                                                 |
-| aio.networkPolicy.ingressPodMatchLabels           | object | `{}`                       | Pod selector labels for ingress rules                                                                                |
-| aio.networkPolicy.ingressNSMatchLabels            | object | `{}`                       | Namespace selector labels for ingress rules                                                                          |
-| aio.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                       | Namespace pod selector labels for ingress rules                                                                      |
-| aio.ingress.enabled                               | bool   | `false`                    | Enable ingress for Hoppscotch                                                                                        |
-| aio.ingress.ingressClassName                      | string | `""`                       | Ingress class name                                                                                                   |
-| aio.ingress.hostname                              | string | `"hoppscotch.local"`       | Ingress hostname                                                                                                     |
-| aio.ingress.path                                  | string | `"/"`                      | Ingress path                                                                                                         |
-| aio.ingress.pathType                              | string | `"ImplementationSpecific"` | Ingress path type                                                                                                    |
-| aio.ingress.apiVersion                            | string | `""`                       | Ingress API version                                                                                                  |
-| aio.ingress.annotations                           | object | `{}`                       | Ingress annotations                                                                                                  |
-| aio.ingress.tls                                   | bool   | `false`                    | Enable TLS for ingress                                                                                               |
-| aio.ingress.selfSigned                            | bool   | `false`                    | Create self-signed TLS certificates                                                                                  |
-| aio.ingress.extraHosts                            | list   | `[]`                       | Extra hostnames for ingress                                                                                          |
-| aio.ingress.extraPaths                            | list   | `[]`                       | Extra paths for ingress                                                                                              |
-| aio.ingress.extraTls                              | list   | `[]`                       | Extra TLS configurations for ingress                                                                                 |
-| aio.ingress.secrets                               | list   | `[]`                       | TLS secrets for ingress                                                                                              |
-| aio.ingress.extraRules                            | list   | `[]`                       | Extra ingress rules                                                                                                  |
-| aio.persistence.enabled                           | bool   | `false`                    | Enable persistent storage for Hoppscotch                                                                             |
-| aio.persistence.storageClass                      | string | `""`                       | Storage class for persistent volume                                                                                  |
-| aio.persistence.accessModes                       | list   | `["ReadWriteOnce"]`        | Access modes for persistent volume                                                                                   |
-| aio.persistence.size                              | string | `"8Gi"`                    | Size of persistent volume                                                                                            |
-| aio.persistence.mountPath                         | string | `"/hoppscotch/data"`       | Mount path for persistent volume                                                                                     |
-| aio.persistence.subPath                           | string | `""`                       | Subpath within persistent volume                                                                                     |
-| aio.persistence.annotations                       | object | `{}`                       | Annotations for persistent volume claim                                                                              |
-| aio.persistence.dataSource                        | object | `{}`                       | Data source for persistent volume                                                                                    |
-| aio.persistence.existingClaim                     | string | `""`                       | Use existing persistent volume claim                                                                                 |
-| aio.persistence.selector                          | object | `{}`                       | Selector for persistent volume                                                                                       |
-| aio.metrics.enabled                               | bool   | `false`                    | Enable metrics collection for Hoppscotch                                                                             |
-| aio.metrics.serviceMonitor.enabled                | bool   | `false`                    | Enable ServiceMonitor for Prometheus monitoring                                                                      |
-| aio.metrics.serviceMonitor.namespace              | string | `""`                       | Namespace for ServiceMonitor (defaults to release namespace)                                                         |
-| aio.metrics.serviceMonitor.annotations            | object | `{}`                       | ServiceMonitor annotations                                                                                           |
-| aio.metrics.serviceMonitor.labels                 | object | `{}`                       | ServiceMonitor labels                                                                                                |
-| aio.metrics.serviceMonitor.jobLabel               | string | `""`                       | ServiceMonitor job label                                                                                             |
-| aio.metrics.serviceMonitor.honorLabels            | bool   | `false`                    | Honor labels from target                                                                                             |
-| aio.metrics.serviceMonitor.interval               | string | `""`                       | ServiceMonitor scrape interval                                                                                       |
-| aio.metrics.serviceMonitor.scrapeTimeout          | string | `""`                       | ServiceMonitor scrape timeout                                                                                        |
-| aio.metrics.serviceMonitor.tlsConfig              | object | `{}`                       | ServiceMonitor TLS configuration                                                                                     |
-| aio.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                       | ServiceMonitor metrics relabelings                                                                                   |
-| aio.metrics.serviceMonitor.relabelings            | list   | `[]`                       | ServiceMonitor relabelings                                                                                           |
-| aio.metrics.serviceMonitor.selector               | object | `{}`                       | ServiceMonitor selector                                                                                              |
+| Key                                               | Type   | Default                    | Description                                                                                                                 |
+| ------------------------------------------------- | ------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| aio.image.repository                              | string | `"hoppscotch/hoppscotch"`  | Hoppscotch image repository                                                                                                 |
+| aio.image.pullPolicy                              | string | `"IfNotPresent"`           | Hoppscotch image pull policy                                                                                                |
+| aio.image.tag                                     | string | `""`                       | Hoppscotch image tag                                                                                                        |
+| aio.replicaCount                                  | int    | `1`                        | Number of Hoppscotch replicas                                                                                               |
+| aio.containerPorts.http                           | int    | `80`                       | Hoppscotch HTTP container port                                                                                              |
+| aio.containerPorts.https                          | int    | `443`                      | Hoppscotch HTTPS container port                                                                                             |
+| aio.containerPorts.frontend                       | int    | `3000`                     | Hoppscotch frontend container port (for multiport access mode)                                                              |
+| aio.containerPorts.desktop                        | int    | `3200`                     | Hoppscotch desktop container port (for multiport access mode)                                                               |
+| aio.containerPorts.backend                        | int    | `3170`                     | Hoppscotch backend container port (for multiport access mode)                                                               |
+| aio.containerPorts.admin                          | int    | `3100`                     | Hoppscotch admin container port (for multiport access mode)                                                                 |
+| aio.readinessProbe.enabled                        | bool   | `true`                     | Enable readiness probe                                                                                                      |
+| aio.readinessProbe.initialDelaySeconds            | int    | `0`                        | Initial delay seconds for readiness probe                                                                                   |
+| aio.readinessProbe.periodSeconds                  | int    | `10`                       | Period seconds for readiness probe                                                                                          |
+| aio.readinessProbe.timeoutSeconds                 | int    | `1`                        | Timeout seconds for readiness probe                                                                                         |
+| aio.readinessProbe.failureThreshold               | int    | `3`                        | Failure threshold for readiness probe                                                                                       |
+| aio.readinessProbe.successThreshold               | int    | `1`                        | Success threshold for readiness probe                                                                                       |
+| aio.customLivenessProbe                           | object | `{}`                       | Custom liveness probe that overrides the default one                                                                        |
+| aio.customReadinessProbe                          | object | `{}`                       | Custom readiness probe that overrides the default one                                                                       |
+| aio.customStartupProbe                            | object | `{}`                       | Custom startup probe that overrides the default one                                                                         |
+| aio.extraEnvVars                                  | list   | `[]`                       | Array of extra environment variables to be added to Hoppscotch containers                                                   |
+| aio.extraEnvVarsCM                                | string | `""`                       | Name of existing ConfigMap containing extra environment variables                                                           |
+| aio.extraEnvVarsSecret                            | string | `""`                       | Name of existing Secret containing extra environment variables                                                              |
+| aio.resourcesPreset                               | string | `"small"`                  | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| aio.resources                                     | object | `{}`                       | Set container resources for Hoppscotch (overrides resourcesPreset)                                                          |
+| aio.podAnnotations                                | object | `{}`                       | Annotations to add to Hoppscotch pods                                                                                       |
+| aio.podLabels                                     | object | `{}`                       | Labels to add to Hoppscotch pods                                                                                            |
+| aio.podSecurityContext                            | object | `{}`                       | Security context for Hoppscotch pods                                                                                        |
+| aio.securityContext                               | object | `{}`                       | Security context for Hoppscotch containers                                                                                  |
+| aio.updateStrategy.type                           | string | `"RollingUpdate"`          | Deployment update strategy type (RollingUpdate or Recreate)                                                                 |
+| aio.pdb.create                                    | bool   | `false`                    | Create PodDisruptionBudget for Hoppscotch deployment                                                                        |
+| aio.pdb.minAvailable                              | string | `""`                       | Minimum number of available pods during disruptions                                                                         |
+| aio.pdb.maxUnavailable                            | string | `""`                       | Maximum number of unavailable pods during disruptions                                                                       |
+| aio.autoscaling.enabled                           | bool   | `false`                    | Enable autoscaling for Hoppscotch deployment                                                                                |
+| aio.autoscaling.minReplicas                       | int    | `1`                        | Minimum number of Hoppscotch replicas                                                                                       |
+| aio.autoscaling.maxReplicas                       | int    | `100`                      | Maximum number of Hoppscotch replicas                                                                                       |
+| aio.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                       | Target CPU utilization percentage for autoscaling                                                                           |
+| aio.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                       | Target memory utilization percentage for autoscaling                                                                        |
+| aio.nodeSelector                                  | object | `{}`                       | Node labels for Hoppscotch pods assignment                                                                                  |
+| aio.tolerations                                   | list   | `[]`                       | Tolerations for Hoppscotch pods assignment                                                                                  |
+| aio.affinity                                      | object | `{}`                       | Affinity for Hoppscotch pods assignment                                                                                     |
+| aio.topologySpreadConstraints                     | list   | `[]`                       | Topology spread constraints for Hoppscotch pods assignment                                                                  |
+| aio.volumes                                       | list   | `[]`                       | Extra volumes to add to Hoppscotch deployment                                                                               |
+| aio.volumeMounts                                  | list   | `[]`                       | Extra volume mounts to add to Hoppscotch containers                                                                         |
+| aio.service.type                                  | string | `"ClusterIP"`              | Kubernetes service type                                                                                                     |
+| aio.service.ports.http                            | int    | `80`                       | Service HTTP port                                                                                                           |
+| aio.service.ports.https                           | int    | `443`                      | Service HTTPS port                                                                                                          |
+| aio.service.ports.frontend                        | int    | `3000`                     | Frontend service HTTP port (when multiport access is enabled)                                                               |
+| aio.service.ports.desktop                         | int    | `3200`                     | Desktop service HTTP port (when multiport access is enabled)                                                                |
+| aio.service.ports.backend                         | int    | `3170`                     | Backend service HTTP port (when multiport access is enabled)                                                                |
+| aio.service.ports.admin                           | int    | `3100`                     | Admin service HTTP port (when multiport access is enabled)                                                                  |
+| aio.service.clusterIP                             | string | `""`                       | Static cluster IP address (optional)                                                                                        |
+| aio.service.nodePorts.http                        | string | `""`                       | NodePort for HTTP (when service type is NodePort)                                                                           |
+| aio.service.nodePorts.https                       | string | `""`                       | NodePort for HTTPS (when service type is NodePort)                                                                          |
+| aio.service.nodePorts.frontend                    | string | `""`                       | NodePort for frontend (when service type is NodePort and multiport access is enabled)                                       |
+| aio.service.nodePorts.desktop                     | string | `""`                       | NodePort for desktop (when service type is NodePort and multiport access is enabled)                                        |
+| aio.service.nodePorts.backend                     | string | `""`                       | NodePort for backend (when service type is NodePort and multiport access is enabled)                                        |
+| aio.service.nodePorts.admin                       | string | `""`                       | NodePort for admin (when service type is NodePort and multiport access is enabled)                                          |
+| aio.service.loadBalancerIP                        | string | `""`                       | Load balancer IP address (when service type is LoadBalancer)                                                                |
+| aio.service.loadBalancerSourceRanges              | list   | `[]`                       | Load balancer source IP ranges (when service type is LoadBalancer)                                                          |
+| aio.service.externalTrafficPolicy                 | string | `"Cluster"`                | External traffic policy (Cluster or Local)                                                                                  |
+| aio.service.annotations                           | object | `{}`                       | Service annotations                                                                                                         |
+| aio.service.sessionAffinity                       | string | `"None"`                   | Session affinity (None or ClientIP)                                                                                         |
+| aio.service.sessionAffinityConfig                 | object | `{}`                       | Session affinity configuration                                                                                              |
+| aio.service.extraPorts                            | list   | `[]`                       | Extra service ports                                                                                                         |
+| aio.networkPolicy.enabled                         | bool   | `false`                    | Enable NetworkPolicy for Hoppscotch pods                                                                                    |
+| aio.networkPolicy.allowExternal                   | bool   | `true`                     | Allow external traffic to Hoppscotch pods                                                                                   |
+| aio.networkPolicy.allowExternalEgress             | bool   | `true`                     | Allow external egress traffic from Hoppscotch pods                                                                          |
+| aio.networkPolicy.addExternalClientAccess         | bool   | `true`                     | Add external client access to NetworkPolicy                                                                                 |
+| aio.networkPolicy.extraIngress                    | list   | `[]`                       | Extra ingress rules for NetworkPolicy                                                                                       |
+| aio.networkPolicy.extraEgress                     | list   | `[]`                       | Extra egress rules for NetworkPolicy                                                                                        |
+| aio.networkPolicy.ingressPodMatchLabels           | object | `{}`                       | Pod selector labels for ingress rules                                                                                       |
+| aio.networkPolicy.ingressNSMatchLabels            | object | `{}`                       | Namespace selector labels for ingress rules                                                                                 |
+| aio.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                       | Namespace pod selector labels for ingress rules                                                                             |
+| aio.ingress.enabled                               | bool   | `false`                    | Enable ingress for Hoppscotch                                                                                               |
+| aio.ingress.ingressClassName                      | string | `""`                       | Ingress class name                                                                                                          |
+| aio.ingress.hostname                              | string | `"hoppscotch.local"`       | Ingress hostname                                                                                                            |
+| aio.ingress.path                                  | string | `"/"`                      | Ingress path                                                                                                                |
+| aio.ingress.pathType                              | string | `"ImplementationSpecific"` | Ingress path type                                                                                                           |
+| aio.ingress.apiVersion                            | string | `""`                       | Ingress API version                                                                                                         |
+| aio.ingress.annotations                           | object | `{}`                       | Ingress annotations                                                                                                         |
+| aio.ingress.tls                                   | bool   | `false`                    | Enable TLS for ingress                                                                                                      |
+| aio.ingress.selfSigned                            | bool   | `false`                    | Create self-signed TLS certificates                                                                                         |
+| aio.ingress.extraHosts                            | list   | `[]`                       | Extra hostnames for ingress                                                                                                 |
+| aio.ingress.extraPaths                            | list   | `[]`                       | Extra paths for ingress                                                                                                     |
+| aio.ingress.extraTls                              | list   | `[]`                       | Extra TLS configurations for ingress                                                                                        |
+| aio.ingress.secrets                               | list   | `[]`                       | TLS secrets for ingress                                                                                                     |
+| aio.ingress.extraRules                            | list   | `[]`                       | Extra ingress rules                                                                                                         |
+| aio.persistence.enabled                           | bool   | `false`                    | Enable persistent storage for Hoppscotch                                                                                    |
+| aio.persistence.storageClass                      | string | `""`                       | Storage class for persistent volume                                                                                         |
+| aio.persistence.accessModes                       | list   | `["ReadWriteOnce"]`        | Access modes for persistent volume                                                                                          |
+| aio.persistence.size                              | string | `"8Gi"`                    | Size of persistent volume                                                                                                   |
+| aio.persistence.mountPath                         | string | `"/hoppscotch/data"`       | Mount path for persistent volume                                                                                            |
+| aio.persistence.subPath                           | string | `""`                       | Subpath within persistent volume                                                                                            |
+| aio.persistence.annotations                       | object | `{}`                       | Annotations for persistent volume claim                                                                                     |
+| aio.persistence.dataSource                        | object | `{}`                       | Data source for persistent volume                                                                                           |
+| aio.persistence.existingClaim                     | string | `""`                       | Use existing persistent volume claim                                                                                        |
+| aio.persistence.selector                          | object | `{}`                       | Selector for persistent volume                                                                                              |
+| aio.metrics.enabled                               | bool   | `false`                    | Enable metrics collection for Hoppscotch                                                                                    |
+| aio.metrics.serviceMonitor.enabled                | bool   | `false`                    | Enable ServiceMonitor for Prometheus monitoring                                                                             |
+| aio.metrics.serviceMonitor.namespace              | string | `""`                       | Namespace for ServiceMonitor (defaults to release namespace)                                                                |
+| aio.metrics.serviceMonitor.annotations            | object | `{}`                       | ServiceMonitor annotations                                                                                                  |
+| aio.metrics.serviceMonitor.labels                 | object | `{}`                       | ServiceMonitor labels                                                                                                       |
+| aio.metrics.serviceMonitor.jobLabel               | string | `""`                       | ServiceMonitor job label                                                                                                    |
+| aio.metrics.serviceMonitor.honorLabels            | bool   | `false`                    | Honor labels from target                                                                                                    |
+| aio.metrics.serviceMonitor.interval               | string | `""`                       | ServiceMonitor scrape interval                                                                                              |
+| aio.metrics.serviceMonitor.scrapeTimeout          | string | `""`                       | ServiceMonitor scrape timeout                                                                                               |
+| aio.metrics.serviceMonitor.tlsConfig              | object | `{}`                       | ServiceMonitor TLS configuration                                                                                            |
+| aio.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                       | ServiceMonitor metrics relabelings                                                                                          |
+| aio.metrics.serviceMonitor.relabelings            | list   | `[]`                       | ServiceMonitor relabelings                                                                                                  |
+| aio.metrics.serviceMonitor.selector               | object | `{}`                       | ServiceMonitor selector                                                                                                     |
 
 ### Hoppscotch Frontend Container Parameters
 
-| Key                                                    | Type   | Default                            | Description                                                                                                          |
-| ------------------------------------------------------ | ------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| frontend.image.repository                              | string | `"hoppscotch/hoppscotch-frontend"` | Hoppscotch image repository                                                                                          |
-| frontend.image.pullPolicy                              | string | `"IfNotPresent"`                   | Hoppscotch image pull policy                                                                                         |
-| frontend.image.tag                                     | string | `""`                               | Hoppscotch image tag                                                                                                 |
-| frontend.replicaCount                                  | int    | `1`                                | Number of Hoppscotch replicas                                                                                        |
-| frontend.containerPorts.http                           | int    | `80`                               | Hoppscotch HTTP container port                                                                                       |
-| frontend.containerPorts.https                          | int    | `443`                              | Hoppscotch HTTPS container port                                                                                      |
-| frontend.readinessProbe.enabled                        | bool   | `true`                             | Enable readiness probe                                                                                               |
-| frontend.readinessProbe.initialDelaySeconds            | int    | `0`                                | Initial delay seconds for readiness probe                                                                            |
-| frontend.readinessProbe.periodSeconds                  | int    | `10`                               | Period seconds for readiness probe                                                                                   |
-| frontend.readinessProbe.timeoutSeconds                 | int    | `1`                                | Timeout seconds for readiness probe                                                                                  |
-| frontend.readinessProbe.failureThreshold               | int    | `3`                                | Failure threshold for readiness probe                                                                                |
-| frontend.readinessProbe.successThreshold               | int    | `1`                                | Success threshold for readiness probe                                                                                |
-| frontend.customLivenessProbe                           | object | `{}`                               | Custom liveness probe that overrides the default one                                                                 |
-| frontend.customReadinessProbe                          | object | `{}`                               | Custom readiness probe that overrides the default one                                                                |
-| frontend.customStartupProbe                            | object | `{}`                               | Custom startup probe that overrides the default one                                                                  |
-| frontend.extraEnvVars                                  | list   | `[]`                               | Array of extra environment variables to be added to Hoppscotch containers                                            |
-| frontend.extraEnvVarsCM                                | string | `""`                               | Name of existing ConfigMap containing extra environment variables                                                    |
-| frontend.extraEnvVarsSecret                            | string | `""`                               | Name of existing Secret containing extra environment variables                                                       |
-| frontend.resourcesPreset                               | string | `"nano"`                           | Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge) |
-| frontend.resources                                     | object | `{}`                               | Set container resources for Hoppscotch (overrides resourcesPreset)                                                   |
-| frontend.podAnnotations                                | object | `{}`                               | Annotations to add to Hoppscotch pods                                                                                |
-| frontend.podLabels                                     | object | `{}`                               | Labels to add to Hoppscotch pods                                                                                     |
-| frontend.podSecurityContext                            | object | `{}`                               | Security context for Hoppscotch pods                                                                                 |
-| frontend.securityContext                               | object | `{}`                               | Security context for Hoppscotch containers                                                                           |
-| frontend.updateStrategy.type                           | string | `"RollingUpdate"`                  | Deployment update strategy type (RollingUpdate or Recreate)                                                          |
-| frontend.pdb.create                                    | bool   | `false`                            | Create PodDisruptionBudget for Hoppscotch deployment                                                                 |
-| frontend.pdb.minAvailable                              | string | `""`                               | Minimum number of available pods during disruptions                                                                  |
-| frontend.pdb.maxUnavailable                            | string | `""`                               | Maximum number of unavailable pods during disruptions                                                                |
-| frontend.autoscaling.enabled                           | bool   | `false`                            | Enable autoscaling for Hoppscotch deployment                                                                         |
-| frontend.autoscaling.minReplicas                       | int    | `1`                                | Minimum number of Hoppscotch replicas                                                                                |
-| frontend.autoscaling.maxReplicas                       | int    | `100`                              | Maximum number of Hoppscotch replicas                                                                                |
-| frontend.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                               | Target CPU utilization percentage for autoscaling                                                                    |
-| frontend.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                               | Target memory utilization percentage for autoscaling                                                                 |
-| frontend.nodeSelector                                  | object | `{}`                               | Node labels for Hoppscotch pods assignment                                                                           |
-| frontend.tolerations                                   | list   | `[]`                               | Tolerations for Hoppscotch pods assignment                                                                           |
-| frontend.affinity                                      | object | `{}`                               | Affinity for Hoppscotch pods assignment                                                                              |
-| frontend.topologySpreadConstraints                     | list   | `[]`                               | Topology spread constraints for Hoppscotch pods assignment                                                           |
-| frontend.volumes                                       | list   | `[]`                               | Extra volumes to add to Hoppscotch deployment                                                                        |
-| frontend.volumeMounts                                  | list   | `[]`                               | Extra volume mounts to add to Hoppscotch containers                                                                  |
-| frontend.service.type                                  | string | `"ClusterIP"`                      | Kubernetes service type                                                                                              |
-| frontend.service.ports.http                            | int    | `80`                               | Service HTTP port                                                                                                    |
-| frontend.service.ports.https                           | int    | `443`                              | Service HTTPS port                                                                                                   |
-| frontend.service.clusterIP                             | string | `""`                               | Static cluster IP address (optional)                                                                                 |
-| frontend.service.nodePorts.http                        | string | `""`                               | NodePort for HTTP (when service type is NodePort)                                                                    |
-| frontend.service.nodePorts.https                       | string | `""`                               | NodePort for HTTPS (when service type is NodePort)                                                                   |
-| frontend.service.loadBalancerIP                        | string | `""`                               | Load balancer IP address (when service type is LoadBalancer)                                                         |
-| frontend.service.loadBalancerSourceRanges              | list   | `[]`                               | Load balancer source IP ranges (when service type is LoadBalancer)                                                   |
-| frontend.service.externalTrafficPolicy                 | string | `"Cluster"`                        | External traffic policy (Cluster or Local)                                                                           |
-| frontend.service.annotations                           | object | `{}`                               | Service annotations                                                                                                  |
-| frontend.service.sessionAffinity                       | string | `"None"`                           | Session affinity (None or ClientIP)                                                                                  |
-| frontend.service.sessionAffinityConfig                 | object | `{}`                               | Session affinity configuration                                                                                       |
-| frontend.service.extraPorts                            | list   | `[]`                               | Extra service ports                                                                                                  |
-| frontend.networkPolicy.enabled                         | bool   | `false`                            | Enable NetworkPolicy for Hoppscotch pods                                                                             |
-| frontend.networkPolicy.allowExternal                   | bool   | `true`                             | Allow external traffic to Hoppscotch pods                                                                            |
-| frontend.networkPolicy.allowExternalEgress             | bool   | `true`                             | Allow external egress traffic from Hoppscotch pods                                                                   |
-| frontend.networkPolicy.addExternalClientAccess         | bool   | `true`                             | Add external client access to NetworkPolicy                                                                          |
-| frontend.networkPolicy.extraIngress                    | list   | `[]`                               | Extra ingress rules for NetworkPolicy                                                                                |
-| frontend.networkPolicy.extraEgress                     | list   | `[]`                               | Extra egress rules for NetworkPolicy                                                                                 |
-| frontend.networkPolicy.ingressPodMatchLabels           | object | `{}`                               | Pod selector labels for ingress rules                                                                                |
-| frontend.networkPolicy.ingressNSMatchLabels            | object | `{}`                               | Namespace selector labels for ingress rules                                                                          |
-| frontend.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                               | Namespace pod selector labels for ingress rules                                                                      |
-| frontend.ingress.enabled                               | bool   | `false`                            | Enable ingress for Hoppscotch                                                                                        |
-| frontend.ingress.ingressClassName                      | string | `""`                               | Ingress class name                                                                                                   |
-| frontend.ingress.hostname                              | string | `"hoppscotch-frontend.local"`      | Ingress hostname                                                                                                     |
-| frontend.ingress.path                                  | string | `"/"`                              | Ingress path                                                                                                         |
-| frontend.ingress.pathType                              | string | `"ImplementationSpecific"`         | Ingress path type                                                                                                    |
-| frontend.ingress.apiVersion                            | string | `""`                               | Ingress API version                                                                                                  |
-| frontend.ingress.annotations                           | object | `{}`                               | Ingress annotations                                                                                                  |
-| frontend.ingress.tls                                   | bool   | `false`                            | Enable TLS for ingress                                                                                               |
-| frontend.ingress.selfSigned                            | bool   | `false`                            | Create self-signed TLS certificates                                                                                  |
-| frontend.ingress.extraHosts                            | list   | `[]`                               | Extra hostnames for ingress                                                                                          |
-| frontend.ingress.extraPaths                            | list   | `[]`                               | Extra paths for ingress                                                                                              |
-| frontend.ingress.extraTls                              | list   | `[]`                               | Extra TLS configurations for ingress                                                                                 |
-| frontend.ingress.secrets                               | list   | `[]`                               | TLS secrets for ingress                                                                                              |
-| frontend.ingress.extraRules                            | list   | `[]`                               | Extra ingress rules                                                                                                  |
-| frontend.persistence.enabled                           | bool   | `false`                            | Enable persistent storage for Hoppscotch                                                                             |
-| frontend.persistence.storageClass                      | string | `""`                               | Storage class for persistent volume                                                                                  |
-| frontend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`                | Access modes for persistent volume                                                                                   |
-| frontend.persistence.size                              | string | `"8Gi"`                            | Size of persistent volume                                                                                            |
-| frontend.persistence.mountPath                         | string | `"/hoppscotch/data"`               | Mount path for persistent volume                                                                                     |
-| frontend.persistence.subPath                           | string | `""`                               | Subpath within persistent volume                                                                                     |
-| frontend.persistence.annotations                       | object | `{}`                               | Annotations for persistent volume claim                                                                              |
-| frontend.persistence.dataSource                        | object | `{}`                               | Data source for persistent volume                                                                                    |
-| frontend.persistence.existingClaim                     | string | `""`                               | Use existing persistent volume claim                                                                                 |
-| frontend.persistence.selector                          | object | `{}`                               | Selector for persistent volume                                                                                       |
-| frontend.metrics.enabled                               | bool   | `false`                            | Enable metrics collection for Hoppscotch                                                                             |
-| frontend.metrics.serviceMonitor.enabled                | bool   | `false`                            | Enable ServiceMonitor for Prometheus monitoring                                                                      |
-| frontend.metrics.serviceMonitor.namespace              | string | `""`                               | Namespace for ServiceMonitor (defaults to release namespace)                                                         |
-| frontend.metrics.serviceMonitor.annotations            | object | `{}`                               | ServiceMonitor annotations                                                                                           |
-| frontend.metrics.serviceMonitor.labels                 | object | `{}`                               | ServiceMonitor labels                                                                                                |
-| frontend.metrics.serviceMonitor.jobLabel               | string | `""`                               | ServiceMonitor job label                                                                                             |
-| frontend.metrics.serviceMonitor.honorLabels            | bool   | `false`                            | Honor labels from target                                                                                             |
-| frontend.metrics.serviceMonitor.interval               | string | `""`                               | ServiceMonitor scrape interval                                                                                       |
-| frontend.metrics.serviceMonitor.scrapeTimeout          | string | `""`                               | ServiceMonitor scrape timeout                                                                                        |
-| frontend.metrics.serviceMonitor.tlsConfig              | object | `{}`                               | ServiceMonitor TLS configuration                                                                                     |
-| frontend.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                               | ServiceMonitor metrics relabelings                                                                                   |
-| frontend.metrics.serviceMonitor.relabelings            | list   | `[]`                               | ServiceMonitor relabelings                                                                                           |
-| frontend.metrics.serviceMonitor.selector               | object | `{}`                               | ServiceMonitor selector                                                                                              |
+| Key                                                    | Type   | Default                            | Description                                                                                                                 |
+| ------------------------------------------------------ | ------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| frontend.image.repository                              | string | `"hoppscotch/hoppscotch-frontend"` | Hoppscotch image repository                                                                                                 |
+| frontend.image.pullPolicy                              | string | `"IfNotPresent"`                   | Hoppscotch image pull policy                                                                                                |
+| frontend.image.tag                                     | string | `""`                               | Hoppscotch image tag                                                                                                        |
+| frontend.replicaCount                                  | int    | `1`                                | Number of Hoppscotch replicas                                                                                               |
+| frontend.containerPorts.http                           | int    | `80`                               | Hoppscotch HTTP container port                                                                                              |
+| frontend.containerPorts.https                          | int    | `443`                              | Hoppscotch HTTPS container port                                                                                             |
+| frontend.readinessProbe.enabled                        | bool   | `true`                             | Enable readiness probe                                                                                                      |
+| frontend.readinessProbe.initialDelaySeconds            | int    | `0`                                | Initial delay seconds for readiness probe                                                                                   |
+| frontend.readinessProbe.periodSeconds                  | int    | `10`                               | Period seconds for readiness probe                                                                                          |
+| frontend.readinessProbe.timeoutSeconds                 | int    | `1`                                | Timeout seconds for readiness probe                                                                                         |
+| frontend.readinessProbe.failureThreshold               | int    | `3`                                | Failure threshold for readiness probe                                                                                       |
+| frontend.readinessProbe.successThreshold               | int    | `1`                                | Success threshold for readiness probe                                                                                       |
+| frontend.customLivenessProbe                           | object | `{}`                               | Custom liveness probe that overrides the default one                                                                        |
+| frontend.customReadinessProbe                          | object | `{}`                               | Custom readiness probe that overrides the default one                                                                       |
+| frontend.customStartupProbe                            | object | `{}`                               | Custom startup probe that overrides the default one                                                                         |
+| frontend.extraEnvVars                                  | list   | `[]`                               | Array of extra environment variables to be added to Hoppscotch containers                                                   |
+| frontend.extraEnvVarsCM                                | string | `""`                               | Name of existing ConfigMap containing extra environment variables                                                           |
+| frontend.extraEnvVarsSecret                            | string | `""`                               | Name of existing Secret containing extra environment variables                                                              |
+| frontend.resourcesPreset                               | string | `"small"`                          | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| frontend.resources                                     | object | `{}`                               | Set container resources for Hoppscotch (overrides resourcesPreset)                                                          |
+| frontend.podAnnotations                                | object | `{}`                               | Annotations to add to Hoppscotch pods                                                                                       |
+| frontend.podLabels                                     | object | `{}`                               | Labels to add to Hoppscotch pods                                                                                            |
+| frontend.podSecurityContext                            | object | `{}`                               | Security context for Hoppscotch pods                                                                                        |
+| frontend.securityContext                               | object | `{}`                               | Security context for Hoppscotch containers                                                                                  |
+| frontend.updateStrategy.type                           | string | `"RollingUpdate"`                  | Deployment update strategy type (RollingUpdate or Recreate)                                                                 |
+| frontend.pdb.create                                    | bool   | `false`                            | Create PodDisruptionBudget for Hoppscotch deployment                                                                        |
+| frontend.pdb.minAvailable                              | string | `""`                               | Minimum number of available pods during disruptions                                                                         |
+| frontend.pdb.maxUnavailable                            | string | `""`                               | Maximum number of unavailable pods during disruptions                                                                       |
+| frontend.autoscaling.enabled                           | bool   | `false`                            | Enable autoscaling for Hoppscotch deployment                                                                                |
+| frontend.autoscaling.minReplicas                       | int    | `1`                                | Minimum number of Hoppscotch replicas                                                                                       |
+| frontend.autoscaling.maxReplicas                       | int    | `100`                              | Maximum number of Hoppscotch replicas                                                                                       |
+| frontend.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                               | Target CPU utilization percentage for autoscaling                                                                           |
+| frontend.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                               | Target memory utilization percentage for autoscaling                                                                        |
+| frontend.nodeSelector                                  | object | `{}`                               | Node labels for Hoppscotch pods assignment                                                                                  |
+| frontend.tolerations                                   | list   | `[]`                               | Tolerations for Hoppscotch pods assignment                                                                                  |
+| frontend.affinity                                      | object | `{}`                               | Affinity for Hoppscotch pods assignment                                                                                     |
+| frontend.topologySpreadConstraints                     | list   | `[]`                               | Topology spread constraints for Hoppscotch pods assignment                                                                  |
+| frontend.volumes                                       | list   | `[]`                               | Extra volumes to add to Hoppscotch deployment                                                                               |
+| frontend.volumeMounts                                  | list   | `[]`                               | Extra volume mounts to add to Hoppscotch containers                                                                         |
+| frontend.service.type                                  | string | `"ClusterIP"`                      | Kubernetes service type                                                                                                     |
+| frontend.service.ports.http                            | int    | `80`                               | Service HTTP port                                                                                                           |
+| frontend.service.ports.https                           | int    | `443`                              | Service HTTPS port                                                                                                          |
+| frontend.service.clusterIP                             | string | `""`                               | Static cluster IP address (optional)                                                                                        |
+| frontend.service.nodePorts.http                        | string | `""`                               | NodePort for HTTP (when service type is NodePort)                                                                           |
+| frontend.service.nodePorts.https                       | string | `""`                               | NodePort for HTTPS (when service type is NodePort)                                                                          |
+| frontend.service.loadBalancerIP                        | string | `""`                               | Load balancer IP address (when service type is LoadBalancer)                                                                |
+| frontend.service.loadBalancerSourceRanges              | list   | `[]`                               | Load balancer source IP ranges (when service type is LoadBalancer)                                                          |
+| frontend.service.externalTrafficPolicy                 | string | `"Cluster"`                        | External traffic policy (Cluster or Local)                                                                                  |
+| frontend.service.annotations                           | object | `{}`                               | Service annotations                                                                                                         |
+| frontend.service.sessionAffinity                       | string | `"None"`                           | Session affinity (None or ClientIP)                                                                                         |
+| frontend.service.sessionAffinityConfig                 | object | `{}`                               | Session affinity configuration                                                                                              |
+| frontend.service.extraPorts                            | list   | `[]`                               | Extra service ports                                                                                                         |
+| frontend.networkPolicy.enabled                         | bool   | `false`                            | Enable NetworkPolicy for Hoppscotch pods                                                                                    |
+| frontend.networkPolicy.allowExternal                   | bool   | `true`                             | Allow external traffic to Hoppscotch pods                                                                                   |
+| frontend.networkPolicy.allowExternalEgress             | bool   | `true`                             | Allow external egress traffic from Hoppscotch pods                                                                          |
+| frontend.networkPolicy.addExternalClientAccess         | bool   | `true`                             | Add external client access to NetworkPolicy                                                                                 |
+| frontend.networkPolicy.extraIngress                    | list   | `[]`                               | Extra ingress rules for NetworkPolicy                                                                                       |
+| frontend.networkPolicy.extraEgress                     | list   | `[]`                               | Extra egress rules for NetworkPolicy                                                                                        |
+| frontend.networkPolicy.ingressPodMatchLabels           | object | `{}`                               | Pod selector labels for ingress rules                                                                                       |
+| frontend.networkPolicy.ingressNSMatchLabels            | object | `{}`                               | Namespace selector labels for ingress rules                                                                                 |
+| frontend.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                               | Namespace pod selector labels for ingress rules                                                                             |
+| frontend.ingress.enabled                               | bool   | `false`                            | Enable ingress for Hoppscotch                                                                                               |
+| frontend.ingress.ingressClassName                      | string | `""`                               | Ingress class name                                                                                                          |
+| frontend.ingress.hostname                              | string | `"hoppscotch-frontend.local"`      | Ingress hostname                                                                                                            |
+| frontend.ingress.path                                  | string | `"/"`                              | Ingress path                                                                                                                |
+| frontend.ingress.pathType                              | string | `"ImplementationSpecific"`         | Ingress path type                                                                                                           |
+| frontend.ingress.apiVersion                            | string | `""`                               | Ingress API version                                                                                                         |
+| frontend.ingress.annotations                           | object | `{}`                               | Ingress annotations                                                                                                         |
+| frontend.ingress.tls                                   | bool   | `false`                            | Enable TLS for ingress                                                                                                      |
+| frontend.ingress.selfSigned                            | bool   | `false`                            | Create self-signed TLS certificates                                                                                         |
+| frontend.ingress.extraHosts                            | list   | `[]`                               | Extra hostnames for ingress                                                                                                 |
+| frontend.ingress.extraPaths                            | list   | `[]`                               | Extra paths for ingress                                                                                                     |
+| frontend.ingress.extraTls                              | list   | `[]`                               | Extra TLS configurations for ingress                                                                                        |
+| frontend.ingress.secrets                               | list   | `[]`                               | TLS secrets for ingress                                                                                                     |
+| frontend.ingress.extraRules                            | list   | `[]`                               | Extra ingress rules                                                                                                         |
+| frontend.persistence.enabled                           | bool   | `false`                            | Enable persistent storage for Hoppscotch                                                                                    |
+| frontend.persistence.storageClass                      | string | `""`                               | Storage class for persistent volume                                                                                         |
+| frontend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`                | Access modes for persistent volume                                                                                          |
+| frontend.persistence.size                              | string | `"8Gi"`                            | Size of persistent volume                                                                                                   |
+| frontend.persistence.mountPath                         | string | `"/hoppscotch/data"`               | Mount path for persistent volume                                                                                            |
+| frontend.persistence.subPath                           | string | `""`                               | Subpath within persistent volume                                                                                            |
+| frontend.persistence.annotations                       | object | `{}`                               | Annotations for persistent volume claim                                                                                     |
+| frontend.persistence.dataSource                        | object | `{}`                               | Data source for persistent volume                                                                                           |
+| frontend.persistence.existingClaim                     | string | `""`                               | Use existing persistent volume claim                                                                                        |
+| frontend.persistence.selector                          | object | `{}`                               | Selector for persistent volume                                                                                              |
+| frontend.metrics.enabled                               | bool   | `false`                            | Enable metrics collection for Hoppscotch                                                                                    |
+| frontend.metrics.serviceMonitor.enabled                | bool   | `false`                            | Enable ServiceMonitor for Prometheus monitoring                                                                             |
+| frontend.metrics.serviceMonitor.namespace              | string | `""`                               | Namespace for ServiceMonitor (defaults to release namespace)                                                                |
+| frontend.metrics.serviceMonitor.annotations            | object | `{}`                               | ServiceMonitor annotations                                                                                                  |
+| frontend.metrics.serviceMonitor.labels                 | object | `{}`                               | ServiceMonitor labels                                                                                                       |
+| frontend.metrics.serviceMonitor.jobLabel               | string | `""`                               | ServiceMonitor job label                                                                                                    |
+| frontend.metrics.serviceMonitor.honorLabels            | bool   | `false`                            | Honor labels from target                                                                                                    |
+| frontend.metrics.serviceMonitor.interval               | string | `""`                               | ServiceMonitor scrape interval                                                                                              |
+| frontend.metrics.serviceMonitor.scrapeTimeout          | string | `""`                               | ServiceMonitor scrape timeout                                                                                               |
+| frontend.metrics.serviceMonitor.tlsConfig              | object | `{}`                               | ServiceMonitor TLS configuration                                                                                            |
+| frontend.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                               | ServiceMonitor metrics relabelings                                                                                          |
+| frontend.metrics.serviceMonitor.relabelings            | list   | `[]`                               | ServiceMonitor relabelings                                                                                                  |
+| frontend.metrics.serviceMonitor.selector               | object | `{}`                               | ServiceMonitor selector                                                                                                     |
 
 ### Hoppscotch Backend Container Parameters
 
-| Key                                                   | Type   | Default                           | Description                                                                                                          |
-| ----------------------------------------------------- | ------ | --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| backend.image.repository                              | string | `"hoppscotch/hoppscotch-backend"` | Hoppscotch image repository                                                                                          |
-| backend.image.pullPolicy                              | string | `"IfNotPresent"`                  | Hoppscotch image pull policy                                                                                         |
-| backend.image.tag                                     | string | `""`                              | Hoppscotch image tag                                                                                                 |
-| backend.replicaCount                                  | int    | `1`                               | Number of Hoppscotch replicas                                                                                        |
-| backend.containerPorts.http                           | int    | `80`                              | Hoppscotch HTTP container port                                                                                       |
-| backend.containerPorts.https                          | int    | `443`                             | Hoppscotch HTTPS container port                                                                                      |
-| backend.readinessProbe.enabled                        | bool   | `true`                            | Enable readiness probe                                                                                               |
-| backend.readinessProbe.initialDelaySeconds            | int    | `0`                               | Initial delay seconds for readiness probe                                                                            |
-| backend.readinessProbe.periodSeconds                  | int    | `10`                              | Period seconds for readiness probe                                                                                   |
-| backend.readinessProbe.timeoutSeconds                 | int    | `1`                               | Timeout seconds for readiness probe                                                                                  |
-| backend.readinessProbe.failureThreshold               | int    | `3`                               | Failure threshold for readiness probe                                                                                |
-| backend.readinessProbe.successThreshold               | int    | `1`                               | Success threshold for readiness probe                                                                                |
-| backend.customLivenessProbe                           | object | `{}`                              | Custom liveness probe that overrides the default one                                                                 |
-| backend.customReadinessProbe                          | object | `{}`                              | Custom readiness probe that overrides the default one                                                                |
-| backend.customStartupProbe                            | object | `{}`                              | Custom startup probe that overrides the default one                                                                  |
-| backend.extraEnvVars                                  | list   | `[]`                              | Array of extra environment variables to be added to Hoppscotch containers                                            |
-| backend.extraEnvVarsCM                                | string | `""`                              | Name of existing ConfigMap containing extra environment variables                                                    |
-| backend.extraEnvVarsSecret                            | string | `""`                              | Name of existing Secret containing extra environment variables                                                       |
-| backend.resourcesPreset                               | string | `"nano"`                          | Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge) |
-| backend.resources                                     | object | `{}`                              | Set container resources for Hoppscotch (overrides resourcesPreset)                                                   |
-| backend.podAnnotations                                | object | `{}`                              | Annotations to add to Hoppscotch pods                                                                                |
-| backend.podLabels                                     | object | `{}`                              | Labels to add to Hoppscotch pods                                                                                     |
-| backend.podSecurityContext                            | object | `{}`                              | Security context for Hoppscotch pods                                                                                 |
-| backend.securityContext                               | object | `{}`                              | Security context for Hoppscotch containers                                                                           |
-| backend.updateStrategy.type                           | string | `"RollingUpdate"`                 | Deployment update strategy type (RollingUpdate or Recreate)                                                          |
-| backend.pdb.create                                    | bool   | `false`                           | Create PodDisruptionBudget for Hoppscotch deployment                                                                 |
-| backend.pdb.minAvailable                              | string | `""`                              | Minimum number of available pods during disruptions                                                                  |
-| backend.pdb.maxUnavailable                            | string | `""`                              | Maximum number of unavailable pods during disruptions                                                                |
-| backend.autoscaling.enabled                           | bool   | `false`                           | Enable autoscaling for Hoppscotch deployment                                                                         |
-| backend.autoscaling.minReplicas                       | int    | `1`                               | Minimum number of Hoppscotch replicas                                                                                |
-| backend.autoscaling.maxReplicas                       | int    | `100`                             | Maximum number of Hoppscotch replicas                                                                                |
-| backend.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                              | Target CPU utilization percentage for autoscaling                                                                    |
-| backend.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                              | Target memory utilization percentage for autoscaling                                                                 |
-| backend.nodeSelector                                  | object | `{}`                              | Node labels for Hoppscotch pods assignment                                                                           |
-| backend.tolerations                                   | list   | `[]`                              | Tolerations for Hoppscotch pods assignment                                                                           |
-| backend.affinity                                      | object | `{}`                              | Affinity for Hoppscotch pods assignment                                                                              |
-| backend.topologySpreadConstraints                     | list   | `[]`                              | Topology spread constraints for Hoppscotch pods assignment                                                           |
-| backend.volumes                                       | list   | `[]`                              | Extra volumes to add to Hoppscotch deployment                                                                        |
-| backend.volumeMounts                                  | list   | `[]`                              | Extra volume mounts to add to Hoppscotch containers                                                                  |
-| backend.service.type                                  | string | `"ClusterIP"`                     | Kubernetes service type                                                                                              |
-| backend.service.ports.http                            | int    | `80`                              | Service HTTP port                                                                                                    |
-| backend.service.ports.https                           | int    | `443`                             | Service HTTPS port                                                                                                   |
-| backend.service.clusterIP                             | string | `""`                              | Static cluster IP address (optional)                                                                                 |
-| backend.service.nodePorts.http                        | string | `""`                              | NodePort for HTTP (when service type is NodePort)                                                                    |
-| backend.service.nodePorts.https                       | string | `""`                              | NodePort for HTTPS (when service type is NodePort)                                                                   |
-| backend.service.loadBalancerIP                        | string | `""`                              | Load balancer IP address (when service type is LoadBalancer)                                                         |
-| backend.service.loadBalancerSourceRanges              | list   | `[]`                              | Load balancer source IP ranges (when service type is LoadBalancer)                                                   |
-| backend.service.externalTrafficPolicy                 | string | `"Cluster"`                       | External traffic policy (Cluster or Local)                                                                           |
-| backend.service.annotations                           | object | `{}`                              | Service annotations                                                                                                  |
-| backend.service.sessionAffinity                       | string | `"None"`                          | Session affinity (None or ClientIP)                                                                                  |
-| backend.service.sessionAffinityConfig                 | object | `{}`                              | Session affinity configuration                                                                                       |
-| backend.service.extraPorts                            | list   | `[]`                              | Extra service ports                                                                                                  |
-| backend.networkPolicy.enabled                         | bool   | `false`                           | Enable NetworkPolicy for Hoppscotch pods                                                                             |
-| backend.networkPolicy.allowExternal                   | bool   | `true`                            | Allow external traffic to Hoppscotch pods                                                                            |
-| backend.networkPolicy.allowExternalEgress             | bool   | `true`                            | Allow external egress traffic from Hoppscotch pods                                                                   |
-| backend.networkPolicy.addExternalClientAccess         | bool   | `true`                            | Add external client access to NetworkPolicy                                                                          |
-| backend.networkPolicy.extraIngress                    | list   | `[]`                              | Extra ingress rules for NetworkPolicy                                                                                |
-| backend.networkPolicy.extraEgress                     | list   | `[]`                              | Extra egress rules for NetworkPolicy                                                                                 |
-| backend.networkPolicy.ingressPodMatchLabels           | object | `{}`                              | Pod selector labels for ingress rules                                                                                |
-| backend.networkPolicy.ingressNSMatchLabels            | object | `{}`                              | Namespace selector labels for ingress rules                                                                          |
-| backend.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                              | Namespace pod selector labels for ingress rules                                                                      |
-| backend.ingress.enabled                               | bool   | `false`                           | Enable ingress for Hoppscotch                                                                                        |
-| backend.ingress.ingressClassName                      | string | `""`                              | Ingress class name                                                                                                   |
-| backend.ingress.hostname                              | string | `"hoppscotch-frontend.local"`     | Ingress hostname                                                                                                     |
-| backend.ingress.path                                  | string | `"/"`                             | Ingress path                                                                                                         |
-| backend.ingress.pathType                              | string | `"ImplementationSpecific"`        | Ingress path type                                                                                                    |
-| backend.ingress.apiVersion                            | string | `""`                              | Ingress API version                                                                                                  |
-| backend.ingress.annotations                           | object | `{}`                              | Ingress annotations                                                                                                  |
-| backend.ingress.tls                                   | bool   | `false`                           | Enable TLS for ingress                                                                                               |
-| backend.ingress.selfSigned                            | bool   | `false`                           | Create self-signed TLS certificates                                                                                  |
-| backend.ingress.extraHosts                            | list   | `[]`                              | Extra hostnames for ingress                                                                                          |
-| backend.ingress.extraPaths                            | list   | `[]`                              | Extra paths for ingress                                                                                              |
-| backend.ingress.extraTls                              | list   | `[]`                              | Extra TLS configurations for ingress                                                                                 |
-| backend.ingress.secrets                               | list   | `[]`                              | TLS secrets for ingress                                                                                              |
-| backend.ingress.extraRules                            | list   | `[]`                              | Extra ingress rules                                                                                                  |
-| backend.persistence.enabled                           | bool   | `false`                           | Enable persistent storage for Hoppscotch                                                                             |
-| backend.persistence.storageClass                      | string | `""`                              | Storage class for persistent volume                                                                                  |
-| backend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`               | Access modes for persistent volume                                                                                   |
-| backend.persistence.size                              | string | `"8Gi"`                           | Size of persistent volume                                                                                            |
-| backend.persistence.mountPath                         | string | `"/hoppscotch/data"`              | Mount path for persistent volume                                                                                     |
-| backend.persistence.subPath                           | string | `""`                              | Subpath within persistent volume                                                                                     |
-| backend.persistence.annotations                       | object | `{}`                              | Annotations for persistent volume claim                                                                              |
-| backend.persistence.dataSource                        | object | `{}`                              | Data source for persistent volume                                                                                    |
-| backend.persistence.existingClaim                     | string | `""`                              | Use existing persistent volume claim                                                                                 |
-| backend.persistence.selector                          | object | `{}`                              | Selector for persistent volume                                                                                       |
-| backend.metrics.enabled                               | bool   | `false`                           | Enable metrics collection for Hoppscotch                                                                             |
-| backend.metrics.serviceMonitor.enabled                | bool   | `false`                           | Enable ServiceMonitor for Prometheus monitoring                                                                      |
-| backend.metrics.serviceMonitor.namespace              | string | `""`                              | Namespace for ServiceMonitor (defaults to release namespace)                                                         |
-| backend.metrics.serviceMonitor.annotations            | object | `{}`                              | ServiceMonitor annotations                                                                                           |
-| backend.metrics.serviceMonitor.labels                 | object | `{}`                              | ServiceMonitor labels                                                                                                |
-| backend.metrics.serviceMonitor.jobLabel               | string | `""`                              | ServiceMonitor job label                                                                                             |
-| backend.metrics.serviceMonitor.honorLabels            | bool   | `false`                           | Honor labels from target                                                                                             |
-| backend.metrics.serviceMonitor.interval               | string | `""`                              | ServiceMonitor scrape interval                                                                                       |
-| backend.metrics.serviceMonitor.scrapeTimeout          | string | `""`                              | ServiceMonitor scrape timeout                                                                                        |
-| backend.metrics.serviceMonitor.tlsConfig              | object | `{}`                              | ServiceMonitor TLS configuration                                                                                     |
-| backend.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                              | ServiceMonitor metrics relabelings                                                                                   |
-| backend.metrics.serviceMonitor.relabelings            | list   | `[]`                              | ServiceMonitor relabelings                                                                                           |
-| backend.metrics.serviceMonitor.selector               | object | `{}`                              | ServiceMonitor selector                                                                                              |
+| Key                                                   | Type   | Default                           | Description                                                                                                                 |
+| ----------------------------------------------------- | ------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| backend.image.repository                              | string | `"hoppscotch/hoppscotch-backend"` | Hoppscotch image repository                                                                                                 |
+| backend.image.pullPolicy                              | string | `"IfNotPresent"`                  | Hoppscotch image pull policy                                                                                                |
+| backend.image.tag                                     | string | `""`                              | Hoppscotch image tag                                                                                                        |
+| backend.replicaCount                                  | int    | `1`                               | Number of Hoppscotch replicas                                                                                               |
+| backend.containerPorts.http                           | int    | `80`                              | Hoppscotch HTTP container port                                                                                              |
+| backend.containerPorts.https                          | int    | `443`                             | Hoppscotch HTTPS container port                                                                                             |
+| backend.readinessProbe.enabled                        | bool   | `true`                            | Enable readiness probe                                                                                                      |
+| backend.readinessProbe.initialDelaySeconds            | int    | `0`                               | Initial delay seconds for readiness probe                                                                                   |
+| backend.readinessProbe.periodSeconds                  | int    | `10`                              | Period seconds for readiness probe                                                                                          |
+| backend.readinessProbe.timeoutSeconds                 | int    | `1`                               | Timeout seconds for readiness probe                                                                                         |
+| backend.readinessProbe.failureThreshold               | int    | `3`                               | Failure threshold for readiness probe                                                                                       |
+| backend.readinessProbe.successThreshold               | int    | `1`                               | Success threshold for readiness probe                                                                                       |
+| backend.customLivenessProbe                           | object | `{}`                              | Custom liveness probe that overrides the default one                                                                        |
+| backend.customReadinessProbe                          | object | `{}`                              | Custom readiness probe that overrides the default one                                                                       |
+| backend.customStartupProbe                            | object | `{}`                              | Custom startup probe that overrides the default one                                                                         |
+| backend.extraEnvVars                                  | list   | `[]`                              | Array of extra environment variables to be added to Hoppscotch containers                                                   |
+| backend.extraEnvVarsCM                                | string | `""`                              | Name of existing ConfigMap containing extra environment variables                                                           |
+| backend.extraEnvVarsSecret                            | string | `""`                              | Name of existing Secret containing extra environment variables                                                              |
+| backend.resourcesPreset                               | string | `"small"`                         | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| backend.resources                                     | object | `{}`                              | Set container resources for Hoppscotch (overrides resourcesPreset)                                                          |
+| backend.podAnnotations                                | object | `{}`                              | Annotations to add to Hoppscotch pods                                                                                       |
+| backend.podLabels                                     | object | `{}`                              | Labels to add to Hoppscotch pods                                                                                            |
+| backend.podSecurityContext                            | object | `{}`                              | Security context for Hoppscotch pods                                                                                        |
+| backend.securityContext                               | object | `{}`                              | Security context for Hoppscotch containers                                                                                  |
+| backend.updateStrategy.type                           | string | `"RollingUpdate"`                 | Deployment update strategy type (RollingUpdate or Recreate)                                                                 |
+| backend.pdb.create                                    | bool   | `false`                           | Create PodDisruptionBudget for Hoppscotch deployment                                                                        |
+| backend.pdb.minAvailable                              | string | `""`                              | Minimum number of available pods during disruptions                                                                         |
+| backend.pdb.maxUnavailable                            | string | `""`                              | Maximum number of unavailable pods during disruptions                                                                       |
+| backend.autoscaling.enabled                           | bool   | `false`                           | Enable autoscaling for Hoppscotch deployment                                                                                |
+| backend.autoscaling.minReplicas                       | int    | `1`                               | Minimum number of Hoppscotch replicas                                                                                       |
+| backend.autoscaling.maxReplicas                       | int    | `100`                             | Maximum number of Hoppscotch replicas                                                                                       |
+| backend.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                              | Target CPU utilization percentage for autoscaling                                                                           |
+| backend.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                              | Target memory utilization percentage for autoscaling                                                                        |
+| backend.nodeSelector                                  | object | `{}`                              | Node labels for Hoppscotch pods assignment                                                                                  |
+| backend.tolerations                                   | list   | `[]`                              | Tolerations for Hoppscotch pods assignment                                                                                  |
+| backend.affinity                                      | object | `{}`                              | Affinity for Hoppscotch pods assignment                                                                                     |
+| backend.topologySpreadConstraints                     | list   | `[]`                              | Topology spread constraints for Hoppscotch pods assignment                                                                  |
+| backend.volumes                                       | list   | `[]`                              | Extra volumes to add to Hoppscotch deployment                                                                               |
+| backend.volumeMounts                                  | list   | `[]`                              | Extra volume mounts to add to Hoppscotch containers                                                                         |
+| backend.service.type                                  | string | `"ClusterIP"`                     | Kubernetes service type                                                                                                     |
+| backend.service.ports.http                            | int    | `80`                              | Service HTTP port                                                                                                           |
+| backend.service.ports.https                           | int    | `443`                             | Service HTTPS port                                                                                                          |
+| backend.service.clusterIP                             | string | `""`                              | Static cluster IP address (optional)                                                                                        |
+| backend.service.nodePorts.http                        | string | `""`                              | NodePort for HTTP (when service type is NodePort)                                                                           |
+| backend.service.nodePorts.https                       | string | `""`                              | NodePort for HTTPS (when service type is NodePort)                                                                          |
+| backend.service.loadBalancerIP                        | string | `""`                              | Load balancer IP address (when service type is LoadBalancer)                                                                |
+| backend.service.loadBalancerSourceRanges              | list   | `[]`                              | Load balancer source IP ranges (when service type is LoadBalancer)                                                          |
+| backend.service.externalTrafficPolicy                 | string | `"Cluster"`                       | External traffic policy (Cluster or Local)                                                                                  |
+| backend.service.annotations                           | object | `{}`                              | Service annotations                                                                                                         |
+| backend.service.sessionAffinity                       | string | `"None"`                          | Session affinity (None or ClientIP)                                                                                         |
+| backend.service.sessionAffinityConfig                 | object | `{}`                              | Session affinity configuration                                                                                              |
+| backend.service.extraPorts                            | list   | `[]`                              | Extra service ports                                                                                                         |
+| backend.networkPolicy.enabled                         | bool   | `false`                           | Enable NetworkPolicy for Hoppscotch pods                                                                                    |
+| backend.networkPolicy.allowExternal                   | bool   | `true`                            | Allow external traffic to Hoppscotch pods                                                                                   |
+| backend.networkPolicy.allowExternalEgress             | bool   | `true`                            | Allow external egress traffic from Hoppscotch pods                                                                          |
+| backend.networkPolicy.addExternalClientAccess         | bool   | `true`                            | Add external client access to NetworkPolicy                                                                                 |
+| backend.networkPolicy.extraIngress                    | list   | `[]`                              | Extra ingress rules for NetworkPolicy                                                                                       |
+| backend.networkPolicy.extraEgress                     | list   | `[]`                              | Extra egress rules for NetworkPolicy                                                                                        |
+| backend.networkPolicy.ingressPodMatchLabels           | object | `{}`                              | Pod selector labels for ingress rules                                                                                       |
+| backend.networkPolicy.ingressNSMatchLabels            | object | `{}`                              | Namespace selector labels for ingress rules                                                                                 |
+| backend.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                              | Namespace pod selector labels for ingress rules                                                                             |
+| backend.ingress.enabled                               | bool   | `false`                           | Enable ingress for Hoppscotch                                                                                               |
+| backend.ingress.ingressClassName                      | string | `""`                              | Ingress class name                                                                                                          |
+| backend.ingress.hostname                              | string | `"hoppscotch-frontend.local"`     | Ingress hostname                                                                                                            |
+| backend.ingress.path                                  | string | `"/"`                             | Ingress path                                                                                                                |
+| backend.ingress.pathType                              | string | `"ImplementationSpecific"`        | Ingress path type                                                                                                           |
+| backend.ingress.apiVersion                            | string | `""`                              | Ingress API version                                                                                                         |
+| backend.ingress.annotations                           | object | `{}`                              | Ingress annotations                                                                                                         |
+| backend.ingress.tls                                   | bool   | `false`                           | Enable TLS for ingress                                                                                                      |
+| backend.ingress.selfSigned                            | bool   | `false`                           | Create self-signed TLS certificates                                                                                         |
+| backend.ingress.extraHosts                            | list   | `[]`                              | Extra hostnames for ingress                                                                                                 |
+| backend.ingress.extraPaths                            | list   | `[]`                              | Extra paths for ingress                                                                                                     |
+| backend.ingress.extraTls                              | list   | `[]`                              | Extra TLS configurations for ingress                                                                                        |
+| backend.ingress.secrets                               | list   | `[]`                              | TLS secrets for ingress                                                                                                     |
+| backend.ingress.extraRules                            | list   | `[]`                              | Extra ingress rules                                                                                                         |
+| backend.persistence.enabled                           | bool   | `false`                           | Enable persistent storage for Hoppscotch                                                                                    |
+| backend.persistence.storageClass                      | string | `""`                              | Storage class for persistent volume                                                                                         |
+| backend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`               | Access modes for persistent volume                                                                                          |
+| backend.persistence.size                              | string | `"8Gi"`                           | Size of persistent volume                                                                                                   |
+| backend.persistence.mountPath                         | string | `"/hoppscotch/data"`              | Mount path for persistent volume                                                                                            |
+| backend.persistence.subPath                           | string | `""`                              | Subpath within persistent volume                                                                                            |
+| backend.persistence.annotations                       | object | `{}`                              | Annotations for persistent volume claim                                                                                     |
+| backend.persistence.dataSource                        | object | `{}`                              | Data source for persistent volume                                                                                           |
+| backend.persistence.existingClaim                     | string | `""`                              | Use existing persistent volume claim                                                                                        |
+| backend.persistence.selector                          | object | `{}`                              | Selector for persistent volume                                                                                              |
+| backend.metrics.enabled                               | bool   | `false`                           | Enable metrics collection for Hoppscotch                                                                                    |
+| backend.metrics.serviceMonitor.enabled                | bool   | `false`                           | Enable ServiceMonitor for Prometheus monitoring                                                                             |
+| backend.metrics.serviceMonitor.namespace              | string | `""`                              | Namespace for ServiceMonitor (defaults to release namespace)                                                                |
+| backend.metrics.serviceMonitor.annotations            | object | `{}`                              | ServiceMonitor annotations                                                                                                  |
+| backend.metrics.serviceMonitor.labels                 | object | `{}`                              | ServiceMonitor labels                                                                                                       |
+| backend.metrics.serviceMonitor.jobLabel               | string | `""`                              | ServiceMonitor job label                                                                                                    |
+| backend.metrics.serviceMonitor.honorLabels            | bool   | `false`                           | Honor labels from target                                                                                                    |
+| backend.metrics.serviceMonitor.interval               | string | `""`                              | ServiceMonitor scrape interval                                                                                              |
+| backend.metrics.serviceMonitor.scrapeTimeout          | string | `""`                              | ServiceMonitor scrape timeout                                                                                               |
+| backend.metrics.serviceMonitor.tlsConfig              | object | `{}`                              | ServiceMonitor TLS configuration                                                                                            |
+| backend.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                              | ServiceMonitor metrics relabelings                                                                                          |
+| backend.metrics.serviceMonitor.relabelings            | list   | `[]`                              | ServiceMonitor relabelings                                                                                                  |
+| backend.metrics.serviceMonitor.selector               | object | `{}`                              | ServiceMonitor selector                                                                                                     |
 
 ### Hoppscotch Admin Container Parameters
 
-| Key                                                 | Type   | Default                         | Description                                                                                                          |
-| --------------------------------------------------- | ------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| admin.image.repository                              | string | `"hoppscotch/hoppscotch-admin"` | Hoppscotch image repository                                                                                          |
-| admin.image.pullPolicy                              | string | `"IfNotPresent"`                | Hoppscotch image pull policy                                                                                         |
-| admin.image.tag                                     | string | `""`                            | Hoppscotch image tag                                                                                                 |
-| admin.replicaCount                                  | int    | `1`                             | Number of Hoppscotch replicas                                                                                        |
-| admin.containerPorts.http                           | int    | `80`                            | Hoppscotch HTTP container port                                                                                       |
-| admin.containerPorts.https                          | int    | `443`                           | Hoppscotch HTTPS container port                                                                                      |
-| admin.readinessProbe.enabled                        | bool   | `true`                          | Enable readiness probe                                                                                               |
-| admin.readinessProbe.initialDelaySeconds            | int    | `0`                             | Initial delay seconds for readiness probe                                                                            |
-| admin.readinessProbe.periodSeconds                  | int    | `10`                            | Period seconds for readiness probe                                                                                   |
-| admin.readinessProbe.timeoutSeconds                 | int    | `1`                             | Timeout seconds for readiness probe                                                                                  |
-| admin.readinessProbe.failureThreshold               | int    | `3`                             | Failure threshold for readiness probe                                                                                |
-| admin.readinessProbe.successThreshold               | int    | `1`                             | Success threshold for readiness probe                                                                                |
-| admin.customLivenessProbe                           | object | `{}`                            | Custom liveness probe that overrides the default one                                                                 |
-| admin.customReadinessProbe                          | object | `{}`                            | Custom readiness probe that overrides the default one                                                                |
-| admin.customStartupProbe                            | object | `{}`                            | Custom startup probe that overrides the default one                                                                  |
-| admin.extraEnvVars                                  | list   | `[]`                            | Array of extra environment variables to be added to Hoppscotch containers                                            |
-| admin.extraEnvVarsCM                                | string | `""`                            | Name of existing ConfigMap containing extra environment variables                                                    |
-| admin.extraEnvVarsSecret                            | string | `""`                            | Name of existing Secret containing extra environment variables                                                       |
-| admin.resourcesPreset                               | string | `"nano"`                        | Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge) |
-| admin.resources                                     | object | `{}`                            | Set container resources for Hoppscotch (overrides resourcesPreset)                                                   |
-| admin.podAnnotations                                | object | `{}`                            | Annotations to add to Hoppscotch pods                                                                                |
-| admin.podLabels                                     | object | `{}`                            | Labels to add to Hoppscotch pods                                                                                     |
-| admin.podSecurityContext                            | object | `{}`                            | Security context for Hoppscotch pods                                                                                 |
-| admin.securityContext                               | object | `{}`                            | Security context for Hoppscotch containers                                                                           |
-| admin.updateStrategy.type                           | string | `"RollingUpdate"`               | Deployment update strategy type (RollingUpdate or Recreate)                                                          |
-| admin.pdb.create                                    | bool   | `false`                         | Create PodDisruptionBudget for Hoppscotch deployment                                                                 |
-| admin.pdb.minAvailable                              | string | `""`                            | Minimum number of available pods during disruptions                                                                  |
-| admin.pdb.maxUnavailable                            | string | `""`                            | Maximum number of unavailable pods during disruptions                                                                |
-| admin.autoscaling.enabled                           | bool   | `false`                         | Enable autoscaling for Hoppscotch deployment                                                                         |
-| admin.autoscaling.minReplicas                       | int    | `1`                             | Minimum number of Hoppscotch replicas                                                                                |
-| admin.autoscaling.maxReplicas                       | int    | `100`                           | Maximum number of Hoppscotch replicas                                                                                |
-| admin.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                            | Target CPU utilization percentage for autoscaling                                                                    |
-| admin.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                            | Target memory utilization percentage for autoscaling                                                                 |
-| admin.nodeSelector                                  | object | `{}`                            | Node labels for Hoppscotch pods assignment                                                                           |
-| admin.tolerations                                   | list   | `[]`                            | Tolerations for Hoppscotch pods assignment                                                                           |
-| admin.affinity                                      | object | `{}`                            | Affinity for Hoppscotch pods assignment                                                                              |
-| admin.topologySpreadConstraints                     | list   | `[]`                            | Topology spread constraints for Hoppscotch pods assignment                                                           |
-| admin.volumes                                       | list   | `[]`                            | Extra volumes to add to Hoppscotch deployment                                                                        |
-| admin.volumeMounts                                  | list   | `[]`                            | Extra volume mounts to add to Hoppscotch containers                                                                  |
-| admin.service.type                                  | string | `"ClusterIP"`                   | Kubernetes service type                                                                                              |
-| admin.service.ports.http                            | int    | `80`                            | Service HTTP port                                                                                                    |
-| admin.service.ports.https                           | int    | `443`                           | Service HTTPS port                                                                                                   |
-| admin.service.clusterIP                             | string | `""`                            | Static cluster IP address (optional)                                                                                 |
-| admin.service.nodePorts.http                        | string | `""`                            | NodePort for HTTP (when service type is NodePort)                                                                    |
-| admin.service.nodePorts.https                       | string | `""`                            | NodePort for HTTPS (when service type is NodePort)                                                                   |
-| admin.service.loadBalancerIP                        | string | `""`                            | Load balancer IP address (when service type is LoadBalancer)                                                         |
-| admin.service.loadBalancerSourceRanges              | list   | `[]`                            | Load balancer source IP ranges (when service type is LoadBalancer)                                                   |
-| admin.service.externalTrafficPolicy                 | string | `"Cluster"`                     | External traffic policy (Cluster or Local)                                                                           |
-| admin.service.annotations                           | object | `{}`                            | Service annotations                                                                                                  |
-| admin.service.sessionAffinity                       | string | `"None"`                        | Session affinity (None or ClientIP)                                                                                  |
-| admin.service.sessionAffinityConfig                 | object | `{}`                            | Session affinity configuration                                                                                       |
-| admin.service.extraPorts                            | list   | `[]`                            | Extra service ports                                                                                                  |
-| admin.networkPolicy.enabled                         | bool   | `false`                         | Enable NetworkPolicy for Hoppscotch pods                                                                             |
-| admin.networkPolicy.allowExternal                   | bool   | `true`                          | Allow external traffic to Hoppscotch pods                                                                            |
-| admin.networkPolicy.allowExternalEgress             | bool   | `true`                          | Allow external egress traffic from Hoppscotch pods                                                                   |
-| admin.networkPolicy.addExternalClientAccess         | bool   | `true`                          | Add external client access to NetworkPolicy                                                                          |
-| admin.networkPolicy.extraIngress                    | list   | `[]`                            | Extra ingress rules for NetworkPolicy                                                                                |
-| admin.networkPolicy.extraEgress                     | list   | `[]`                            | Extra egress rules for NetworkPolicy                                                                                 |
-| admin.networkPolicy.ingressPodMatchLabels           | object | `{}`                            | Pod selector labels for ingress rules                                                                                |
-| admin.networkPolicy.ingressNSMatchLabels            | object | `{}`                            | Namespace selector labels for ingress rules                                                                          |
-| admin.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                            | Namespace pod selector labels for ingress rules                                                                      |
-| admin.ingress.enabled                               | bool   | `false`                         | Enable ingress for Hoppscotch                                                                                        |
-| admin.ingress.ingressClassName                      | string | `""`                            | Ingress class name                                                                                                   |
-| admin.ingress.hostname                              | string | `"hoppscotch-admin.local"`      | Ingress hostname                                                                                                     |
-| admin.ingress.path                                  | string | `"/"`                           | Ingress path                                                                                                         |
-| admin.ingress.pathType                              | string | `"ImplementationSpecific"`      | Ingress path type                                                                                                    |
-| admin.ingress.apiVersion                            | string | `""`                            | Ingress API version                                                                                                  |
-| admin.ingress.annotations                           | object | `{}`                            | Ingress annotations                                                                                                  |
-| admin.ingress.tls                                   | bool   | `false`                         | Enable TLS for ingress                                                                                               |
-| admin.ingress.selfSigned                            | bool   | `false`                         | Create self-signed TLS certificates                                                                                  |
-| admin.ingress.extraHosts                            | list   | `[]`                            | Extra hostnames for ingress                                                                                          |
-| admin.ingress.extraPaths                            | list   | `[]`                            | Extra paths for ingress                                                                                              |
-| admin.ingress.extraTls                              | list   | `[]`                            | Extra TLS configurations for ingress                                                                                 |
-| admin.ingress.secrets                               | list   | `[]`                            | TLS secrets for ingress                                                                                              |
-| admin.ingress.extraRules                            | list   | `[]`                            | Extra ingress rules                                                                                                  |
-| admin.persistence.enabled                           | bool   | `false`                         | Enable persistent storage for Hoppscotch                                                                             |
-| admin.persistence.storageClass                      | string | `""`                            | Storage class for persistent volume                                                                                  |
-| admin.persistence.accessModes                       | list   | `["ReadWriteOnce"]`             | Access modes for persistent volume                                                                                   |
-| admin.persistence.size                              | string | `"8Gi"`                         | Size of persistent volume                                                                                            |
-| admin.persistence.mountPath                         | string | `"/hoppscotch/data"`            | Mount path for persistent volume                                                                                     |
-| admin.persistence.subPath                           | string | `""`                            | Subpath within persistent volume                                                                                     |
-| admin.persistence.annotations                       | object | `{}`                            | Annotations for persistent volume claim                                                                              |
-| admin.persistence.dataSource                        | object | `{}`                            | Data source for persistent volume                                                                                    |
-| admin.persistence.existingClaim                     | string | `""`                            | Use existing persistent volume claim                                                                                 |
-| admin.persistence.selector                          | object | `{}`                            | Selector for persistent volume                                                                                       |
-| admin.metrics.enabled                               | bool   | `false`                         | Enable metrics collection for Hoppscotch                                                                             |
-| admin.metrics.serviceMonitor.enabled                | bool   | `false`                         | Enable ServiceMonitor for Prometheus monitoring                                                                      |
-| admin.metrics.serviceMonitor.namespace              | string | `""`                            | Namespace for ServiceMonitor (defaults to release namespace)                                                         |
-| admin.metrics.serviceMonitor.annotations            | object | `{}`                            | ServiceMonitor annotations                                                                                           |
-| admin.metrics.serviceMonitor.labels                 | object | `{}`                            | ServiceMonitor labels                                                                                                |
-| admin.metrics.serviceMonitor.jobLabel               | string | `""`                            | ServiceMonitor job label                                                                                             |
-| admin.metrics.serviceMonitor.honorLabels            | bool   | `false`                         | Honor labels from target                                                                                             |
-| admin.metrics.serviceMonitor.interval               | string | `""`                            | ServiceMonitor scrape interval                                                                                       |
-| admin.metrics.serviceMonitor.scrapeTimeout          | string | `""`                            | ServiceMonitor scrape timeout                                                                                        |
-| admin.metrics.serviceMonitor.tlsConfig              | object | `{}`                            | ServiceMonitor TLS configuration                                                                                     |
-| admin.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                            | ServiceMonitor metrics relabelings                                                                                   |
-| admin.metrics.serviceMonitor.relabelings            | list   | `[]`                            | ServiceMonitor relabelings                                                                                           |
-| admin.metrics.serviceMonitor.selector               | object | `{}`                            | ServiceMonitor selector                                                                                              |
+| Key                                                 | Type   | Default                         | Description                                                                                                                 |
+| --------------------------------------------------- | ------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| admin.image.repository                              | string | `"hoppscotch/hoppscotch-admin"` | Hoppscotch image repository                                                                                                 |
+| admin.image.pullPolicy                              | string | `"IfNotPresent"`                | Hoppscotch image pull policy                                                                                                |
+| admin.image.tag                                     | string | `""`                            | Hoppscotch image tag                                                                                                        |
+| admin.replicaCount                                  | int    | `1`                             | Number of Hoppscotch replicas                                                                                               |
+| admin.containerPorts.http                           | int    | `80`                            | Hoppscotch HTTP container port                                                                                              |
+| admin.containerPorts.https                          | int    | `443`                           | Hoppscotch HTTPS container port                                                                                             |
+| admin.readinessProbe.enabled                        | bool   | `true`                          | Enable readiness probe                                                                                                      |
+| admin.readinessProbe.initialDelaySeconds            | int    | `0`                             | Initial delay seconds for readiness probe                                                                                   |
+| admin.readinessProbe.periodSeconds                  | int    | `10`                            | Period seconds for readiness probe                                                                                          |
+| admin.readinessProbe.timeoutSeconds                 | int    | `1`                             | Timeout seconds for readiness probe                                                                                         |
+| admin.readinessProbe.failureThreshold               | int    | `3`                             | Failure threshold for readiness probe                                                                                       |
+| admin.readinessProbe.successThreshold               | int    | `1`                             | Success threshold for readiness probe                                                                                       |
+| admin.customLivenessProbe                           | object | `{}`                            | Custom liveness probe that overrides the default one                                                                        |
+| admin.customReadinessProbe                          | object | `{}`                            | Custom readiness probe that overrides the default one                                                                       |
+| admin.customStartupProbe                            | object | `{}`                            | Custom startup probe that overrides the default one                                                                         |
+| admin.extraEnvVars                                  | list   | `[]`                            | Array of extra environment variables to be added to Hoppscotch containers                                                   |
+| admin.extraEnvVarsCM                                | string | `""`                            | Name of existing ConfigMap containing extra environment variables                                                           |
+| admin.extraEnvVarsSecret                            | string | `""`                            | Name of existing Secret containing extra environment variables                                                              |
+| admin.resourcesPreset                               | string | `"small"`                       | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| admin.resources                                     | object | `{}`                            | Set container resources for Hoppscotch (overrides resourcesPreset)                                                          |
+| admin.podAnnotations                                | object | `{}`                            | Annotations to add to Hoppscotch pods                                                                                       |
+| admin.podLabels                                     | object | `{}`                            | Labels to add to Hoppscotch pods                                                                                            |
+| admin.podSecurityContext                            | object | `{}`                            | Security context for Hoppscotch pods                                                                                        |
+| admin.securityContext                               | object | `{}`                            | Security context for Hoppscotch containers                                                                                  |
+| admin.updateStrategy.type                           | string | `"RollingUpdate"`               | Deployment update strategy type (RollingUpdate or Recreate)                                                                 |
+| admin.pdb.create                                    | bool   | `false`                         | Create PodDisruptionBudget for Hoppscotch deployment                                                                        |
+| admin.pdb.minAvailable                              | string | `""`                            | Minimum number of available pods during disruptions                                                                         |
+| admin.pdb.maxUnavailable                            | string | `""`                            | Maximum number of unavailable pods during disruptions                                                                       |
+| admin.autoscaling.enabled                           | bool   | `false`                         | Enable autoscaling for Hoppscotch deployment                                                                                |
+| admin.autoscaling.minReplicas                       | int    | `1`                             | Minimum number of Hoppscotch replicas                                                                                       |
+| admin.autoscaling.maxReplicas                       | int    | `100`                           | Maximum number of Hoppscotch replicas                                                                                       |
+| admin.autoscaling.targetCPUUtilizationPercentage    | int    | `80`                            | Target CPU utilization percentage for autoscaling                                                                           |
+| admin.autoscaling.targetMemoryUtilizationPercentage | int    | `80`                            | Target memory utilization percentage for autoscaling                                                                        |
+| admin.nodeSelector                                  | object | `{}`                            | Node labels for Hoppscotch pods assignment                                                                                  |
+| admin.tolerations                                   | list   | `[]`                            | Tolerations for Hoppscotch pods assignment                                                                                  |
+| admin.affinity                                      | object | `{}`                            | Affinity for Hoppscotch pods assignment                                                                                     |
+| admin.topologySpreadConstraints                     | list   | `[]`                            | Topology spread constraints for Hoppscotch pods assignment                                                                  |
+| admin.volumes                                       | list   | `[]`                            | Extra volumes to add to Hoppscotch deployment                                                                               |
+| admin.volumeMounts                                  | list   | `[]`                            | Extra volume mounts to add to Hoppscotch containers                                                                         |
+| admin.service.type                                  | string | `"ClusterIP"`                   | Kubernetes service type                                                                                                     |
+| admin.service.ports.http                            | int    | `80`                            | Service HTTP port                                                                                                           |
+| admin.service.ports.https                           | int    | `443`                           | Service HTTPS port                                                                                                          |
+| admin.service.clusterIP                             | string | `""`                            | Static cluster IP address (optional)                                                                                        |
+| admin.service.nodePorts.http                        | string | `""`                            | NodePort for HTTP (when service type is NodePort)                                                                           |
+| admin.service.nodePorts.https                       | string | `""`                            | NodePort for HTTPS (when service type is NodePort)                                                                          |
+| admin.service.loadBalancerIP                        | string | `""`                            | Load balancer IP address (when service type is LoadBalancer)                                                                |
+| admin.service.loadBalancerSourceRanges              | list   | `[]`                            | Load balancer source IP ranges (when service type is LoadBalancer)                                                          |
+| admin.service.externalTrafficPolicy                 | string | `"Cluster"`                     | External traffic policy (Cluster or Local)                                                                                  |
+| admin.service.annotations                           | object | `{}`                            | Service annotations                                                                                                         |
+| admin.service.sessionAffinity                       | string | `"None"`                        | Session affinity (None or ClientIP)                                                                                         |
+| admin.service.sessionAffinityConfig                 | object | `{}`                            | Session affinity configuration                                                                                              |
+| admin.service.extraPorts                            | list   | `[]`                            | Extra service ports                                                                                                         |
+| admin.networkPolicy.enabled                         | bool   | `false`                         | Enable NetworkPolicy for Hoppscotch pods                                                                                    |
+| admin.networkPolicy.allowExternal                   | bool   | `true`                          | Allow external traffic to Hoppscotch pods                                                                                   |
+| admin.networkPolicy.allowExternalEgress             | bool   | `true`                          | Allow external egress traffic from Hoppscotch pods                                                                          |
+| admin.networkPolicy.addExternalClientAccess         | bool   | `true`                          | Add external client access to NetworkPolicy                                                                                 |
+| admin.networkPolicy.extraIngress                    | list   | `[]`                            | Extra ingress rules for NetworkPolicy                                                                                       |
+| admin.networkPolicy.extraEgress                     | list   | `[]`                            | Extra egress rules for NetworkPolicy                                                                                        |
+| admin.networkPolicy.ingressPodMatchLabels           | object | `{}`                            | Pod selector labels for ingress rules                                                                                       |
+| admin.networkPolicy.ingressNSMatchLabels            | object | `{}`                            | Namespace selector labels for ingress rules                                                                                 |
+| admin.networkPolicy.ingressNSPodMatchLabels         | object | `{}`                            | Namespace pod selector labels for ingress rules                                                                             |
+| admin.ingress.enabled                               | bool   | `false`                         | Enable ingress for Hoppscotch                                                                                               |
+| admin.ingress.ingressClassName                      | string | `""`                            | Ingress class name                                                                                                          |
+| admin.ingress.hostname                              | string | `"hoppscotch-admin.local"`      | Ingress hostname                                                                                                            |
+| admin.ingress.path                                  | string | `"/"`                           | Ingress path                                                                                                                |
+| admin.ingress.pathType                              | string | `"ImplementationSpecific"`      | Ingress path type                                                                                                           |
+| admin.ingress.apiVersion                            | string | `""`                            | Ingress API version                                                                                                         |
+| admin.ingress.annotations                           | object | `{}`                            | Ingress annotations                                                                                                         |
+| admin.ingress.tls                                   | bool   | `false`                         | Enable TLS for ingress                                                                                                      |
+| admin.ingress.selfSigned                            | bool   | `false`                         | Create self-signed TLS certificates                                                                                         |
+| admin.ingress.extraHosts                            | list   | `[]`                            | Extra hostnames for ingress                                                                                                 |
+| admin.ingress.extraPaths                            | list   | `[]`                            | Extra paths for ingress                                                                                                     |
+| admin.ingress.extraTls                              | list   | `[]`                            | Extra TLS configurations for ingress                                                                                        |
+| admin.ingress.secrets                               | list   | `[]`                            | TLS secrets for ingress                                                                                                     |
+| admin.ingress.extraRules                            | list   | `[]`                            | Extra ingress rules                                                                                                         |
+| admin.persistence.enabled                           | bool   | `false`                         | Enable persistent storage for Hoppscotch                                                                                    |
+| admin.persistence.storageClass                      | string | `""`                            | Storage class for persistent volume                                                                                         |
+| admin.persistence.accessModes                       | list   | `["ReadWriteOnce"]`             | Access modes for persistent volume                                                                                          |
+| admin.persistence.size                              | string | `"8Gi"`                         | Size of persistent volume                                                                                                   |
+| admin.persistence.mountPath                         | string | `"/hoppscotch/data"`            | Mount path for persistent volume                                                                                            |
+| admin.persistence.subPath                           | string | `""`                            | Subpath within persistent volume                                                                                            |
+| admin.persistence.annotations                       | object | `{}`                            | Annotations for persistent volume claim                                                                                     |
+| admin.persistence.dataSource                        | object | `{}`                            | Data source for persistent volume                                                                                           |
+| admin.persistence.existingClaim                     | string | `""`                            | Use existing persistent volume claim                                                                                        |
+| admin.persistence.selector                          | object | `{}`                            | Selector for persistent volume                                                                                              |
+| admin.metrics.enabled                               | bool   | `false`                         | Enable metrics collection for Hoppscotch                                                                                    |
+| admin.metrics.serviceMonitor.enabled                | bool   | `false`                         | Enable ServiceMonitor for Prometheus monitoring                                                                             |
+| admin.metrics.serviceMonitor.namespace              | string | `""`                            | Namespace for ServiceMonitor (defaults to release namespace)                                                                |
+| admin.metrics.serviceMonitor.annotations            | object | `{}`                            | ServiceMonitor annotations                                                                                                  |
+| admin.metrics.serviceMonitor.labels                 | object | `{}`                            | ServiceMonitor labels                                                                                                       |
+| admin.metrics.serviceMonitor.jobLabel               | string | `""`                            | ServiceMonitor job label                                                                                                    |
+| admin.metrics.serviceMonitor.honorLabels            | bool   | `false`                         | Honor labels from target                                                                                                    |
+| admin.metrics.serviceMonitor.interval               | string | `""`                            | ServiceMonitor scrape interval                                                                                              |
+| admin.metrics.serviceMonitor.scrapeTimeout          | string | `""`                            | ServiceMonitor scrape timeout                                                                                               |
+| admin.metrics.serviceMonitor.tlsConfig              | object | `{}`                            | ServiceMonitor TLS configuration                                                                                            |
+| admin.metrics.serviceMonitor.metricsRelabelings     | list   | `[]`                            | ServiceMonitor metrics relabelings                                                                                          |
+| admin.metrics.serviceMonitor.relabelings            | list   | `[]`                            | ServiceMonitor relabelings                                                                                                  |
+| admin.metrics.serviceMonitor.selector               | object | `{}`                            | ServiceMonitor selector                                                                                                     |
 
 ### Hoppscotch Migrations Container Parameters
 
-| Key                           | Type   | Default  | Description                                                                                                          |
-| ----------------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
-| migrations.enabled            | bool   | `true`   | Enable database migrations job                                                                                       |
-| migrations.extraEnvVars       | list   | `[]`     | Array of extra environment variables to be added to Hoppscotch containers                                            |
-| migrations.extraEnvVarsCM     | string | `""`     | Name of existing ConfigMap containing extra environment variables                                                    |
-| migrations.extraEnvVarsSecret | string | `""`     | Name of existing Secret containing extra environment variables                                                       |
-| migrations.resourcesPreset    | string | `"nano"` | Set container resources according to one common preset (allowed values: nano, small, medium, large, xlarge, 2xlarge) |
-| migrations.resources          | object | `{}`     | Set container resources for Hoppscotch (overrides resourcesPreset)                                                   |
+| Key                                  | Type   | Default   | Description                                                                                                                 |
+| ------------------------------------ | ------ | --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| migrations.enabled                   | bool   | `true`    | Enable database migrations job                                                                                              |
+| migrations.extraEnvVars              | list   | `[]`      | Array of extra environment variables to be added to Hoppscotch containers                                                   |
+| migrations.extraEnvVarsCM            | string | `""`      | Name of existing ConfigMap containing extra environment variables                                                           |
+| migrations.extraEnvVarsSecret        | string | `""`      | Name of existing Secret containing extra environment variables                                                              |
+| migrations.resourcesPreset           | string | `"small"` | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| migrations.resources                 | object | `{}`      | Set container resources for Hoppscotch (overrides resourcesPreset)                                                          |
+| migrations.nodeSelector              | object | `{}`      | Node labels for Hoppscotch pods assignment                                                                                  |
+| migrations.tolerations               | list   | `[]`      | Tolerations for Hoppscotch pods assignment                                                                                  |
+| migrations.affinity                  | object | `{}`      | Affinity for Hoppscotch pods assignment                                                                                     |
+| migrations.topologySpreadConstraints | list   | `[]`      | Topology spread constraints for Hoppscotch pods assignment                                                                  |
 
 ### Default Init Containers Parameters
 
-| Key                                             | Type | Default | Description                                                 |
-| ----------------------------------------------- | ---- | ------- | ----------------------------------------------------------- |
-| defaultInitContainers.waitForDatabase.enabled   | bool | `true`  | Enable init container that waits for database to be ready   |
-| defaultInitContainers.waitForMigrations.enabled | bool | `true`  | Enable init container that waits for migrations to complete |
+| Key                                                        | Type   | Default          | Description                                                                                                         |
+| ---------------------------------------------------------- | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| defaultInitContainers.waitForDatabase.enabled              | bool   | `true`           | Enable init container that waits for database to be ready                                                           |
+| defaultInitContainers.waitForDatabase.image.repository     | string | `"postgres"`     | Wait for database image repository                                                                                  |
+| defaultInitContainers.waitForDatabase.image.pullPolicy     | string | `"IfNotPresent"` | Wait for database image pull policy                                                                                 |
+| defaultInitContainers.waitForDatabase.image.tag            | string | `"16-alpine"`    | Wait for database image tag                                                                                         |
+| defaultInitContainers.waitForDatabase.extraEnvVars         | list   | `[]`             | Array of extra environment variables to be added to wait for database containers                                    |
+| defaultInitContainers.waitForDatabase.extraEnvVarsCM       | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for database containers   |
+| defaultInitContainers.waitForDatabase.extraEnvVarsSecret   | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for database containers          |
+| defaultInitContainers.waitForMigrations.enabled            | bool   | `true`           | Enable init container that waits for migrations to complete                                                         |
+| defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                  |
+| defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers |
+| defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers        |
 
 ### Other Parameters
 
@@ -947,8 +980,9 @@ unique for each release. This allows the job to be run multiple times without co
 | postgresql.auth.password                        | string | `""`                                | PostgreSQL application password                                       |
 | postgresql.auth.database                        | string | `""`                                | PostgreSQL application database name                                  |
 | postgresql.auth.existingSecret                  | string | `""`                                | Existing secret containing PostgreSQL credentials                     |
+| postgresql.auth.secretKeys.userPasswordKey      | string | `""`                                | Key in existing secret containing username                            |
 | postgresql.architecture                         | string | `"standalone"`                      | PostgreSQL architecture (standalone or replication)                   |
-| postgresql.primary.resourcesPreset              | string | `"nano"`                            | PostgreSQL primary resource preset                                    |
+| postgresql.primary.resourcesPreset              | string | `"small"`                           | PostgreSQL primary resource preset                                    |
 | postgresql.primary.resources                    | object | `{}`                                | PostgreSQL primary resource limits/requests                           |
 | postgresql.volumePermissions.image.repository   | string | `"bitnamilegacy/os-shell"`          | Volume Permissions image repository                                   |
 | postgresql.metrics.image.repository             | string | `"bitnamilegacy/postgres-exporter"` | PostgreSQL Prometheus Exporter image repository                       |
@@ -971,8 +1005,9 @@ unique for each release. This allows the job to be run multiple times without co
 | redis.auth.enabled                       | bool   | `true`                           | Enable Redis authentication                           |
 | redis.auth.password                      | string | `""`                             | Redis password                                        |
 | redis.auth.existingSecret                | string | `""`                             | Existing secret containing Redis credentials          |
+| redis.auth.existingSecretPasswordKey     | string | `""`                             | Key in existing secret containing password            |
 | redis.architecture                       | string | `"standalone"`                   | Redis architecture (standalone or replication)        |
-| redis.master.resourcesPreset             | string | `"nano"`                         | Redis master resource preset                          |
+| redis.master.resourcesPreset             | string | `"small"`                        | Redis master resource preset                          |
 | redis.master.resources                   | object | `{}`                             | Redis master resource limits/requests                 |
 | redis.sentinel.image.repository          | string | `"bitnamilegacy/redis-sentinel"` | Redis Sentinel image repository                       |
 | redis.metrics.image.repository           | string | `"bitnamilegacy/redis-exporter"` | Redis Exporter image repository                       |
@@ -995,7 +1030,8 @@ unique for each release. This allows the job to be run multiple times without co
 | clickhouse.auth.username                                            | string | `""`                                | ClickHouse username                                        |
 | clickhouse.auth.password                                            | string | `""`                                | ClickHouse password                                        |
 | clickhouse.auth.existingSecret                                      | string | `""`                                | Existing secret containing ClickHouse credentials          |
-| clickhouse.resourcesPreset                                          | string | `"nano"`                            | ClickHouse resource preset                                 |
+| clickhouse.auth.existingSecretKey                                   | string | `""`                                | Key in existing secret containing password                 |
+| clickhouse.resourcesPreset                                          | string | `"small"`                           | ClickHouse resource preset                                 |
 | clickhouse.resources                                                | object | `{}`                                | ClickHouse resource limits/requests                        |
 | clickhouse.keeper.image.repository                                  | string | `"bitnamilegacy/clickhouse-keeper"` | ClickHouse Keeper image repository                         |
 | externalClickhouse.host                                             | string | `""`                                | External ClickHouse host                                   |

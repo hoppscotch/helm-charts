@@ -2,10 +2,8 @@ suite: Frontend PDB
 templates:
   - frontend/deployment.yaml
   - frontend/pdb.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate PDB when deployment mode is distributed and PDB is enabled
     template: frontend/pdb.yaml

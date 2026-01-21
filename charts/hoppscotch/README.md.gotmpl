@@ -9,7 +9,8 @@
 ## TL;DR
 
 ```bash
-helm install hoppscotch http://hoppscotch.github.io/helm-charts/hoppscotch
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+helm install hoppscotch hoppscotch/hoppscotch
 ```
 
 ## Introduction
@@ -28,18 +29,37 @@ This chart bootstraps a [Hoppscotch](https://github.com/hoppscotch/hoppscotch) d
 To install the chart with the release name `hoppscotch`:
 
 ```bash
+# Add the Hoppscotch Helm repository
 helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
-helm install hoppscotch hoppscotch/hoppscotch
+
+# Install the Hoppscotch chart
+helm install hoppscotch hoppscotch/hoppscotch \
+--namespace hoppscotch \
+--create-namespace \
+--set aio.ingress.enabled=true \
+--set aio.ingress.ingressClassName=nginx \
+--set aio.ingress.hostname=hoppscotch.local \
+--set postgresql.enabled=true \
+--set postgresql.auth.username=hoppscotch \
+--set postgresql.auth.password=hoppscotch \
+--set postgresql.auth.database=hoppscotch
 ```
 
-## Deployment Modes
+**Note**: Replace `nginx` and `hoppscotch.local` with the ingress controller class and hostname of your choice.
+
+See [Configuration and Installation Details](#configuration-and-installation-details) and [Parameters](#parameters) for
+more information on configuration options.
+
+## Configuration and Installation Details
+
+### Deployment Modes
 
 Hoppscotch supports two deployment modes:
 
 - **All-In-One** Using the All-In-One container which includes all services in a single container
 - **Distributed** Using individual containers for each service
 
-### Using All-in-One Container
+#### Using All-in-One Container
 
 To deploy Hoppscotch using the AIO container, set the `deploymentMode` to `aio` in your values file:
 
@@ -52,7 +72,7 @@ The AIO container supports two access modes:
 - **Subpath Access**: Services are accessible via subpaths on a single port (80)
 - **Multiport Access**: Each service is accessible on its own port
 
-#### Subpath Access
+##### Subpath Access
 
 When using AIO with subpath access, services can be accessed on port 80 from the following subpaths:
 
@@ -72,7 +92,7 @@ hoppscotch:
     enableSubpathBasedAccess: true
 ```
 
-#### Multiport Access
+##### Multiport Access
 
 When using AIO with multiport access, services can be accessed on the following ports:
 
@@ -92,7 +112,7 @@ hoppscotch:
     enableSubpathBasedAccess: false
 ```
 
-### Using Individual Containers
+#### Using Individual Containers
 
 To deploy Hoppscotch using individual containers for each service, set the `deploymentMode` to `distributed` in your
 values file:
@@ -112,7 +132,7 @@ Services can be accessed on the following ports:
 
 Note: Only multiport access is supported in distributed mode.
 
-## Enterprise Edition
+### Enterprise Edition
 
 Hoppscotch offers an Enterprise Edition with additional features and support. To enable Enterprise Edition, you must set
 your enterprise license key and configure containers to use the enterprise images:
@@ -142,7 +162,7 @@ admin:
     repository: hoppscotch/hoppscotch-admin-enterprise
 ```
 
-## Auto-Generating Config URLs
+### Auto-Generating Config URLs
 
 The chart automatically sets configuration URLs for the frontend, backend, and admin services based on the deployment
 mode and ingress configuration.
@@ -193,9 +213,9 @@ aio:
 
 See below the specific environment variables that are auto-generated.
 
-### AIO Auto-Generated Config URLs
+#### AIO Auto-Generated Config URLs
 
-#### AIO Frontend
+##### AIO Frontend
 
 | Key                     | Value                                                                 |
 | ----------------------- | --------------------------------------------------------------------- |
@@ -206,7 +226,7 @@ See below the specific environment variables that are auto-generated.
 | VITE_BASE_URL           | `https://${aio.ingress.hostname}/${aio.ingress.path}`                 |
 | VITE_SHORTCODE_BASE_URL | `https://${aio.ingress.hostname}/${aio.ingress.path}`                 |
 
-#### AIO Backend
+##### AIO Backend
 
 <!-- markdownlint-disable MD013 MD034 -->
 
@@ -222,9 +242,9 @@ See below the specific environment variables that are auto-generated.
 
 <!-- markdownlint-enable MD013 MD034 -->
 
-### Distributed Auto-Generated Config URLs
+#### Distributed Auto-Generated Config URLs
 
-#### Distributed Frontend
+##### Distributed Frontend
 
 | Key                     | Value                                                                 |
 | ----------------------- | --------------------------------------------------------------------- |
@@ -235,7 +255,7 @@ See below the specific environment variables that are auto-generated.
 | VITE_BASE_URL           | `https://${backend.ingress.hostname}/${backend.ingress.path}`         |
 | VITE_SHORTCODE_BASE_URL | `https://${backend.ingress.hostname}/${backend.ingress.path}`         |
 
-#### Distributed Backend
+##### Distributed Backend
 
 <!-- markdownlint-disable MD013 MD034 -->
 
@@ -251,7 +271,7 @@ See below the specific environment variables that are auto-generated.
 
 <!-- markdownlint-enable MD013 MD034 -->
 
-## Auto-Generating Secrets
+### Auto-Generating Secrets
 
 The chart automatically generates secrets if not provided. These auto-generated secrets will be persisted and reused on
 subsequent upgrades.
@@ -266,7 +286,7 @@ hoppscotch:
       dataEncryptionKey: "" # Random 32-character alphanumeric string used if not provided
 ```
 
-## Overriding Config Values
+### Overriding Config Values
 
 You can override config values using an existing secret, extra env vars, extra configmap, or extra secret. The order of
 precedence of these methods is as follows (from highest to lowest):
@@ -319,10 +339,10 @@ To use an existing secret:
 existingSecret: my-existing-secret
 ```
 
-Note: The existing secret must contain all required keys. See [templates/secrets.yaml](templates/secrets.yaml) for more
+Note: The existing secret must contain all required keys. See [templates/config/secret.yaml](templates/config/secret.yaml) for more
 info.
 
-## Waiting for Database Readiness
+### Waiting for Database Readiness
 
 Hoppscotch pods that connect to the database will wait for the database to be ready before starting. This is
 accomplished by using the `wait-for-db` and `wait-for-migrations` default init containers.
@@ -349,7 +369,7 @@ defaultInitContainers:
   waitForMigrations: false
 ```
 
-## Running Database Migrations
+### Running Database Migrations
 
 Database migrations are run automatically after installs and upgrades. The chart includes a migrations job that runs the
 following command:

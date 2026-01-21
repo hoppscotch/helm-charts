@@ -2,10 +2,8 @@ suite: AIO Service Monitor
 templates:
   - aio/deployment.yaml
   - aio/servicemonitor.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate ServiceMonitor when deployment mode is aio and metrics are enabled
     template: aio/servicemonitor.yaml

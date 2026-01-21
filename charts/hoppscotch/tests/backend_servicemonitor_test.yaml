@@ -2,10 +2,8 @@ suite: Backend Service Monitor
 templates:
   - backend/deployment.yaml
   - backend/servicemonitor.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate ServiceMonitor when deployment mode is distributed and metrics are enabled
     template: backend/servicemonitor.yaml

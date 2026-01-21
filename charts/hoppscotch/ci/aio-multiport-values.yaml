@@ -2,6 +2,9 @@ deploymentMode: aio
 hoppscotch:
   frontend:
     enableSubpathBasedAccess: false
+aio:
+  readinessProbe:
+    initialDelaySeconds: 15
 postgresql:
   enabled: true
   auth:
@@ -9,6 +12,5 @@ postgresql:
     password: hoppscotch
     database: hoppscotch
   primary:
-    persistentVolumeClaimRetentionPolicy:
-      enabled: true
-      whenDeleted: Delete
+    persistence:
+      enabled: false

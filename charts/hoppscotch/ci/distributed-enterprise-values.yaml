@@ -4,7 +4,7 @@ hoppscotch:
     enterpriseLicenseKey: your-enterprise-license-key
 frontend:
   image:
-    repository: hoppscotch/hoppscotch-frontend-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-frontend
   ingress:
     enabled: true
     hostname: frontend.hoppscotch.local
@@ -14,8 +14,10 @@ frontend:
     annotations:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 backend:
+  readinessProbe:
+    initialDelaySeconds: 15
   image:
-    repository: hoppscotch/hoppscotch-backend-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-backend
   ingress:
     enabled: true
     hostname: backend.hoppscotch.local
@@ -26,7 +28,7 @@ backend:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 admin:
   image:
-    repository: hoppscotch/hoppscotch-admin-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-admin
   ingress:
     enabled: true
     hostname: admin.hoppscotch.local
@@ -42,6 +44,5 @@ postgresql:
     password: hoppscotch
     database: hoppscotch
   primary:
-    persistentVolumeClaimRetentionPolicy:
-      enabled: true
-      whenDeleted: Delete
+    persistence:
+      enabled: false

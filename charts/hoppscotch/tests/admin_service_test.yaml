@@ -2,10 +2,8 @@ suite: Admin Service
 templates:
   - admin/deployment.yaml
   - admin/service.yaml
-  - configmap.yaml
-  - secrets.yaml
-values:
-  - ../values.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
 tests:
   - it: should generate service when deployment mode is distributed
     template: admin/service.yaml

@@ -1,0 +1,189 @@
+suite: Default Init Container Wait for Migrations
+templates:
+  - aio/deployment.yaml
+  - backend/deployment.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
+tests:
+  - it: should generate init container when enabled
+    template: aio/deployment.yaml
+    set:
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+          any: true
+
+  - it: should not generate init container when disabled
+    template: aio/deployment.yaml
+    set:
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: false
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - notContains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+          any: true
+
+  - it: should set container image to aio image when deployment mode is aio
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          repository: hoppscotch/hoppscotch
+          tag: latest
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            image: hoppscotch/hoppscotch:latest
+          any: true
+
+  - it: should set container image to backend image when deployment mode is not aio
+    template: backend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        image:
+          repository: hoppscotch/hoppscotch-backend
+          tag: latest
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            image: hoppscotch/hoppscotch-backend:latest
+          any: true
+
+  - it: should set container image pull policy to aio image pull policy when deployment mode is aio
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        image:
+          pullPolicy: Always
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            imagePullPolicy: Always
+          any: true
+
+  - it: should set container image pull policy to backend image pull policy when deployment mode is not aio
+    template: backend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        image:
+          pullPolicy: Always
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            imagePullPolicy: Always
+          any: true
+
+  - it: should set extra env vars when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+          extraEnvVars:
+            - name: EXTRA_ENV_VAR_1
+              value: value_1
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - contains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            env:
+              - name: EXTRA_ENV_VAR_1
+                value: value_1
+          any: true
+
+  - it: should set extra env vars config map when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+          extraEnvVarsCM: extra-env-vars-config-map
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - notContains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            envFrom:
+              - configMapRef:
+                  name: extra-env-vars-config-map
+          any: true
+
+  - it: should set extra env vars secret when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForMigrations:
+          enabled: true
+          extraEnvVarsSecret: env-vars-secret
+    asserts:
+      - containsDocument:
+          apiVersion: apps/v1
+          kind: Deployment
+      - notContains:
+          path: spec.template.spec.initContainers
+          content:
+            name: wait-for-migrations
+            envFrom:
+              - secretRef:
+                  name: env-vars-secret
+          any: true

@@ -1,8 +1,7 @@
 extends: default
-ignore:
-  - .cr-release-packages/
-  - charts/*/templates/
-  - charts/*/values.yaml
+ignore: |
+  charts/*/templates/*
+  charts/*/values.yaml
 rules:
   comments:
     min-spaces-from-content: 1

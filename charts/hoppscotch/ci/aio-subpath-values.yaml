@@ -1,5 +1,7 @@
 deploymentMode: aio
 aio:
+  readinessProbe:
+    initialDelaySeconds: 15
   ingress:
     enabled: true
     hostname: hoppscotch.local
@@ -15,6 +17,5 @@ postgresql:
     password: hoppscotch
     database: hoppscotch
   primary:
-    persistentVolumeClaimRetentionPolicy:
-      enabled: true
-      whenDeleted: Delete
+    persistence:
+      enabled: false
