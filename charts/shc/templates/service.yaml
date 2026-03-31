@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Values.global.namespace | default .Release.Namespace }}
   labels:
     app: {{ .Values.service.app }}
+    {{- toYaml .Values.service.labels | nindent 4 }}
   annotations:
     {{- toYaml .Values.service.annotations | nindent 4 }}
 spec:
