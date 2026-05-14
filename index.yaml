@@ -2,6 +2,35 @@ apiVersion: v1
 entries:
   hoppscotch:
   - apiVersion: v2
+    appVersion: 2026.4.1
+    created: "2026-05-14T18:52:15.689957248Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.x.x
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 22.x.x
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 9.x.x
+    description: Hoppscotch is a lightweight, web-based API development suite. It
+      was built from the ground up with ease of use and accessibility in mind providing
+      all the functionality needed for developers with minimalist, unobtrusive UI.
+    digest: a132e6aa5a007cac205c38536a46479b8f70cb1f3ef4ec9402886698f8847d35
+    home: https://docs.hoppscotch.io
+    icon: https://avatars.githubusercontent.com/u/56705483?s=200&v=4
+    name: hoppscotch
+    sources:
+    - https://github.com/hoppscotch/helm-charts/tree/main/charts/hoppscotch
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-0.3.8/hoppscotch-0.3.8.tgz
+    version: 0.3.8
+  - apiVersion: v2
     appVersion: 2026.4.0
     created: "2026-04-30T12:05:31.268678358Z"
     dependencies:
@@ -525,6 +554,16 @@ entries:
     version: 0.1.0
   hoppscotch-community:
   - apiVersion: v2
+    appVersion: 2026.4.1
+    created: "2026-05-14T18:52:15.995961485Z"
+    description: A Helm chart for Hoppscotch Community Edition
+    digest: 171458be45ca45e0dc553edf1dcc79c69f6da53535835240158e2880cd19f7fb
+    name: hoppscotch-community
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-community-0.2.8/hoppscotch-community-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
     appVersion: 2026.4.0
     created: "2026-04-30T12:05:31.478544564Z"
     description: A Helm chart for Hoppscotch Community Edition
@@ -696,6 +735,16 @@ entries:
     version: 0.1.0
   hoppscotch-enterprise:
   - apiVersion: v2
+    appVersion: 2026.4.1
+    created: "2026-05-14T18:52:16.259953009Z"
+    description: A Helm chart for Hoppscotch Enterprise Edition
+    digest: 0a9b91eaccb8db27a25e1148beeada35460e03e76c516d1317f5c61fd1b912ef
+    name: hoppscotch-enterprise
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-enterprise-0.2.8/hoppscotch-enterprise-0.2.8.tgz
+    version: 0.2.8
+  - apiVersion: v2
     appVersion: 2026.4.0
     created: "2026-04-30T12:05:31.704100306Z"
     description: A Helm chart for Hoppscotch Enterprise Edition
@@ -865,4 +914,4 @@ entries:
     urls:
     - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-enterprise-0.1.0/hoppscotch-enterprise-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-30T12:05:31.704372877Z"
+generated: "2026-05-14T18:52:16.260236684Z"
