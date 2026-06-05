@@ -1,0 +1,85 @@
+{{- if .Values.mockServer.ingress.enabled }}
+{{- $fullname := include "hoppscotch.fullname" . }}
+{{- $namespace := include "hoppscotch.namespace" . }}
+{{- $hostname := .Values.mockServer.ingress.hostname }}
+{{- $pathPrefix := include "hoppscotch.mockServer.pathPrefix" . }}
+{{- $serviceName := include "hoppscotch.mockServer.serviceName" . }}
+{{- $servicePort := include "hoppscotch.mockServer.servicePort" . | int }}
+{{- $controllerType := .Values.mockServer.ingress.controllerType }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullname }}-mock-server
+  namespace: {{ $namespace | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-mock-server
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if eq $controllerType "nginx" }}
+    {{/*
+    nginx: server-snippet extracts mock-id from the subdomain via a regex capture group.
+    configuration-snippet rewrites the path to include the mock-id and path prefix.
+    This provides full subdomain-to-path rewriting including mock-id extraction.
+    */}}
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      set $mock_id "";
+      if ($host ~ "^([^.]+)\.{{ $hostname | replace "." "\\." }}$") {
+        set $mock_id $1;
+      }
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(.*)$ {{ $pathPrefix }}/$mock_id/$1 break;
+    {{- else if eq $controllerType "traefik" }}
+    {{/*
+    traefik: references the Middleware CRD created in traefik-middleware.yaml.
+    NOTE: Traefik replacePathRegex cannot extract the subdomain from the Host header.
+    The backend application must resolve the mock-id from the Host header when using
+    traefik or alb ingress controllers.
+    */}}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ $namespace }}-{{ $fullname }}-mock-rewrite@kubernetescrd
+    {{- else if eq $controllerType "alb" }}
+    {{/*
+    alb: sets scheme, target-type, and group name for AWS ALB.
+    NOTE: ALB does not support subdomain-to-path rewriting natively.
+    The backend application must resolve the mock-id from the Host header.
+    */}}
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: {{ $fullname }}-mock
+    {{- end }}
+    {{- if .Values.mockServer.ingress.annotations }}
+    {{- toYaml .Values.mockServer.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.mockServer.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.mockServer.ingress.ingressClassName | quote }}
+  {{- end }}
+  rules:
+    - host: {{ printf "*.%s" $hostname | quote }}
+      http:
+        paths:
+          - path: {{ .Values.mockServer.ingress.path }}
+            pathType: {{ .Values.mockServer.ingress.pathType }}
+            backend:
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+    {{- if .Values.mockServer.ingress.extraRules }}
+    {{- toYaml .Values.mockServer.ingress.extraRules | nindent 4 }}
+    {{- end }}
+  {{- if or (and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) .Values.mockServer.ingress.selfSigned)) .Values.mockServer.ingress.extraTls }}
+  tls:
+    {{- if and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) .Values.mockServer.ingress.selfSigned) }}
+    - hosts:
+        - {{ printf "*.%s" $hostname | quote }}
+      secretName: {{ .Values.mockServer.ingress.tlsSecret | default (printf "%s-wildcard-tls" $hostname) }}
+    {{- end }}
+    {{- if .Values.mockServer.ingress.extraTls }}
+    {{- toYaml .Values.mockServer.ingress.extraTls | nindent 4 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
