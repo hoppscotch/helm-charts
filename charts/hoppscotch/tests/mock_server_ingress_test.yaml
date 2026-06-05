@@ -251,6 +251,26 @@ tests:
           path: spec.ingressClassName
           value: nginx
 
+  - it: should render TLS block when cert-manager annotation is in commonAnnotations
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      commonAnnotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: nginx
+          hostname: mock.hoppscotch.local
+          tls: true
+    asserts:
+      - equal:
+          path: spec.tls[0].hosts[0]
+          value: "*.mock.hoppscotch.local"
+      - equal:
+          path: spec.tls[0].secretName
+          value: mock.hoppscotch.local-wildcard-tls
+
   - it: should fail when controllerType is invalid
     template: mock-server/ingress.yaml
     set:

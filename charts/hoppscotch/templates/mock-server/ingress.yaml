@@ -74,9 +74,9 @@ spec:
     {{- if .Values.mockServer.ingress.extraRules }}
     {{- toYaml .Values.mockServer.ingress.extraRules | nindent 4 }}
     {{- end }}
-  {{- if or (and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) .Values.mockServer.ingress.selfSigned)) .Values.mockServer.ingress.extraTls }}
+  {{- if or (and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.commonAnnotations )) .Values.mockServer.ingress.selfSigned)) .Values.mockServer.ingress.extraTls }}
   tls:
-    {{- if and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) .Values.mockServer.ingress.selfSigned) }}
+    {{- if and .Values.mockServer.ingress.tls (or (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.mockServer.ingress.annotations )) (include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Values.commonAnnotations )) .Values.mockServer.ingress.selfSigned) }}
     - hosts:
         - {{ printf "*.%s" $hostname | quote }}
       secretName: {{ .Values.mockServer.ingress.tlsSecret | default (printf "%s-wildcard-tls" $hostname) }}
