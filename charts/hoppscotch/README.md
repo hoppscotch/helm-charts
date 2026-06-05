@@ -396,9 +396,9 @@ unique for each release. This allows the job to be run multiple times without co
 
 ### Mock Server Wildcard Ingress
 
-Hoppscotch's mock server runs on the backend at `/mock/<mock-id>/<path>`. The mock server wildcard ingress feature
-enables subdomain-based access so that requests to `<mock-id>.mock.example.com/<path>` are transparently routed to the
-backend at `/mock/<mock-id>/<path>`.
+Hoppscotch's mock server is served by the backend under `/mock/<mock-id>/<path>` (and via `/backend/mock/<mock-id>/<path>`
+when using AIO subpath access). The mock server wildcard ingress feature enables subdomain-based access so that requests
+to `<mock-id>.mock.example.com/<path>` are transparently routed to the appropriate backend path for your deployment mode.
 
 The mock server ingress is **independent of the deployment mode** — it works with both `aio` and `distributed` modes.
 It is disabled by default and has zero impact on existing deployments.
@@ -425,10 +425,17 @@ The `controllerType` toggle selects the ingress controller and configures the ap
 
 ##### nginx
 
-When `controllerType: nginx`, the chart adds nginx-specific annotations that:
+When `controllerType: nginx`, the chart adds nginx-specific annotations that (when snippet annotations are enabled on
+your nginx ingress controller):
 
 1. Extract the `mock-id` from the subdomain using a server-snippet regex capture group
 2. Rewrite the request path to include the mock-id and the correct backend path prefix
+
+> **Important**: The nginx option relies on `nginx.ingress.kubernetes.io/server-snippet` and
+> `nginx.ingress.kubernetes.io/configuration-snippet` annotations. Many ingress-nginx deployments disable snippet
+> annotations by default for security reasons (via `allow-snippet-annotations: "false"` in the controller config).
+> You must enable snippet annotations on your ingress-nginx controller for the mock-id extraction to work. Without
+> them, the rewrite will not function correctly.
 
 ```yaml
 mockServer:

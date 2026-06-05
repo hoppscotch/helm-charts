@@ -251,6 +251,19 @@ tests:
           path: spec.ingressClassName
           value: nginx
 
+  - it: should fail when controllerType is invalid
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: invalid-controller
+          hostname: mock.hoppscotch.local
+    asserts:
+      - failedTemplate:
+          errorMessage: 'mockServer.ingress.controllerType must be one of nginx|traefik|alb, got "invalid-controller"'
+
   - it: should merge commonAnnotations with controller annotations
     template: mock-server/ingress.yaml
     set:

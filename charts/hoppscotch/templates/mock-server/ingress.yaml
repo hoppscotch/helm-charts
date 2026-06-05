@@ -6,6 +6,9 @@
 {{- $serviceName := include "hoppscotch.mockServer.serviceName" . }}
 {{- $servicePort := include "hoppscotch.mockServer.servicePort" . | int }}
 {{- $controllerType := .Values.mockServer.ingress.controllerType }}
+{{- if not (has $controllerType (list "nginx" "traefik" "alb")) -}}
+{{- fail (printf "mockServer.ingress.controllerType must be one of nginx|traefik|alb, got %q" $controllerType) -}}
+{{- end -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
