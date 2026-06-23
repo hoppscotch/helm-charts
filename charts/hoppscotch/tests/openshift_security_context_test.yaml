@@ -1,0 +1,140 @@
+suite: OpenShift Security Context Adaptation
+templates:
+  - aio/deployment.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
+tests:
+  - it: should keep runAsUser, runAsGroup and fsGroup on plain Kubernetes by default
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should not render a securityContext when none is configured
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext
+
+  - it: should strip runAsUser, runAsGroup and fsGroup when adaptSecurityContext is force
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      aio:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+        securityContext:
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.runAsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+
+  - it: should not adapt when adaptSecurityContext is disabled even on OpenShift
+    template: aio/deployment.yaml
+    capabilities:
+      apiVersions:
+        - security.openshift.io/v1/SecurityContextConstraints
+    set:
+      deploymentMode: aio
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: disabled
+      aio:
+        podSecurityContext:
+          runAsUser: 1000
+          fsGroup: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+
+  - it: should adapt automatically when an OpenShift cluster is detected
+    template: aio/deployment.yaml
+    capabilities:
+      apiVersions:
+        - security.openshift.io/v1/SecurityContextConstraints
+    set:
+      deploymentMode: aio
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: auto
+      aio:
+        podSecurityContext:
+          runAsUser: 1000
+          fsGroup: 1000
+          runAsNonRoot: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should not adapt on auto when no OpenShift cluster is detected
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: auto
+      aio:
+        podSecurityContext:
+          runAsUser: 1000
+          fsGroup: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000

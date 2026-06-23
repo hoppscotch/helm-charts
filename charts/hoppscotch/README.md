@@ -1,7 +1,7 @@
 # Hoppscotch Helm Chart
 
-![Version: 0.2.6](https://img.shields.io/badge/Version-0.2.6-informational?style=flat-square)
-![AppVersion: 2025.12.1](https://img.shields.io/badge/AppVersion-2025.12.1-informational?style=flat-square)
+![Version: 0.3.9](https://img.shields.io/badge/Version-0.3.9-informational?style=flat-square)
+![AppVersion: 2026.5.0](https://img.shields.io/badge/AppVersion-2026.5.0-informational?style=flat-square)
 
 Hoppscotch is a lightweight, web-based API development suite. It was built from the ground up with ease of use and
 accessibility in mind providing all the functionality needed for developers with minimalist, unobtrusive UI.
@@ -394,18 +394,80 @@ for the migrations job to complete.
 Instead the migration job is triggered by appending the release revision number to the job name to ensure that it is
 unique for each release. This allows the job to be run multiple times without conflicts.
 
+### Deploying on OpenShift
+
+The chart is compatible with both vanilla Kubernetes and
+[Red Hat OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift). On OpenShift, the `restricted-v2`
+Security Context Constraint (SCC) assigns a random UID/GID and `fsGroup` from the namespace's allowed range and forbids
+hardcoding them. To make the chart and its Bitnami dependencies (PostgreSQL, Redis, ClickHouse) compatible, set the
+OpenShift compatibility mode:
+
+```yaml
+global:
+  compatibility:
+    openshift:
+      # auto: adapt only when an OpenShift cluster is detected (default)
+      # force: always adapt
+      # disabled: never adapt
+      adaptSecurityContext: auto
+```
+
+When adaptation is active, the chart removes `runAsUser`, `runAsGroup` and `fsGroup` from every `securityContext` so the
+platform can assign the allowed IDs. The default `auto` value only adapts when an OpenShift cluster is detected (via the
+`security.openshift.io/v1` API), so the same values file works unchanged on plain Kubernetes.
+
+#### Exposing services with OpenShift Routes
+
+In addition to standard `Ingress`, the chart can create native OpenShift
+[Route](https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html) resources.
+Routes are an alternative to ingress and are disabled by default:
+
+```yaml
+deploymentMode: aio
+aio:
+  route:
+    enabled: true
+    host: "" # auto-assigned by OpenShift when empty
+    targetPort: http
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+```
+
+In `distributed` mode, configure `frontend.route`, `backend.route` and `admin.route` instead.
+
+#### Port binding considerations
+
+In AIO subpath mode (default), the container serves on privileged port `80`. OpenShift's `restricted-v2` SCC runs
+containers as a non-root user that cannot bind ports below `1024`. If the container image cannot bind port `80` as
+non-root, use AIO multiport mode (or `distributed` mode), whose services listen on unprivileged ports (`3000`, `3100`,
+`3170`, `3200`):
+
+```yaml
+deploymentMode: aio
+hoppscotch:
+  frontend:
+    enableSubpathBasedAccess: false
+aio:
+  route:
+    enabled: true
+    targetPort: http-frontend
+```
+
 ## Parameters
 
 <!-- markdownlint-disable MD013 MD034 -->
 
 ### Global Parameters
 
-| Key                                 | Type   | Default | Description                                         |
-| ----------------------------------- | ------ | ------- | --------------------------------------------------- |
-| global.imageRegistry                | string | `""`    | Global Docker image registry                        |
-| global.imagePullSecrets             | list   | `[]`    | Global Docker registry secret names as an array     |
-| global.defaultStorageClass          | string | `""`    | Global default storage class for persistent volumes |
-| global.security.allowInsecureImages | bool   | `false` | Allows skipping image verification                  |
+| Key                                                 | Type   | Default  | Description                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| global.imageRegistry                                | string | `""`     | Global Docker image registry                                                                                                                                                                                                                                                                                                                                        |
+| global.imagePullSecrets                             | list   | `[]`     | Global Docker registry secret names as an array                                                                                                                                                                                                                                                                                                                     |
+| global.defaultStorageClass                          | string | `""`     | Global default storage class for persistent volumes                                                                                                                                                                                                                                                                                                                 |
+| global.security.allowInsecureImages                 | bool   | `false`  | Allows skipping image verification                                                                                                                                                                                                                                                                                                                                  |
+| global.compatibility.openshift.adaptSecurityContext | string | `"auto"` | Adapt the securityContext sections of Hoppscotch and its dependencies to be compatible with OpenShift restricted-v2 SCC: removes `runAsUser`, `runAsGroup` and `fsGroup` so the platform assigns IDs from the namespace's allowed range. Possible values: `auto` (apply only if an OpenShift cluster is detected), `force` (always apply), `disabled` (never apply) |
 
 ### Common Parameters
 
@@ -594,6 +656,15 @@ unique for each release. This allows the job to be run multiple times without co
 | aio.ingress.extraTls                              | list   | `[]`                       | Extra TLS configurations for ingress                                                                                        |
 | aio.ingress.secrets                               | list   | `[]`                       | TLS secrets for ingress                                                                                                     |
 | aio.ingress.extraRules                            | list   | `[]`                       | Extra ingress rules                                                                                                         |
+| aio.route.enabled                                 | bool   | `false`                    | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| aio.route.host                                    | string | `""`                       | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| aio.route.path                                    | string | `""`                       | Route path                                                                                                                  |
+| aio.route.targetPort                              | string | `"http"`                   | Service target port name or number the Route forwards to                                                                    |
+| aio.route.wildcardPolicy                          | string | `"None"`                   | Route wildcard policy (None or Subdomain)                                                                                   |
+| aio.route.annotations                             | object | `{}`                       | Route annotations                                                                                                           |
+| aio.route.tls.enabled                             | bool   | `true`                     | Enable TLS for the Route                                                                                                    |
+| aio.route.tls.termination                         | string | `"edge"`                   | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| aio.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`               | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | aio.persistence.enabled                           | bool   | `false`                    | Enable persistent storage for Hoppscotch                                                                                    |
 | aio.persistence.storageClass                      | string | `""`                       | Storage class for persistent volume                                                                                         |
 | aio.persistence.accessModes                       | list   | `["ReadWriteOnce"]`        | Access modes for persistent volume                                                                                          |
@@ -697,6 +768,15 @@ unique for each release. This allows the job to be run multiple times without co
 | frontend.ingress.extraTls                              | list   | `[]`                               | Extra TLS configurations for ingress                                                                                        |
 | frontend.ingress.secrets                               | list   | `[]`                               | TLS secrets for ingress                                                                                                     |
 | frontend.ingress.extraRules                            | list   | `[]`                               | Extra ingress rules                                                                                                         |
+| frontend.route.enabled                                 | bool   | `false`                            | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| frontend.route.host                                    | string | `""`                               | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| frontend.route.path                                    | string | `""`                               | Route path                                                                                                                  |
+| frontend.route.targetPort                              | string | `"http"`                           | Service target port name or number the Route forwards to                                                                    |
+| frontend.route.wildcardPolicy                          | string | `"None"`                           | Route wildcard policy (None or Subdomain)                                                                                   |
+| frontend.route.annotations                             | object | `{}`                               | Route annotations                                                                                                           |
+| frontend.route.tls.enabled                             | bool   | `true`                             | Enable TLS for the Route                                                                                                    |
+| frontend.route.tls.termination                         | string | `"edge"`                           | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| frontend.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                       | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | frontend.persistence.enabled                           | bool   | `false`                            | Enable persistent storage for Hoppscotch                                                                                    |
 | frontend.persistence.storageClass                      | string | `""`                               | Storage class for persistent volume                                                                                         |
 | frontend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`                | Access modes for persistent volume                                                                                          |
@@ -800,6 +880,15 @@ unique for each release. This allows the job to be run multiple times without co
 | backend.ingress.extraTls                              | list   | `[]`                              | Extra TLS configurations for ingress                                                                                        |
 | backend.ingress.secrets                               | list   | `[]`                              | TLS secrets for ingress                                                                                                     |
 | backend.ingress.extraRules                            | list   | `[]`                              | Extra ingress rules                                                                                                         |
+| backend.route.enabled                                 | bool   | `false`                           | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| backend.route.host                                    | string | `""`                              | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| backend.route.path                                    | string | `""`                              | Route path                                                                                                                  |
+| backend.route.targetPort                              | string | `"http"`                          | Service target port name or number the Route forwards to                                                                    |
+| backend.route.wildcardPolicy                          | string | `"None"`                          | Route wildcard policy (None or Subdomain)                                                                                   |
+| backend.route.annotations                             | object | `{}`                              | Route annotations                                                                                                           |
+| backend.route.tls.enabled                             | bool   | `true`                            | Enable TLS for the Route                                                                                                    |
+| backend.route.tls.termination                         | string | `"edge"`                          | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| backend.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                      | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | backend.persistence.enabled                           | bool   | `false`                           | Enable persistent storage for Hoppscotch                                                                                    |
 | backend.persistence.storageClass                      | string | `""`                              | Storage class for persistent volume                                                                                         |
 | backend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`               | Access modes for persistent volume                                                                                          |
@@ -903,6 +992,15 @@ unique for each release. This allows the job to be run multiple times without co
 | admin.ingress.extraTls                              | list   | `[]`                            | Extra TLS configurations for ingress                                                                                        |
 | admin.ingress.secrets                               | list   | `[]`                            | TLS secrets for ingress                                                                                                     |
 | admin.ingress.extraRules                            | list   | `[]`                            | Extra ingress rules                                                                                                         |
+| admin.route.enabled                                 | bool   | `false`                         | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| admin.route.host                                    | string | `""`                            | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| admin.route.path                                    | string | `""`                            | Route path                                                                                                                  |
+| admin.route.targetPort                              | string | `"http"`                        | Service target port name or number the Route forwards to                                                                    |
+| admin.route.wildcardPolicy                          | string | `"None"`                        | Route wildcard policy (None or Subdomain)                                                                                   |
+| admin.route.annotations                             | object | `{}`                            | Route annotations                                                                                                           |
+| admin.route.tls.enabled                             | bool   | `true`                          | Enable TLS for the Route                                                                                                    |
+| admin.route.tls.termination                         | string | `"edge"`                        | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| admin.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                    | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | admin.persistence.enabled                           | bool   | `false`                         | Enable persistent storage for Hoppscotch                                                                                    |
 | admin.persistence.storageClass                      | string | `""`                            | Storage class for persistent volume                                                                                         |
 | admin.persistence.accessModes                       | list   | `["ReadWriteOnce"]`             | Access modes for persistent volume                                                                                          |

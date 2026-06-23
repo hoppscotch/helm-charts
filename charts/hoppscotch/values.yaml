@@ -14,6 +14,11 @@ global:
     # -- Allows skipping image verification
     # @section -- Global Parameters
     allowInsecureImages: false
+  compatibility:
+    openshift:
+      # -- Adapt the securityContext sections of Hoppscotch and its dependencies to be compatible with OpenShift restricted-v2 SCC: removes `runAsUser`, `runAsGroup` and `fsGroup` so the platform assigns IDs from the namespace's allowed range. Possible values: `auto` (apply only if an OpenShift cluster is detected), `force` (always apply), `disabled` (never apply)
+      # @section -- Global Parameters
+      adaptSecurityContext: auto
 
 # @section -- Common Parameters
 
@@ -613,6 +618,36 @@ aio:
     # @section -- Hoppscotch AIO Container Parameters
     extraRules: []
 
+  route:
+    # -- Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)
+    # @section -- Hoppscotch AIO Container Parameters
+    enabled: false
+    # -- Route hostname (auto-assigned by OpenShift when left empty)
+    # @section -- Hoppscotch AIO Container Parameters
+    host: ""
+    # -- Route path
+    # @section -- Hoppscotch AIO Container Parameters
+    path: ""
+    # -- Service target port name or number the Route forwards to
+    # @section -- Hoppscotch AIO Container Parameters
+    targetPort: http
+    # -- Route wildcard policy (None or Subdomain)
+    # @section -- Hoppscotch AIO Container Parameters
+    wildcardPolicy: None
+    # -- Route annotations
+    # @section -- Hoppscotch AIO Container Parameters
+    annotations: {}
+    tls:
+      # -- Enable TLS for the Route
+      # @section -- Hoppscotch AIO Container Parameters
+      enabled: true
+      # -- TLS termination type (edge, passthrough or reencrypt)
+      # @section -- Hoppscotch AIO Container Parameters
+      termination: edge
+      # -- Insecure traffic policy (None, Allow or Redirect)
+      # @section -- Hoppscotch AIO Container Parameters
+      insecureEdgeTerminationPolicy: Redirect
+
   persistence:
     # -- Enable persistent storage for Hoppscotch
     # @section -- Hoppscotch AIO Container Parameters
@@ -949,6 +984,36 @@ frontend:
     # -- Extra ingress rules
     # @section -- Hoppscotch Frontend Container Parameters
     extraRules: []
+
+  route:
+    # -- Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)
+    # @section -- Hoppscotch Frontend Container Parameters
+    enabled: false
+    # -- Route hostname (auto-assigned by OpenShift when left empty)
+    # @section -- Hoppscotch Frontend Container Parameters
+    host: ""
+    # -- Route path
+    # @section -- Hoppscotch Frontend Container Parameters
+    path: ""
+    # -- Service target port name or number the Route forwards to
+    # @section -- Hoppscotch Frontend Container Parameters
+    targetPort: http
+    # -- Route wildcard policy (None or Subdomain)
+    # @section -- Hoppscotch Frontend Container Parameters
+    wildcardPolicy: None
+    # -- Route annotations
+    # @section -- Hoppscotch Frontend Container Parameters
+    annotations: {}
+    tls:
+      # -- Enable TLS for the Route
+      # @section -- Hoppscotch Frontend Container Parameters
+      enabled: true
+      # -- TLS termination type (edge, passthrough or reencrypt)
+      # @section -- Hoppscotch Frontend Container Parameters
+      termination: edge
+      # -- Insecure traffic policy (None, Allow or Redirect)
+      # @section -- Hoppscotch Frontend Container Parameters
+      insecureEdgeTerminationPolicy: Redirect
 
   persistence:
     # -- Enable persistent storage for Hoppscotch
@@ -1287,6 +1352,36 @@ backend:
     # @section -- Hoppscotch Backend Container Parameters
     extraRules: []
 
+  route:
+    # -- Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)
+    # @section -- Hoppscotch Backend Container Parameters
+    enabled: false
+    # -- Route hostname (auto-assigned by OpenShift when left empty)
+    # @section -- Hoppscotch Backend Container Parameters
+    host: ""
+    # -- Route path
+    # @section -- Hoppscotch Backend Container Parameters
+    path: ""
+    # -- Service target port name or number the Route forwards to
+    # @section -- Hoppscotch Backend Container Parameters
+    targetPort: http
+    # -- Route wildcard policy (None or Subdomain)
+    # @section -- Hoppscotch Backend Container Parameters
+    wildcardPolicy: None
+    # -- Route annotations
+    # @section -- Hoppscotch Backend Container Parameters
+    annotations: {}
+    tls:
+      # -- Enable TLS for the Route
+      # @section -- Hoppscotch Backend Container Parameters
+      enabled: true
+      # -- TLS termination type (edge, passthrough or reencrypt)
+      # @section -- Hoppscotch Backend Container Parameters
+      termination: edge
+      # -- Insecure traffic policy (None, Allow or Redirect)
+      # @section -- Hoppscotch Backend Container Parameters
+      insecureEdgeTerminationPolicy: Redirect
+
   persistence:
     # -- Enable persistent storage for Hoppscotch
     # @section -- Hoppscotch Backend Container Parameters
@@ -1623,6 +1718,36 @@ admin:
     # -- Extra ingress rules
     # @section -- Hoppscotch Admin Container Parameters
     extraRules: []
+
+  route:
+    # -- Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)
+    # @section -- Hoppscotch Admin Container Parameters
+    enabled: false
+    # -- Route hostname (auto-assigned by OpenShift when left empty)
+    # @section -- Hoppscotch Admin Container Parameters
+    host: ""
+    # -- Route path
+    # @section -- Hoppscotch Admin Container Parameters
+    path: ""
+    # -- Service target port name or number the Route forwards to
+    # @section -- Hoppscotch Admin Container Parameters
+    targetPort: http
+    # -- Route wildcard policy (None or Subdomain)
+    # @section -- Hoppscotch Admin Container Parameters
+    wildcardPolicy: None
+    # -- Route annotations
+    # @section -- Hoppscotch Admin Container Parameters
+    annotations: {}
+    tls:
+      # -- Enable TLS for the Route
+      # @section -- Hoppscotch Admin Container Parameters
+      enabled: true
+      # -- TLS termination type (edge, passthrough or reencrypt)
+      # @section -- Hoppscotch Admin Container Parameters
+      termination: edge
+      # -- Insecure traffic policy (None, Allow or Redirect)
+      # @section -- Hoppscotch Admin Container Parameters
+      insecureEdgeTerminationPolicy: Redirect
 
   persistence:
     # -- Enable persistent storage for Hoppscotch

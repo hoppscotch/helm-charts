@@ -1,0 +1,38 @@
+{{- if and (eq .Values.deploymentMode "distributed") .Values.admin.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "hoppscotch.admin.serviceName" . }}
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-admin
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.admin.route.annotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.admin.route.annotations }}
+    {{- toYaml .Values.admin.route.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.admin.route.host }}
+  host: {{ .Values.admin.route.host | quote }}
+  {{- end }}
+  {{- if .Values.admin.route.path }}
+  path: {{ .Values.admin.route.path | quote }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "hoppscotch.admin.serviceName" . }}
+    weight: 100
+  port:
+    targetPort: {{ .Values.admin.route.targetPort }}
+  {{- if .Values.admin.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.admin.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.admin.route.tls.insecureEdgeTerminationPolicy }}
+  {{- end }}
+  wildcardPolicy: {{ .Values.admin.route.wildcardPolicy }}
+{{- end }}

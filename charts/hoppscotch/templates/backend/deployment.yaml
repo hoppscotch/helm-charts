@@ -44,15 +44,15 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "hoppscotch.serviceAccountName" . }}
-      {{- with .Values.backend.podSecurityContext }}
+      {{- with (include "hoppscotch.compatibility.renderSecurityContext" (dict "secContext" .Values.backend.podSecurityContext "context" $)) }}
       securityContext:
-        {{- toYaml . | nindent 8 }}
+        {{- . | nindent 8 }}
       {{- end }}
       containers:
         - name: hoppscotch
-          {{- with .Values.backend.securityContext }}
+          {{- with (include "hoppscotch.compatibility.renderSecurityContext" (dict "secContext" .Values.backend.securityContext "context" $)) }}
           securityContext:
-            {{- toYaml . | nindent 12 }}
+            {{- . | nindent 12 }}
           {{- end }}
           image: {{ include "hoppscotch.image" (dict "component" .Values.backend "context" .) }}
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
