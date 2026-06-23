@@ -6,6 +6,9 @@ templates:
 tests:
   - it: should generate Route when deployment mode is aio and route is enabled
     template: aio/route.yaml
+    capabilities:
+      apiVersions:
+        - route.openshift.io/v1
     set:
       deploymentMode: aio
       aio:
@@ -50,8 +53,24 @@ tests:
       - hasDocuments:
           count: 0
 
+  - it: should not generate Route when the Route API is unavailable
+    template: aio/route.yaml
+    capabilities:
+      apiVersions: []
+    set:
+      deploymentMode: aio
+      aio:
+        route:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
   - it: should set host, path and disable TLS when configured
     template: aio/route.yaml
+    capabilities:
+      apiVersions:
+        - route.openshift.io/v1
     set:
       deploymentMode: aio
       aio:

@@ -8,6 +8,9 @@ templates:
 tests:
   - it: should generate frontend Route in distributed mode when enabled
     template: frontend/route.yaml
+    capabilities:
+      apiVersions:
+        - route.openshift.io/v1
     set:
       deploymentMode: distributed
       frontend:
@@ -26,6 +29,9 @@ tests:
 
   - it: should generate backend Route in distributed mode when enabled
     template: backend/route.yaml
+    capabilities:
+      apiVersions:
+        - route.openshift.io/v1
     set:
       deploymentMode: distributed
       backend:
@@ -41,6 +47,9 @@ tests:
 
   - it: should generate admin Route in distributed mode when enabled
     template: admin/route.yaml
+    capabilities:
+      apiVersions:
+        - route.openshift.io/v1
     set:
       deploymentMode: distributed
       admin:
@@ -61,6 +70,28 @@ tests:
       - admin/route.yaml
     set:
       deploymentMode: aio
+      frontend:
+        route:
+          enabled: true
+      backend:
+        route:
+          enabled: true
+      admin:
+        route:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not generate distributed Routes when the Route API is unavailable
+    templates:
+      - frontend/route.yaml
+      - backend/route.yaml
+      - admin/route.yaml
+    capabilities:
+      apiVersions: []
+    set:
+      deploymentMode: distributed
       frontend:
         route:
           enabled: true

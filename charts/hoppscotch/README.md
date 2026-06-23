@@ -437,6 +437,10 @@ aio:
 
 In `distributed` mode, configure `frontend.route`, `backend.route` and `admin.route` instead.
 
+Routes are only rendered on clusters that expose the `route.openshift.io/v1` API, so enabling them in a
+values file shared with plain Kubernetes is a no-op there rather than a failed install. When previewing a
+Route offline with `helm template`, pass `--api-versions route.openshift.io/v1` so it renders.
+
 #### Port binding considerations
 
 In AIO subpath mode (default), the container serves on privileged port `80`. OpenShift's `restricted-v2` SCC runs

@@ -1,4 +1,4 @@
-{{- if and (eq .Values.deploymentMode "distributed") .Values.admin.route.enabled }}
+{{- if and (eq .Values.deploymentMode "distributed") .Values.admin.route.enabled (.Capabilities.APIVersions.Has "route.openshift.io/v1") }}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
