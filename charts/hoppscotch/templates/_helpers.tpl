@@ -33,6 +33,45 @@ Usage: {{ include "hoppscotch.hasCertManagerRequest" ( dict "annotations" .Value
 {{- end -}}
 
 {{/*
+Return true if the detected running cluster is OpenShift.
+*/}}
+{{- define "hoppscotch.compatibility.isOpenshift" -}}
+  {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints" -}}
+    {{- true -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return true if the securityContext sections should be adapted for OpenShift based on
+`global.compatibility.openshift.adaptSecurityContext` and the detected cluster.
+Usage: {{ include "hoppscotch.compatibility.shouldAdaptSecurityContext" . }}
+*/}}
+{{- define "hoppscotch.compatibility.shouldAdaptSecurityContext" -}}
+  {{- $mode := dig "compatibility" "openshift" "adaptSecurityContext" "disabled" .Values.global -}}
+  {{- if eq $mode "force" -}}
+    {{- true -}}
+  {{- else if and (eq $mode "auto") (include "hoppscotch.compatibility.isOpenshift" .) -}}
+    {{- true -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Render a securityContext section, adapting it for OpenShift when required. When adaptation is
+active, `runAsUser`, `runAsGroup` and `fsGroup` are removed so the platform can assign IDs from the
+namespace's allowed range. Returns an empty string when the resulting context is empty.
+Usage: {{ include "hoppscotch.compatibility.renderSecurityContext" (dict "secContext" .Values.aio.podSecurityContext "context" $) }}
+*/}}
+{{- define "hoppscotch.compatibility.renderSecurityContext" -}}
+  {{- $adapted := omit .secContext "enabled" -}}
+  {{- if include "hoppscotch.compatibility.shouldAdaptSecurityContext" .context -}}
+    {{- $adapted = omit $adapted "fsGroup" "runAsUser" "runAsGroup" -}}
+  {{- end -}}
+  {{- if $adapted -}}
+    {{- toYaml $adapted -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Return the Hoppscotch container image name with tag. Chart app version is used as a default tag if not specified. This
 helper is intended to be used for Hoppscotch components only. For all other components use `hoppscotch.images.image`.
 Usage: {{ include "hoppscotch.image" (dict "component" .Values.frontend "context" .) }}
