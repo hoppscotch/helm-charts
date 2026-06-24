@@ -87,7 +87,7 @@ enterprise:
 
     proxy:
       # Enable a local proxy server for routing API requests (requires subpath access)
-      localProxyServerEnable: false
+      localProxyServerEnabled: false
       # Default proxy URL offered to clients when proxying is enabled
       appUrl: "https://proxy.hoppscotch.io"
       # Access token for the proxy server (leave empty if not required)

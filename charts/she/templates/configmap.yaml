@@ -25,7 +25,7 @@ data:
   WHITELISTED_ORIGINS: {{ .Values.enterprise.config.urls.whitelistedOrigins | quote }}
 
   # Proxy
-  LOCAL_PROXY_SERVER_ENABLE: {{ .Values.enterprise.config.proxy.localProxyServerEnable | quote }}
+  LOCAL_PROXY_SERVER_ENABLE: {{ .Values.enterprise.config.proxy.localProxyServerEnabled | quote }}
   PROXY_APP_URL: {{ .Values.enterprise.config.proxy.appUrl | quote }}
   VITE_PROXYSCOTCH_ACCESS_TOKEN: {{ .Values.enterprise.config.proxy.proxyscotchAccessToken | quote }}
   TRUST_PROXY: {{ .Values.enterprise.config.trustProxy | quote }}

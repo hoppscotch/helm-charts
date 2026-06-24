@@ -122,6 +122,12 @@ ClickHouse powers audit logs and workspace activity logs. The bundled ClickHouse
 `clickhouse.enabled`; the connection details and the audit-log toggles are configured from the **admin dashboard** (they are
 no longer environment variables).
 
+> **Upgrading from < 0.3.0:** the `allowAuditLogs`, `allowWorkspaceActivityLogs`, `external`, `host`, `user` and `password`
+> keys under `enterprise.config.clickhouse` were removed. The deploy gate moved from `allowAuditLogs` to `clickhouse.enabled`
+> (default `false`), so a previously bundled ClickHouse will **not** be re-deployed on upgrade until you set
+> `clickhouse.enabled: true`. Existing data is preserved in the retained `clickhouse-data` PVC; re-enable the connection and
+> audit-log toggles in the admin dashboard.
+
 ```yaml
 enterprise:
   config:
@@ -159,14 +165,17 @@ enterprise:
 
 ### Database Deployment Options
 
-1. **Self-hosted Databases**
+1. **Self-hosted Databases (PostgreSQL, Redis)**
    - Set `external: false` for automatic deployment
    - Databases are deployed as StatefulSets with persistent storage
    - Configuration managed through values.yaml
 
-2. **External Databases**
+2. **External Databases (PostgreSQL, Redis)**
    - Set `external: true` and provide connection details
    - Manual database management required
+
+> **ClickHouse** does not use the `external` flag: set `clickhouse.enabled: true` to deploy the bundled instance, or leave it
+> disabled and point the admin dashboard at your own ClickHouse.
 
 ## Uninstalling the Chart
 
