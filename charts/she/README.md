@@ -8,6 +8,13 @@ This Helm chart bootstraps Hoppscotch Enterprise Edition deployment on a Kuberne
 manager. The Enterprise Edition includes advanced features for large-scale deployments, enhanced security, and
 enterprise support.
 
+> **Note:** Starting with chart v0.3.0 the environment footprint is reduced to match the upstream
+> [`.env.example`](https://github.com/hoppscotch/selfhost-enterprise/blob/main/.env.example). Most application settings —
+> SMTP/mailer, authentication providers (Google, GitHub, Microsoft, SAML, OIDC, …), rate limits, token validity, the
+> JWT/session secrets and the ClickHouse connection — are now configured from the **admin dashboard** and stored in the
+> database, so they are no longer Helm values. This chart only configures the minimal set: license key, database, Redis (for
+> horizontal scaling), URLs, the data encryption key and proxy options.
+
 ## Enterprise Features
 
 - Enhanced scalability options
@@ -36,7 +43,6 @@ urls:
     gql: "http://backend.yourdomain.com/graphql"
     ws: "ws://backend.yourdomain.com/graphql"
     api: "http://backend.yourdomain.com/v1"
-  redirect: "http://frontend.yourdomain.com"
   whitelistedOrigins: "http://backend.yourdomain.com,http://frontend.yourdomain.com,http://admin.yourdomain.com"
 
 # Ingress Configuration
@@ -58,7 +64,6 @@ urls:
     gql: "http://yourdomain.com/backend/graphql"
     ws: "ws://yourdomain.com/backend/graphql"
     api: "http://yourdomain.com/backend/v1"
-  redirect: "http://yourdomain.com"
   whitelistedOrigins: "http://yourdomain.com/backend,http://yourdomain.com,http://yourdomain.com/admin"
 
 enableSubpathBasedAccess: true
@@ -113,21 +118,18 @@ helm install [RELEASE_NAME] hoppscotch/hoppscotch-enterprise -f values.yaml
 
 #### ClickHouse Configuration
 
+ClickHouse powers audit logs and workspace activity logs. The bundled ClickHouse StatefulSet is opt-in via
+`clickhouse.enabled`; the connection details and the audit-log toggles are configured from the **admin dashboard** (they are
+no longer environment variables).
+
 ```yaml
 enterprise:
   config:
     clickhouse:
-      allowAuditLogs: true
-      allowWorkspaceActivityLogs: true
-      # External ClickHouse configuration
-      external: false
-      host: "your-clickhouse-host"
-      user: "your-clickhouse-user"
-      password: "your-clickhouse-password"
-
-      # Self-hosted ClickHouse configuration
+      # Deploy the bundled ClickHouse StatefulSet (connection is wired from the admin dashboard)
+      enabled: true
       clickhouse:
-        image: "clickhouse/clickhouse-server:latest"
+        image: "clickhouse/clickhouse-server:24.8"
         username: "default"
         password: "clickhouse-password"
         persistence:

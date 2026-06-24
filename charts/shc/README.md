@@ -7,6 +7,12 @@
 This Helm chart bootstraps Hoppscotch Community Edition deployment on a Kubernetes cluster using the Helm package
 manager.
 
+> **Note:** Starting with chart v0.3.0 the environment footprint is reduced to match the upstream
+> [`.env.example`](https://github.com/hoppscotch/hoppscotch/blob/main/.env.example). Most application settings — SMTP/mailer,
+> authentication providers (Google, GitHub, Microsoft, …), rate limits, token validity and the JWT/session secrets — are now
+> configured from the **admin dashboard** and stored in the database, so they are no longer Helm values. This chart only
+> configures the minimal set: database, URLs, the data encryption key and proxy options.
+
 ## Prerequisites
 
 - Kubernetes 1.19+
@@ -26,7 +32,6 @@ urls:
     gql: "http://backend.yourdomain.com/graphql"
     ws: "ws://backend.yourdomain.com/graphql"
     api: "http://backend.yourdomain.com/v1"
-  redirect: "http://frontend.yourdomain.com"
   whitelistedOrigins: "http://backend.yourdomain.com,http://frontend.yourdomain.com,http://admin.yourdomain.com"
 
 # Ingress Configuration
@@ -48,7 +53,6 @@ urls:
     gql: "http://yourdomain.com/backend/graphql"
     ws: "ws://yourdomain.com/backend/graphql"
     api: "http://yourdomain.com/backend/v1"
-  redirect: "http://yourdomain.com"
   whitelistedOrigins: "http://yourdomain.com/backend,http://yourdomain.com,http://yourdomain.com/admin"
 
 enableSubpathBasedAccess: true
