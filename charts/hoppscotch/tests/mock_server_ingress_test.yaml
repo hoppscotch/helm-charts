@@ -1,0 +1,304 @@
+suite: Mock Server Ingress
+templates:
+  - mock-server/ingress.yaml
+  - mock-server/traefik-middleware.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
+tests:
+  - it: should generate Ingress when enabled in aio mode
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+    asserts:
+      - containsDocument:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+      - equal:
+          path: metadata.name
+          value: release-name-hoppscotch-mock-server
+      - equal:
+          path: spec.rules[0].host
+          value: "*.mock.hoppscotch.local"
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: release-name-hoppscotch
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 80
+
+  - it: should generate Ingress when enabled in distributed mode
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: distributed
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+    asserts:
+      - containsDocument:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+      - equal:
+          path: metadata.name
+          value: release-name-hoppscotch-mock-server
+      - equal:
+          path: spec.rules[0].host
+          value: "*.mock.hoppscotch.local"
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: release-name-hoppscotch-backend
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 80
+
+  - it: should not generate Ingress when disabled
+    template: mock-server/ingress.yaml
+    set:
+      mockServer:
+        ingress:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should include nginx annotations when controllerType is nginx
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: nginx
+          hostname: mock.hoppscotch.local
+    asserts:
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/use-regex"]
+          value: "true"
+      - matchRegex:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/server-snippet"]
+          pattern: "mock_id"
+      - matchRegex:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/configuration-snippet"]
+          pattern: "rewrite"
+
+  - it: should include traefik annotations when controllerType is traefik
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: traefik
+          hostname: mock.hoppscotch.local
+    asserts:
+      - matchRegex:
+          path: metadata.annotations["traefik.ingress.kubernetes.io/router.middlewares"]
+          pattern: "mock-rewrite@kubernetescrd"
+
+  - it: should include alb annotations when controllerType is alb
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: alb
+          hostname: mock.hoppscotch.local
+    asserts:
+      - equal:
+          path: metadata.annotations["alb.ingress.kubernetes.io/scheme"]
+          value: internet-facing
+      - equal:
+          path: metadata.annotations["alb.ingress.kubernetes.io/target-type"]
+          value: ip
+      - matchRegex:
+          path: metadata.annotations["alb.ingress.kubernetes.io/group.name"]
+          pattern: "mock$"
+
+  - it: should include TLS block with wildcard host when tls is true and selfSigned is true
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+          tls: true
+          selfSigned: true
+    asserts:
+      - equal:
+          path: spec.tls[0].hosts[0]
+          value: "*.mock.hoppscotch.local"
+      - equal:
+          path: spec.tls[0].secretName
+          value: mock.hoppscotch.local-wildcard-tls
+
+  - it: should use custom tlsSecret when provided
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+          tls: true
+          selfSigned: true
+          tlsSecret: my-custom-wildcard-tls
+    asserts:
+      - equal:
+          path: spec.tls[0].secretName
+          value: my-custom-wildcard-tls
+
+  - it: should use aio backend port (3170) when enableSubpathBasedAccess is false
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccess: false
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+    asserts:
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 3170
+
+  - it: should create Traefik Middleware when controllerType is traefik
+    template: mock-server/traefik-middleware.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: traefik
+          hostname: mock.hoppscotch.local
+    asserts:
+      - containsDocument:
+          apiVersion: traefik.io/v1alpha1
+          kind: Middleware
+      - equal:
+          path: metadata.name
+          value: release-name-hoppscotch-mock-rewrite
+      - equal:
+          path: spec.replacePathRegex.regex
+          value: "^/(.*)"
+      - matchRegex:
+          path: spec.replacePathRegex.replacement
+          pattern: "^/backend/mock/\\$1$"
+
+  - it: should create Traefik Middleware with /mock prefix when enableSubpathBasedAccess is false
+    template: mock-server/traefik-middleware.yaml
+    set:
+      deploymentMode: aio
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccess: false
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: traefik
+          hostname: mock.hoppscotch.local
+    asserts:
+      - containsDocument:
+          apiVersion: traefik.io/v1alpha1
+          kind: Middleware
+      - matchRegex:
+          path: spec.replacePathRegex.replacement
+          pattern: "^/mock/\\$1$"
+
+  - it: should not create Traefik Middleware when controllerType is nginx
+    template: mock-server/traefik-middleware.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: nginx
+          hostname: mock.hoppscotch.local
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not create Traefik Middleware when ingress is disabled
+    template: mock-server/traefik-middleware.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: false
+          controllerType: traefik
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set ingressClassName when provided
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          hostname: mock.hoppscotch.local
+          ingressClassName: nginx
+    asserts:
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+
+  - it: should render TLS block when cert-manager annotation is in commonAnnotations
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      commonAnnotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: nginx
+          hostname: mock.hoppscotch.local
+          tls: true
+    asserts:
+      - equal:
+          path: spec.tls[0].hosts[0]
+          value: "*.mock.hoppscotch.local"
+      - equal:
+          path: spec.tls[0].secretName
+          value: mock.hoppscotch.local-wildcard-tls
+
+  - it: should fail when controllerType is invalid
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: invalid-controller
+          hostname: mock.hoppscotch.local
+    asserts:
+      - failedTemplate:
+          errorMessage: 'mockServer.ingress.controllerType must be one of nginx|traefik|alb, got "invalid-controller"'
+
+  - it: should merge commonAnnotations with controller annotations
+    template: mock-server/ingress.yaml
+    set:
+      deploymentMode: aio
+      commonAnnotations:
+        custom.annotation/key: custom-value
+      mockServer:
+        ingress:
+          enabled: true
+          controllerType: nginx
+          hostname: mock.hoppscotch.local
+    asserts:
+      - equal:
+          path: metadata.annotations["custom.annotation/key"]
+          value: custom-value
+      - equal:
+          path: metadata.annotations["nginx.ingress.kubernetes.io/use-regex"]
+          value: "true"

@@ -393,6 +393,137 @@ for the migrations job to complete.
 Instead the migration job is triggered by appending the release revision number to the job name to ensure that it is
 unique for each release. This allows the job to be run multiple times without conflicts.
 
+### Mock Server Wildcard Ingress
+
+Hoppscotch's mock server is served by the backend under `/mock/<mock-id>/<path>` (and via `/backend/mock/<mock-id>/<path>`
+when using AIO subpath access). The mock server wildcard ingress feature enables subdomain-based access so that requests
+to `<mock-id>.mock.example.com/<path>` are transparently routed to the appropriate backend path for your deployment mode.
+
+The mock server ingress is **independent of the deployment mode** — it works with both `aio` and `distributed` modes.
+It is disabled by default and has zero impact on existing deployments.
+
+#### Enabling Mock Server Ingress
+
+To enable the mock server wildcard ingress, set the following in your values file:
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx  # nginx | traefik | alb
+    hostname: mock.example.com
+    ingressClassName: nginx
+```
+
+This creates an Ingress resource with the wildcard host `*.mock.example.com` that routes all subdomain traffic to the
+Hoppscotch backend service.
+
+#### Supported Ingress Controllers
+
+The `controllerType` toggle selects the ingress controller and configures the appropriate annotations automatically.
+An unsupported value will cause the template to fail with a descriptive error message.
+
+##### nginx
+
+When `controllerType: nginx`, the chart adds nginx-specific annotations that (when snippet annotations are enabled on
+your nginx ingress controller):
+
+1. Extract the `mock-id` from the subdomain using a server-snippet regex capture group
+2. Rewrite the request path to include the mock-id and the correct backend path prefix
+
+> **Important**: The nginx option relies on `nginx.ingress.kubernetes.io/server-snippet` and
+> `nginx.ingress.kubernetes.io/configuration-snippet` annotations. Many ingress-nginx deployments disable snippet
+> annotations by default for security reasons (via `allow-snippet-annotations: "false"` in the controller config).
+> You must enable snippet annotations on your ingress-nginx controller for the mock-id extraction to work. Without
+> them, the rewrite will not function correctly.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+```
+
+This is the recommended controller type as it provides full subdomain-to-path rewriting including mock-id extraction
+entirely at the ingress layer.
+
+##### traefik
+
+When `controllerType: traefik`, the chart creates an Ingress resource with a Traefik router middleware annotation and
+also creates a `Middleware` CRD (`traefik.io/v1alpha1`) that rewrites the request path.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: traefik
+    hostname: mock.example.com
+    ingressClassName: traefik
+```
+
+> **Note**: Traefik's `replacePathRegex` middleware can rewrite the request path but cannot extract the mock-id from
+> the Host header (subdomain). When using Traefik, the backend application must resolve the mock-id from the `Host`
+> header itself.
+
+##### alb (AWS Load Balancer)
+
+When `controllerType: alb`, the chart adds AWS ALB annotations for internet-facing load balancer configuration.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: alb
+    hostname: mock.example.com
+```
+
+> **Note**: AWS ALB does not support subdomain-to-path rewriting natively. When using ALB, the backend application
+> must resolve the mock-id from the `Host` header itself.
+
+#### Path Prefix Behavior
+
+The path prefix used for URL rewriting depends on the deployment mode and subpath access setting:
+
+| Deployment Mode | `enableSubpathBasedAccess` | Service Port | Path Prefix     |
+| --------------- | -------------------------- | ------------ | --------------- |
+| `aio`           | `true` (default)           | 80           | `/backend/mock` |
+| `aio`           | `false`                    | 3170         | `/mock`         |
+| `distributed`   | N/A                        | 80           | `/mock`         |
+
+#### TLS Configuration
+
+To enable TLS with a self-signed certificate:
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+    tls: true
+    selfSigned: true
+```
+
+To use an existing TLS secret (e.g., from cert-manager):
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+    tls: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tlsSecret: mock-example-com-wildcard-tls
+```
+
+The TLS secret covers the wildcard host `*.mock.example.com`.
+
 ## Parameters
 
 <!-- markdownlint-disable MD013 MD034 -->

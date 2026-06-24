@@ -221,3 +221,47 @@ Return the service account name to use.
     {{- default "default" .Values.serviceAccount.name -}}
   {{- end -}}
 {{- end -}}
+
+{{/*
+Return the mock server service name based on deployment mode.
+In aio mode, the AIO service is used. In distributed mode, the backend service is used.
+*/}}
+{{- define "hoppscotch.mockServer.serviceName" -}}
+  {{- if eq .Values.deploymentMode "aio" -}}
+    {{- include "hoppscotch.aio.serviceName" . -}}
+  {{- else -}}
+    {{- include "hoppscotch.backend.serviceName" . -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return the mock server service port based on deployment mode and subpath access setting.
+- aio + enableSubpathBasedAccess=true  → aio.service.ports.http (port 80, traffic via /backend/mock prefix)
+- aio + enableSubpathBasedAccess=false → aio.service.ports.backend (port 3170, direct backend port)
+- distributed                          → backend.service.ports.http (port 80)
+*/}}
+{{- define "hoppscotch.mockServer.servicePort" -}}
+  {{- if eq .Values.deploymentMode "aio" -}}
+    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess -}}
+      {{- .Values.aio.service.ports.http -}}
+    {{- else -}}
+      {{- .Values.aio.service.ports.backend -}}
+    {{- end -}}
+  {{- else -}}
+    {{- .Values.backend.service.ports.http -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return the mock server path prefix used for URL rewriting.
+- aio + enableSubpathBasedAccess=true  → /backend/mock (traffic goes through the subpath proxy)
+- aio + enableSubpathBasedAccess=false → /mock (direct backend access on port 3170)
+- distributed                          → /mock (direct backend access)
+*/}}
+{{- define "hoppscotch.mockServer.pathPrefix" -}}
+  {{- if and (eq .Values.deploymentMode "aio") .Values.hoppscotch.frontend.enableSubpathBasedAccess -}}
+    {{- "/backend/mock" -}}
+  {{- else -}}
+    {{- "/mock" -}}
+  {{- end -}}
+{{- end -}}
