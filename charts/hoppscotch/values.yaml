@@ -1811,7 +1811,7 @@ externalRedis:
 ## ClickHouse Parameters
 
 clickhouse:
-  # -- Enable ClickHouse subchart
+  # -- Enable the bundled ClickHouse subchart for enterprise audit logs. No CLICKHOUSE_* env is injected into the app; configure the connection and audit-log toggles from the admin dashboard. Enterprise Edition required.
   # @section -- ClickHouse Parameters
   enabled: false
   defaultInitContainers:

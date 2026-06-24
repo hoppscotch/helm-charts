@@ -1116,7 +1116,7 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| clickhouse.enabled | bool | `false` | Enable ClickHouse subchart |
+| clickhouse.enabled | bool | `false` | Enable the bundled ClickHouse subchart for enterprise audit logs. No CLICKHOUSE_* env is injected into the app; configure the connection and audit-log toggles from the admin dashboard. Enterprise Edition required. |
 | clickhouse.defaultInitContainers.volumePermissions.image.repository | string | `"bitnamilegacy/os-shell"` | Volume Permissions image repository |
 | clickhouse.image.repository | string | `"bitnamilegacy/clickhouse"` | ClickHouse image repository |
 | clickhouse.auth.username | string | `""` | ClickHouse username |
