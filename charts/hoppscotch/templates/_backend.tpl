@@ -11,39 +11,6 @@ Generate backend base URL based on deployment mode and ingress configuration
 {{- end -}}
 
 {{/*
-Generate auth callback URL based on deployment mode and ingress configuration
-Usage: {{ include "hoppscotch.backend.authCallbackUrl" (dict "provider" "github" "context" .) }}
-*/}}
-{{- define "hoppscotch.backend.authCallbackUrl" -}}
-  {{- $baseUrl := (include "hoppscotch.backend.baseUrl" .context) -}}
-  {{- if ne $baseUrl "" -}}
-    {{- printf "%s/v1/auth/%s/callback" $baseUrl .provider -}}
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Generate GitHub auth callback URL based on on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.githubCallbackUrl" -}}
-  {{- if .Values.hoppscotch.backend.auth.github.callbackUrl -}}
-    {{- .Values.hoppscotch.backend.auth.github.callbackUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.backend.authCallbackUrl" (dict "provider" "github" "context" .) -}}
-  {{- end -}}
-{{- end }}
-
-{{/*
-Generate Google auth callback URL based on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.googleCallbackUrl" -}}
-  {{- if .Values.hoppscotch.backend.auth.google.callbackUrl -}}
-    {{- .Values.hoppscotch.backend.auth.google.callbackUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.backend.authCallbackUrl" (dict "provider" "google" "context" .) -}}
-  {{- end -}}
-{{- end }}
-
-{{/*
 Backend image based on deployment mode. This named template is used by migrations and wait for migrations containers to
 ensure the correct image is selected consistent with the deployment mode.
 */}}
@@ -60,39 +27,6 @@ containers to ensure the correct image is pulled consistent with the deployment 
 {{- end -}}
 
 {{/*
-Generate Microsoft auth callback URL based on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.microsoftCallbackUrl" -}}
-  {{- if .Values.hoppscotch.backend.auth.microsoft.callbackUrl -}}
-    {{- .Values.hoppscotch.backend.auth.microsoft.callbackUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.backend.authCallbackUrl" (dict "provider" "microsoft" "context" .) -}}
-  {{- end -}}
-{{- end }}
-
-{{/*
-Generate OIDC auth callback URL based on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.oidcCallbackUrl" -}}
-  {{- if .Values.hoppscotch.backend.auth.oidc.callbackUrl -}}
-    {{- .Values.hoppscotch.backend.auth.oidc.callbackUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.backend.authCallbackUrl" (dict "provider" "oidc" "context" .) -}}
-  {{- end -}}
-{{- end }}
-
-{{/*
-Generate SAML auth callback URL based on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.samlCallbackUrl" -}}
-  {{- if .Values.hoppscotch.backend.auth.saml.callbackUrl -}}
-    {{- .Values.hoppscotch.backend.auth.saml.callbackUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.backend.authCallbackUrl" (dict "provider" "saml" "context" .) -}}
-  {{- end -}}
-{{- end }}
-
-{{/*
 Generate readiness probe HTTP GET path
 */}}
 {{- define "hoppscotch.backend.readinessProbePath" -}}
@@ -100,17 +34,6 @@ Generate readiness probe HTTP GET path
     /backend/ping
   {{- else -}}
     /ping
-  {{- end -}}
-{{- end -}}
-
-{{/*
-Generate the redirect URL for the backend based on deployment mode and ingress configuration
-*/}}
-{{- define "hoppscotch.backend.redirectUrl" -}}
-  {{- if .Values.hoppscotch.backend.redirectUrl -}}
-    {{- .Values.hoppscotch.backend.redirectUrl -}}
-  {{- else -}}
-    {{- include "hoppscotch.frontend.baseUrl" . -}}
   {{- end -}}
 {{- end -}}
 
