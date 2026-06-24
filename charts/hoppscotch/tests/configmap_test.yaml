@@ -15,6 +15,8 @@ tests:
           appTosLink: https://example.com/tos
           appPrivacyPolicyLink: https://example.com/privacy
           enableSubpathBasedAccess: true
+          proxyAppUrl: https://proxy.example.com
+          proxyscotchAccessToken: proxy-token
     asserts:
       - containsDocument:
           apiVersion: v1
@@ -49,53 +51,22 @@ tests:
       - equal:
           path: data.ENABLE_SUBPATH_BASED_ACCESS
           value: "true"
+      - equal:
+          path: data.PROXY_APP_URL
+          value: https://proxy.example.com
+      - equal:
+          path: data.VITE_PROXYSCOTCH_ACCESS_TOKEN
+          value: proxy-token
 
   - it: should render backend parameters when explicitly set
     set:
       hoppscotch:
         backend:
           aioAlternatePort: 3000
-          authToken:
-            tokenSaltComplexity: 10
-            magicLinkTokenValidity: 3
-            refreshTokenValidity: "604800000"
-            accessTokenValidity: "86400000"
-          allowSecureCookies: true
-          redirectUrl: https://example.com
+          trustProxy: true
           whitelistedOrigins:
             - https://example.com
             - app://example.com
-          auth:
-            allowedProviders:
-              - google
-              - github
-              - microsoft
-              - email
-            google:
-              callbackUrl: https://example.com/auth/google/callback
-              scope:
-                - email
-                - profile
-            github:
-              callbackUrl: https://example.com/auth/github/callback
-              scope:
-                - user:email
-            microsoft:
-              callbackUrl: https://example.com/auth/microsoft/callback
-              scope:
-                - user.read
-              tenant: common
-          mailer:
-            smtpEnabled: true
-            useCustomConfigs: false
-            addressFrom: no-reply@example.com
-            smtpHost: smtp.example.com
-            smtpPort: 465
-            smtpSecure: true
-            tlsRejectUnauthorized: true
-          rateLimit:
-            ttl: 60
-            max: 100
     asserts:
       - containsDocument:
           apiVersion: v1
@@ -109,81 +80,11 @@ tests:
           path: data.HOPP_AIO_ALTERNATE_PORT
           value: "3000"
       - equal:
-          path: data.TOKEN_SALT_COMPLEXITY
-          value: "10"
-      - equal:
-          path: data.MAGIC_LINK_TOKEN_VALIDITY
-          value: "3"
-      - equal:
-          path: data.REFRESH_TOKEN_VALIDITY
-          value: "604800000"
-      - equal:
-          path: data.ACCESS_TOKEN_VALIDITY
-          value: "86400000"
-      - equal:
-          path: data.ALLOW_SECURE_COOKIES
+          path: data.TRUST_PROXY
           value: "true"
-      - equal:
-          path: data.REDIRECT_URL
-          value: https://example.com
       - equal:
           path: data.WHITELISTED_ORIGINS
           value: "https://example.com,app://example.com"
-      - equal:
-          path: data.VITE_ALLOWED_AUTH_PROVIDERS
-          value: "GOOGLE,GITHUB,MICROSOFT,EMAIL"
-      - equal:
-          path: data.GOOGLE_CALLBACK_URL
-          value: https://example.com/auth/google/callback
-      - equal:
-          path: data.GOOGLE_SCOPE
-          value: "email,profile"
-      - equal:
-          path: data.GITHUB_CALLBACK_URL
-          value: https://example.com/auth/github/callback
-      - equal:
-          path: data.GITHUB_SCOPE
-          value: "user:email"
-      - equal:
-          path: data.MICROSOFT_CALLBACK_URL
-          value: https://example.com/auth/microsoft/callback
-      - equal:
-          path: data.MICROSOFT_SCOPE
-          value: "user.read"
-      - equal:
-          path: data.MICROSOFT_TENANT
-          value: common
-      - equal:
-          path: data.MAILER_SMTP_ENABLE
-          value: "true"
-      - equal:
-          path: data.MAILER_USE_CUSTOM_CONFIGS
-          value: "false"
-      - equal:
-          path: data.MAILER_ADDRESS_FROM
-          value: no-reply@example.com
-      - equal:
-          path: data.MAILER_SMTP_HOST
-          value: smtp.example.com
-      - equal:
-          path: data.MAILER_SMTP_PORT
-          value: "465"
-      - equal:
-          path: data.MAILER_SMTP_SECURE
-          value: "true"
-      - notExists:
-          path: data.MAILER_SMTP_USER
-      - notExists:
-          path: data.MAILER_SMTP_PASSWORD
-      - equal:
-          path: data.MAILER_TLS_REJECT_UNAUTHORIZED
-          value: "true"
-      - equal:
-          path: data.RATE_LIMIT_TTL
-          value: "60"
-      - equal:
-          path: data.RATE_LIMIT_MAX
-          value: "100"
 
   - it: should render enterprise parameters when explicitly set
     set:
@@ -192,46 +93,11 @@ tests:
           localProxyServerEnabled: true
           proxyAppUrl: https://proxy.example.com
         backend:
-          auth:
-            githubEnterprise:
-              enabled: true
-              authorizationUrl: https://github.example.com/login/oauth/authorize
-              tokenUrl: https://github.example.com/login/oauth/access_token
-              userProfileUrl: https://github.example.com/users
-              userEmailUrl: https://github.example.com/user/emails
-            saml:
-              issuer: https://saml.example.com
-              audience: https://example.com
-              callbackUrl: https://example.com/v1/auth/saml/callback
-              entryPoint: https://saml.example.com/saml
-              wantAssertionsSigned: true
-              wantResponseSigned: true
-            oidc:
-              providerName: oidc-provider
-              issuer: https://oidc.example.com
-              authorizationUrl: https://oidc.example.com/auth
-              tokenUrl: https://oidc.example.com/token
-              userInfoUrl: https://oidc.example.com/userinfo
-              callbackUrl: https://example.com/v1/auth/oidc/callback
-            scope:
-              - openid
-              - profile
-              - email
-          clickhouse:
-            allowAuditLogs: true
           horizontalScalingEnabled: true
-      externalClickhouse:
-        host: clickhouse.example.com
-        port: 8123
     asserts:
       - containsDocument:
           apiVersion: v1
           kind: ConfigMap
-      - equal:
-          path: metadata.name
-          value: release-name-hoppscotch
-      - notExists:
-          path: data.ENTERPRISE_LICENSE_KEY
       - equal:
           path: data.LOCAL_PROXY_SERVER_ENABLE
           value: "true"
@@ -239,353 +105,61 @@ tests:
           path: data.PROXY_APP_URL
           value: https://proxy.example.com
       - equal:
-          path: data.IS_GITHUB_ENTERPRISE_ENABLED
-          value: "true"
-      - equal:
-          path: data.GITHUB_AUTHORIZATION_URL
-          value: https://github.example.com/login/oauth/authorize
-      - equal:
-          path: data.GITHUB_TOKEN_URL
-          value: https://github.example.com/login/oauth/access_token
-      - equal:
-          path: data.GITHUB_USER_PROFILE_URL
-          value: https://github.example.com/users
-      - equal:
-          path: data.GITHUB_USER_EMAIL_URL
-          value: https://github.example.com/user/emails
-      - equal:
-          path: data.SAML_ISSUER
-          value: https://saml.example.com
-      - equal:
-          path: data.SAML_AUDIENCE
-          value: https://example.com
-      - equal:
-          path: data.SAML_CALLBACK_URL
-          value: https://example.com/v1/auth/saml/callback
-      - equal:
-          path: data.SAML_CERT
-          value: ""
-      - equal:
-          path: data.SAML_ENTRY_POINT
-          value: https://saml.example.com/saml
-      - equal:
-          path: data.SAML_WANT_ASSERTIONS_SIGNED
-          value: "true"
-      - equal:
-          path: data.SAML_WANT_RESPONSE_SIGNED
-          value: "true"
-      - equal:
-          path: data.OIDC_PROVIDER_NAME
-          value: oidc-provider
-      - equal:
-          path: data.OIDC_ISSUER
-          value: https://oidc.example.com
-      - equal:
-          path: data.OIDC_AUTH_URL
-          value: https://oidc.example.com/auth
-      - equal:
-          path: data.OIDC_TOKEN_URL
-          value: https://oidc.example.com/token
-      - equal:
-          path: data.OIDC_USER_INFO_URL
-          value: https://oidc.example.com/userinfo
-      - notExists:
-          path: data.OIDC_CLIENT_ID
-      - notExists:
-          path: data.OIDC_CLIENT_SECRET
-      - equal:
-          path: data.OIDC_CALLBACK_URL
-          value: https://example.com/v1/auth/oidc/callback
-      - equal:
-          path: data.OIDC_SCOPE
-          value: "openid profile email"
-      - equal:
-          path: data.ALLOW_AUDIT_LOGS
-          value: "true"
-      - equal:
-          path: data.CLICKHOUSE_HOST
-          value: clickhouse.example.com:8123
-      - notExists:
-          path: data.CLICKHOUSE_USER
-      - notExists:
-          path: data.CLICKHOUSE_PASSWORD
-      - equal:
           path: data.HORIZONTAL_SCALING
           value: "true"
+
+  - it: should not render env vars that moved to the admin dashboard
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
       - notExists:
-          path: data.REDIS_URL
-
-  - it: should default custom SMTP port to 587
-    set:
-      hoppscotch:
-        backend:
-          mailer:
-            smtpPort: 587
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.MAILER_SMTP_PORT
-          value: "587"
-
-  - it: should generate auth callback URL for GitHub when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.GITHUB_CALLBACK_URL
-          value: https://example.com/backend/v1/auth/github/callback
-
-  - it: should generate auth callback URL for GitHub when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.GITHUB_CALLBACK_URL
-          value: https://backend.example.com/v1/auth/github/callback
-
-  - it: should generate auth callback URL for Google when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.GOOGLE_CALLBACK_URL
-          value: https://example.com/backend/v1/auth/google/callback
-
-  - it: should generate auth callback URL for Google when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.GOOGLE_CALLBACK_URL
-          value: https://backend.example.com/v1/auth/google/callback
-
-  - it: should generate auth callback URL for Microsoft when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.MICROSOFT_CALLBACK_URL
-          value: https://example.com/backend/v1/auth/microsoft/callback
-
-  - it: should generate auth callback URL for Microsoft when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.MICROSOFT_CALLBACK_URL
-          value: https://backend.example.com/v1/auth/microsoft/callback
-
-  - it: should generate auth callback URL for OIDC when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.OIDC_CALLBACK_URL
-          value: https://example.com/backend/v1/auth/oidc/callback
-
-  - it: should generate auth callback URL for OIDC when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.OIDC_CALLBACK_URL
-          value: https://backend.example.com/v1/auth/oidc/callback
-
-  - it: should generate auth callback URL for SAML when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.SAML_CALLBACK_URL
-          value: https://example.com/backend/v1/auth/saml/callback
-
-  - it: should generate auth callback URL for SAML when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.SAML_CALLBACK_URL
-          value: https://backend.example.com/v1/auth/saml/callback
-
-  - it: should generate backend redirect URL when deployment mode is aio and ingress is enabled
-    set:
-      deploymentMode: aio
-      aio:
-        subpathBasedAccess: true
-        ingress:
-          enabled: true
-          hostname: example.com
-          tls: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
+          path: data.MAILER_SMTP_ENABLE
+      - notExists:
+          path: data.MAILER_SMTP_HOST
+      - notExists:
+          path: data.RATE_LIMIT_TTL
+      - notExists:
+          path: data.RATE_LIMIT_MAX
+      - notExists:
+          path: data.TOKEN_SALT_COMPLEXITY
+      - notExists:
+          path: data.MAGIC_LINK_TOKEN_VALIDITY
+      - notExists:
+          path: data.ACCESS_TOKEN_VALIDITY
+      - notExists:
+          path: data.REFRESH_TOKEN_VALIDITY
+      - notExists:
+          path: data.ALLOW_SECURE_COOKIES
+      - notExists:
           path: data.REDIRECT_URL
-          value: https://example.com
+      - notExists:
+          path: data.VITE_ALLOWED_AUTH_PROVIDERS
+      - notExists:
+          path: data.GOOGLE_CALLBACK_URL
+      - notExists:
+          path: data.GITHUB_CALLBACK_URL
+      - notExists:
+          path: data.MICROSOFT_CALLBACK_URL
+      - notExists:
+          path: data.SAML_CALLBACK_URL
+      - notExists:
+          path: data.OIDC_CALLBACK_URL
+      - notExists:
+          path: data.IS_GITHUB_ENTERPRISE_ENABLED
+      - notExists:
+          path: data.ALLOW_AUDIT_LOGS
+      - notExists:
+          path: data.CLICKHOUSE_HOST
 
-  - it: should generate backend redirect URL when deployment mode is distributed and ingress is enabled
-    set:
-      deploymentMode: distributed
-      frontend:
-        ingress:
-          enabled: true
-          hostname: frontend.example.com
-          tls: true
-      backend:
-        ingress:
-          enabled: true
-          hostname: backend.example.com
-          tls: true
-      admin:
-        ingress:
-          enabled: true
-          hostname: admin.example.com
-          tls: true
+  - it: should default trust proxy to false
     asserts:
       - containsDocument:
           apiVersion: v1
           kind: ConfigMap
       - equal:
-          path: data.REDIRECT_URL
-          value: https://frontend.example.com
+          path: data.TRUST_PROXY
+          value: "false"
 
   - it: should generate backend whitelisted origins when deployment mode is aio and ingress is enabled
     set:
@@ -933,94 +507,3 @@ tests:
       - equal:
           path: data.ENABLE_SUBPATH_BASED_ACCESS
           value: "false"
-
-  - it: should set allow audit logs to true when hoppscotch backend allow audit logs is enabled
-    set:
-      hoppscotch:
-        backend:
-          allowAuditLogs: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.ALLOW_AUDIT_LOGS
-          value: "true"
-
-  - it: should set allow audit logs to false when hoppscotch backend allow audit logs is disabled
-    set:
-      hoppscotch:
-        backend:
-          allowAuditLogs: false
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.ALLOW_AUDIT_LOGS
-          value: "false"
-
-  - it: should set allow audit logs to true when hoppscotch backend clickhouse allow audit logs is enabled
-    set:
-      hoppscotch:
-        backend:
-          clickhouse:
-            allowAuditLogs: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.ALLOW_AUDIT_LOGS
-          value: "true"
-
-  - it: should set allow audit logs to false when hoppscotch backend clickhouse allow audit logs is disabled
-    set:
-      hoppscotch:
-        backend:
-          clickhouse:
-            allowAuditLogs: false
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.ALLOW_AUDIT_LOGS
-          value: "false"
-
-  - it: should set clickhouse host to clickhouse values
-    set:
-      clickhouse:
-        enabled: true
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.CLICKHOUSE_HOST
-          value: RELEASE-NAME-clickhouse.NAMESPACE.svc.cluster.local:8123
-
-  - it: should set clickhouse host to external clickhouse values with default port
-    set:
-      externalClickhouse:
-        host: external-clickhouse
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.CLICKHOUSE_HOST
-          value: external-clickhouse:8123
-
-  - it: should set clickhouse host to external clickhouse values with custom port
-    set:
-      externalClickhouse:
-        host: external-clickhouse
-        port: 1234
-    asserts:
-      - containsDocument:
-          apiVersion: v1
-          kind: ConfigMap
-      - equal:
-          path: data.CLICKHOUSE_HOST
-          value: external-clickhouse:1234
