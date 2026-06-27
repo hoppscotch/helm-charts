@@ -1,5 +1,4 @@
-{{- if .Values.enterprise.config.clickhouse.allowAuditLogs }}
-{{- if not .Values.enterprise.config.clickhouse.external }}
+{{- if .Values.enterprise.config.clickhouse.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -67,5 +66,4 @@ spec:
     name: clickhouse
   selector:
     app: {{ .Release.Name }}-clickhouse
-{{- end }}
 {{- end }}

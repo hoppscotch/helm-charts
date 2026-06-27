@@ -90,226 +90,30 @@ hoppscotch:
     # -- URL of proxy server for routing API requests (optional). Enterprise Edition required.
     # @section -- Hoppscotch Application Parameters
     proxyAppUrl: ""
+    # -- Access token for the default proxy server (leave empty if not required)
+    # @section -- Hoppscotch Application Parameters
+    proxyscotchAccessToken: ""
 
   backend:
     # -- Alternate port for AIO container endpoint when using subpath access mode
     # @section -- Hoppscotch Application Parameters
     aioAlternatePort: 80
 
-    authToken:
-      # -- Secret key for JWT token generation and validation (auto-generated if empty)
-      # @section -- Hoppscotch Application Parameters
-      jwtSecret: ""
-      # -- Complexity of the SALT used for hashing (higher = more secure)
-      # @section -- Hoppscotch Application Parameters
-      tokenSaltComplexity: 10
-      # -- Duration of magic link token validity for sign-in (in days)
-      # @section -- Hoppscotch Application Parameters
-      magicLinkTokenValidity: 3
-      # -- Validity of refresh token for authentication (in milliseconds)
-      # @section -- Hoppscotch Application Parameters
-      refreshTokenValidity: "604800000"
-      # -- Validity of access token for authentication (in milliseconds)
-      # @section -- Hoppscotch Application Parameters
-      accessTokenValidity: "86400000"
-      # -- Secret key for session management (auto-generated if empty)
-      # @section -- Hoppscotch Application Parameters
-      sessionSecret: ""
-
-    # -- Allow secure cookies (recommended for HTTPS deployments)
-    # @section -- Hoppscotch Application Parameters
-    allowSecureCookies: true
     # -- 32-character key for encrypting sensitive data stored in database (auto-generated if empty)
     # @section -- Hoppscotch Application Parameters
     dataEncryptionKey: ""
 
-    # -- Fallback URL for debugging when redirects fail
+    # -- If true, the client's IP is read from the left-most entry of the X-Forwarded-For header
     # @section -- Hoppscotch Application Parameters
-    redirectUrl: ""
+    trustProxy: false
 
     # -- List of origins allowed to interact with the app through cross-origin requests
     # @section -- Hoppscotch Application Parameters
     whitelistedOrigins: []
 
-    auth:
-      # -- List of allowed authentication providers (email, google, github, microsoft, oidc, saml)
-      # @section -- Hoppscotch Application Parameters
-      allowedProviders:
-        - email
-
-      google:
-        # -- Google OAuth client ID
-        # @section -- Hoppscotch Application Parameters
-        clientId: ""
-        # -- Google OAuth client secret
-        # @section -- Hoppscotch Application Parameters
-        clientSecret: ""
-        # -- Google OAuth callback URL
-        # @section -- Hoppscotch Application Parameters
-        callbackUrl: ""
-        # -- Google OAuth scopes to request
-        # @section -- Hoppscotch Application Parameters
-        scope:
-          - email
-          - profile
-
-      github:
-        # -- GitHub OAuth client ID
-        # @section -- Hoppscotch Application Parameters
-        clientId: ""
-        # -- GitHub OAuth client secret
-        # @section -- Hoppscotch Application Parameters
-        clientSecret: ""
-        # -- GitHub OAuth callback URL
-        # @section -- Hoppscotch Application Parameters
-        callbackUrl: ""
-        # -- GitHub OAuth scopes to request
-        # @section -- Hoppscotch Application Parameters
-        scope:
-          - user:email
-
-      githubEnterprise:
-        # -- Enable GitHub Enterprise authentication. Enterprise Edition required.
-        # @section -- Hoppscotch Application Parameters
-        enabled: false
-        # -- GitHub Enterprise authorization URL
-        # @section -- Hoppscotch Application Parameters
-        authorizationUrl: ""
-        # -- GitHub Enterprise token URL
-        # @section -- Hoppscotch Application Parameters
-        tokenUrl: ""
-        # -- GitHub Enterprise user profile URL
-        # @section -- Hoppscotch Application Parameters
-        userProfileUrl: ""
-        # -- GitHub Enterprise user email URL
-        # @section -- Hoppscotch Application Parameters
-        userEmailUrl: ""
-
-      microsoft:
-        # -- Microsoft OAuth client ID
-        # @section -- Hoppscotch Application Parameters
-        clientId: ""
-        # -- Microsoft OAuth client secret
-        # @section -- Hoppscotch Application Parameters
-        clientSecret: ""
-        # -- Microsoft OAuth callback URL
-        # @section -- Hoppscotch Application Parameters
-        callbackUrl: ""
-        # -- Microsoft OAuth scopes to request
-        # @section -- Hoppscotch Application Parameters
-        scope: user.read
-        # -- Microsoft OAuth tenant ID (common for multi-tenant apps)
-        # @section -- Hoppscotch Application Parameters
-        tenant: ""
-
-      oidc:
-        # -- OIDC provider display name
-        # @section -- Hoppscotch Application Parameters
-        providerName: ""
-        # -- OIDC issuer URL
-        # @section -- Hoppscotch Application Parameters
-        issuer: ""
-        # -- OIDC authorization URL
-        # @section -- Hoppscotch Application Parameters
-        authorizationUrl: ""
-        # -- OIDC token URL
-        # @section -- Hoppscotch Application Parameters
-        tokenUrl: ""
-        # -- OIDC user info URL
-        # @section -- Hoppscotch Application Parameters
-        userInfoUrl: ""
-        # -- OIDC client ID
-        # @section -- Hoppscotch Application Parameters
-        clientId: ""
-        # -- OIDC client secret
-        # @section -- Hoppscotch Application Parameters
-        clientSecret: ""
-        # -- OIDC callback URL
-        # @section -- Hoppscotch Application Parameters
-        callbackUrl: ""
-        # -- OIDC scopes to request
-        # @section -- Hoppscotch Application Parameters
-        scope:
-          - openid
-          - profile
-          - email
-
-      saml:
-        # -- SAML issuer identifier. Enterprise Edition required.
-        # @section -- Hoppscotch Application Parameters
-        issuer: ""
-        # -- SAML audience identifier
-        # @section -- Hoppscotch Application Parameters
-        audience: ""
-        # -- SAML callback URL
-        # @section -- Hoppscotch Application Parameters
-        callbackUrl: ""
-        # -- SAML certificate for signature verification
-        # @section -- Hoppscotch Application Parameters
-        cert: ""
-        # -- SAML identity provider entry point URL
-        # @section -- Hoppscotch Application Parameters
-        entryPoint: ""
-        # -- Require signed SAML assertions
-        # @section -- Hoppscotch Application Parameters
-        wantAssertionsSigned: true
-        # -- Require signed SAML responses
-        # @section -- Hoppscotch Application Parameters
-        wantResponseSigned: false
-
-    mailer:
-      # -- Enable SMTP mailer for email delivery
-      # @section -- Hoppscotch Application Parameters
-      smtpEnabled: true
-      # -- Use custom SMTP configuration instead of SMTP URL
-      # @section -- Hoppscotch Application Parameters
-      useCustomConfigs: false
-      # -- Email address to use as sender
-      # @section -- Hoppscotch Application Parameters
-      addressFrom: no-reply@example.com
-      # -- SMTP URL for email delivery (used when useCustomConfigs is false)
-      # @section -- Hoppscotch Application Parameters
-      smtpUrl: smtps://user:pass@smtp.example.com
-      # -- SMTP host (used when useCustomConfigs is true)
-      # @section -- Hoppscotch Application Parameters
-      smtpHost: ""
-      # -- SMTP port (used when useCustomConfigs is true)
-      # @section -- Hoppscotch Application Parameters
-      smtpPort: 587
-      # -- Use secure connection for SMTP (used when useCustomConfigs is true)
-      # @section -- Hoppscotch Application Parameters
-      smtpSecure: true
-      # -- SMTP username (used when useCustomConfigs is true)
-      # @section -- Hoppscotch Application Parameters
-      smtpUser: ""
-      # -- SMTP password (used when useCustomConfigs is true)
-      # @section -- Hoppscotch Application Parameters
-      smtpPassword: ""
-      # -- Reject unauthorized TLS connections
-      # @section -- Hoppscotch Application Parameters
-      tlsRejectUnauthorized: true
-
-    rateLimit:
-      # -- Time window for rate limiting (in seconds)
-      # @section -- Hoppscotch Application Parameters
-      ttl: 60
-      # -- Maximum number of requests per IP within TTL window
-      # @section -- Hoppscotch Application Parameters
-      max: 100
-
     # -- Enterprise license key for Hoppscotch Enterprise features
     # @section -- Hoppscotch Application Parameters
     enterpriseLicenseKey: ""
-
-    # -- Enable audit logs collection to ClickHouse. Enterprise Edition required.
-    # @section -- Hoppscotch Application Parameters
-    allowAuditLogs: false
-
-    # @ignored
-    clickhouse:
-      # -- Enable audit logs collection to ClickHouse. Enterprise Edition required. Deprecated: use `hoppscotch.backend.allowAuditLogs` instead.
-      # @section -- Hoppscotch Application Parameters
-      allowAuditLogs: false
 
     # -- Enable horizontal scaling with Redis for state management. Enterprise Edition required.
     # @section -- Hoppscotch Application Parameters
@@ -2007,7 +1811,7 @@ externalRedis:
 ## ClickHouse Parameters
 
 clickhouse:
-  # -- Enable ClickHouse subchart
+  # -- Enable the bundled ClickHouse subchart for enterprise audit logs. No CLICKHOUSE_* env is injected into the app; configure the connection and audit-log toggles from the admin dashboard. Enterprise Edition required.
   # @section -- ClickHouse Parameters
   enabled: false
   defaultInitContainers:
@@ -2044,23 +1848,3 @@ clickhouse:
       # -- ClickHouse Keeper image repository
       # @section -- ClickHouse Parameters
       repository: bitnamilegacy/clickhouse-keeper
-
-externalClickhouse:
-  # -- External ClickHouse host
-  # @section -- ClickHouse Parameters
-  host: ""
-  # -- External ClickHouse port
-  # @section -- ClickHouse Parameters
-  port: 8123
-  # -- External ClickHouse username
-  # @section -- ClickHouse Parameters
-  user: ""
-  # -- External ClickHouse password
-  # @section -- ClickHouse Parameters
-  password: ""
-  # -- Existing secret containing external ClickHouse credentials
-  # @section -- ClickHouse Parameters
-  existingSecret: ""
-  # -- Key in existing secret containing password
-  # @section -- ClickHouse Parameters
-  existingSecretPasswordKey: ""

@@ -33,34 +33,20 @@ community:
       username: hoppscotch
       password: hoppscotch123
 
-    mailer:
-      enable: false
-      useCustomConfigs: false
-      addressFrom: '"Dummy Name" <dummy@example.com>'
-      smtp:
-        url: "smtps://user:pass@smtp.example.com"
-        host: "smtp.example.com"
-        port: "587"
-        secure: false
-        user: "user"
-        password: "password"
-        tlsRejectUnauthorized: false
-
-    rateLimit:
-      ttl: 60
-      max: 100
-
     affinityEnabled: false
     nodeHostnames: "node-1,node-2" # Example: "node-3,node-4"
 
-    authjwt:
-      sessionSecret: "dummySessionSecret"
-      jwtSecret: "dummyJwtSecret"
-      tokenSaltComplexity: 10
-      magicLinkTokenValidity: 3
-      refreshTokenValidity: "1d"
-      accessTokenValidity: "1d"
-      dataEncryptionKey: "data encryption key with 32 char"
+    # 32-character key for encrypting sensitive data stored in the database
+    dataEncryptionKey: "data encryption key with 32 char"
+
+    # If true, the client's IP is read from the left-most entry of X-Forwarded-For
+    trustProxy: false
+
+    proxy:
+      # Default proxy URL offered to clients when proxying is enabled
+      appUrl: "https://proxy.hoppscotch.io"
+      # Access token for the proxy server (leave empty if not required)
+      proxyscotchAccessToken: ""
 
     urls:
       base: "http://frontend.example.com"
@@ -70,31 +56,7 @@ community:
         gql: "http://backend.example.com/graphql"
         ws: "ws://backend.example.com/graphql"
         api: "http://backend.example.com/v1"
-      redirect: "http://frontend.example.com"
       whitelistedOrigins: "http://backend.example.com,http://frontend.example.com,http://admin.example.com"
-
-    auth:
-      allowedProviders: "EMAIL" # "GOOGLE,MICROSOFT,GITHUB,EMAIL"
-
-      existingSecret: ""
-      google:
-        clientId: "" # "dummyGoogleClientId"
-        clientSecret: "" # "dummyGoogleClientSecret"
-        callbackUrl: "" # "http://backend.example.com/v1/auth/google/callback"
-        scope: "" # "email,profile"
-
-      github:
-        clientId: "" # "dummyGithubClientId"
-        clientSecret: "" # "dummyGithubClientSecret"
-        callbackUrl: "" # "http://backend.example.com/v1/auth/github/callback"
-        scope: "" # "user:email"
-
-      microsoft:
-        clientId: "" # "dummyMicrosoftClientId"
-        clientSecret: "" # "dummyMicrosoftClientSecret"
-        callbackUrl: "" # "http://backend.example.com/v1/auth/microsoft/callback"
-        scope: "" # "user.read"
-        tenant: "" # "dummyTenantId"
 
     community:
       enableSubpathBasedAccess: false

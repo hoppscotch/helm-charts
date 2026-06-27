@@ -11,65 +11,23 @@ metadata:
     {{- toYaml .Values.commonAnnotations | nindent 4 }}
   {{- end }}
 data:
-  ACCESS_TOKEN_VALIDITY: {{ .Values.hoppscotch.backend.authToken.accessTokenValidity | quote }}
-  ALLOW_AUDIT_LOGS: {{ or .Values.hoppscotch.backend.allowAuditLogs .Values.hoppscotch.backend.clickhouse.allowAuditLogs | quote }}
-  ALLOW_SECURE_COOKIES: {{ .Values.hoppscotch.backend.allowSecureCookies | quote }}
-  CLICKHOUSE_HOST: {{ include "hoppscotch.secret.clickhouseHost" . | quote }}
   {{- if eq .Values.deploymentMode "aio" }}
   ENABLE_SUBPATH_BASED_ACCESS: {{ .Values.hoppscotch.frontend.enableSubpathBasedAccess | quote }}
   {{- else }}
   ENABLE_SUBPATH_BASED_ACCESS: "false"
   {{- end }}
-  GITHUB_AUTHORIZATION_URL: {{ .Values.hoppscotch.backend.auth.githubEnterprise.authorizationUrl | quote }}
-  GITHUB_CALLBACK_URL: {{ include "hoppscotch.backend.githubCallbackUrl" . | quote }}
-  GITHUB_SCOPE: {{ .Values.hoppscotch.backend.auth.github.scope | join "," | quote }}
-  GITHUB_TOKEN_URL: {{ .Values.hoppscotch.backend.auth.githubEnterprise.tokenUrl | quote }}
-  GITHUB_USER_EMAIL_URL: {{ .Values.hoppscotch.backend.auth.githubEnterprise.userEmailUrl | quote }}
-  GITHUB_USER_PROFILE_URL: {{ .Values.hoppscotch.backend.auth.githubEnterprise.userProfileUrl | quote }}
-  GOOGLE_CALLBACK_URL: {{ include "hoppscotch.backend.googleCallbackUrl" . | quote }}
-  GOOGLE_SCOPE: {{ .Values.hoppscotch.backend.auth.google.scope | join "," | quote }}
   HOPP_AIO_ALTERNATE_PORT: {{ .Values.hoppscotch.backend.aioAlternatePort | quote }}
   HORIZONTAL_SCALING: {{ .Values.hoppscotch.backend.horizontalScalingEnabled | quote }}
-  IS_GITHUB_ENTERPRISE_ENABLED: {{ .Values.hoppscotch.backend.auth.githubEnterprise.enabled | quote }}
   LOCAL_PROXY_SERVER_ENABLE: {{ .Values.hoppscotch.frontend.localProxyServerEnabled | quote }}
-  MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.hoppscotch.backend.authToken.magicLinkTokenValidity | quote }}
-  MAILER_ADDRESS_FROM: {{ .Values.hoppscotch.backend.mailer.addressFrom | quote }}
-  MAILER_SMTP_ENABLE: {{ .Values.hoppscotch.backend.mailer.smtpEnabled | quote }}
-  MAILER_SMTP_HOST: {{ .Values.hoppscotch.backend.mailer.smtpHost | quote }}
-  MAILER_SMTP_PORT: {{ .Values.hoppscotch.backend.mailer.smtpPort | quote }}
-  MAILER_SMTP_SECURE: {{ .Values.hoppscotch.backend.mailer.smtpSecure | quote }}
-  MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.hoppscotch.backend.mailer.tlsRejectUnauthorized | quote }}
-  MAILER_USE_CUSTOM_CONFIGS: {{ .Values.hoppscotch.backend.mailer.useCustomConfigs | quote }}
-  MICROSOFT_CALLBACK_URL: {{ include "hoppscotch.backend.microsoftCallbackUrl" . | quote }}
-  MICROSOFT_SCOPE: {{ .Values.hoppscotch.backend.auth.microsoft.scope | join "," | quote }}
-  MICROSOFT_TENANT: {{ .Values.hoppscotch.backend.auth.microsoft.tenant | quote }}
-  OIDC_AUTH_URL: {{ .Values.hoppscotch.backend.auth.oidc.authorizationUrl | quote }}
-  OIDC_CALLBACK_URL: {{ include "hoppscotch.backend.oidcCallbackUrl" . | quote }}
-  OIDC_ISSUER: {{  .Values.hoppscotch.backend.auth.oidc.issuer | quote }}
-  OIDC_PROVIDER_NAME: {{  .Values.hoppscotch.backend.auth.oidc.providerName | quote }}
-  OIDC_SCOPE: {{ .Values.hoppscotch.backend.auth.oidc.scope | join " " | quote }}
-  OIDC_TOKEN_URL: {{ .Values.hoppscotch.backend.auth.oidc.tokenUrl | quote }}
-  OIDC_USER_INFO_URL: {{ .Values.hoppscotch.backend.auth.oidc.userInfoUrl | quote }}
   PROXY_APP_URL: {{ .Values.hoppscotch.frontend.proxyAppUrl | quote }}
-  RATE_LIMIT_TTL: {{ .Values.hoppscotch.backend.rateLimit.ttl | quote }}
-  RATE_LIMIT_MAX: {{ .Values.hoppscotch.backend.rateLimit.max | quote }}
-  REDIRECT_URL: {{ include "hoppscotch.backend.redirectUrl" . | quote }}
-  REFRESH_TOKEN_VALIDITY: {{ .Values.hoppscotch.backend.authToken.refreshTokenValidity | quote }}
-  SAML_AUDIENCE: {{ .Values.hoppscotch.backend.auth.saml.audience | quote }}
-  SAML_CALLBACK_URL: {{ include "hoppscotch.backend.samlCallbackUrl" . | quote }}
-  SAML_CERT: {{ .Values.hoppscotch.backend.auth.saml.cert | quote }}
-  SAML_ENTRY_POINT: {{ .Values.hoppscotch.backend.auth.saml.entryPoint | quote }}
-  SAML_ISSUER: {{ .Values.hoppscotch.backend.auth.saml.issuer | quote }}
-  SAML_WANT_ASSERTIONS_SIGNED: {{ .Values.hoppscotch.backend.auth.saml.wantAssertionsSigned | quote }}
-  SAML_WANT_RESPONSE_SIGNED: {{ .Values.hoppscotch.backend.auth.saml.wantResponseSigned | quote }}
-  TOKEN_SALT_COMPLEXITY: {{ .Values.hoppscotch.backend.authToken.tokenSaltComplexity | quote }}
+  TRUST_PROXY: {{ .Values.hoppscotch.backend.trustProxy | quote }}
   VITE_ADMIN_URL: {{ include "hoppscotch.frontend.adminUrl" . | quote }}
-  VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.hoppscotch.backend.auth.allowedProviders | join "," | upper | quote }}
   VITE_APP_PRIVACY_POLICY_LINK: {{ .Values.hoppscotch.frontend.appPrivacyPolicyLink | quote }}
   VITE_APP_TOS_LINK: {{ .Values.hoppscotch.frontend.appTosLink | quote }}
   VITE_BACKEND_API_URL: {{ include "hoppscotch.frontend.backendApiUrl" . | quote }}
   VITE_BACKEND_GQL_URL: {{ include "hoppscotch.frontend.backendGqlUrl" . | quote }}
   VITE_BACKEND_WS_URL: {{ include "hoppscotch.frontend.backendWsUrl" . | quote }}
   VITE_BASE_URL: {{ include "hoppscotch.frontend.baseUrl" . | quote }}
+  VITE_PROXYSCOTCH_ACCESS_TOKEN: {{ .Values.hoppscotch.frontend.proxyscotchAccessToken | quote }}
   VITE_SHORTCODE_BASE_URL: {{ include "hoppscotch.frontend.shortcodeBaseUrl" . | quote }}
   WHITELISTED_ORIGINS: {{ include "hoppscotch.backend.whitelistedOrigins" . | quote }}
