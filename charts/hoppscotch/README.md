@@ -459,6 +459,32 @@ aio:
     targetPort: http-frontend
 ```
 
+#### Container image requirements
+
+Under `restricted-v2` the container also runs with a random UID that does not own the image filesystem. At
+startup the all-in-one image writes a `build.env` file into its application directory (`/usr/src/app`); when
+that path is not writable by the assigned UID the pod fails with `EACCES: permission denied, open 'build.env'`.
+Stock Hoppscotch images are not yet arbitrary-UID-safe, so on `restricted-v2` use one of the following:
+
+- Grant the release ServiceAccount the `anyuid` SCC (requires a cluster administrator), which runs the
+  container as the image's own user:
+
+  ```bash
+  oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
+  ```
+
+- Or build a thin derived image that makes the application directory writable by the root group (GID `0`),
+  which the UID assigned by OpenShift always belongs to:
+
+  ```dockerfile
+  FROM hoppscotch/hoppscotch:latest
+  USER root
+  RUN chgrp -R 0 /usr/src/app && chmod -R g=u /usr/src/app
+  ```
+
+  Point `aio.image` (or the distributed component images) at the result. The long-term fix is for the upstream
+  images to apply the same adjustment, after which no workaround is needed.
+
 ## Parameters
 
 <!-- markdownlint-disable MD013 MD034 -->
