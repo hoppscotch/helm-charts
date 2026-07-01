@@ -9,27 +9,10 @@ metadata:
   annotations:
     purpose: "community-configuration"
 data:
-  # Mailer (non-sensitive)
-  MAILER_SMTP_ENABLE: {{ .Values.community.config.mailer.enable | quote }}
-  MAILER_USE_CUSTOM_CONFIGS: {{ .Values.community.config.mailer.useCustomConfigs | quote }}
-  MAILER_ADDRESS_FROM: {{ .Values.community.config.mailer.addressFrom | quote }}
-  MAILER_SMTP_URL: {{ .Values.community.config.mailer.smtp.url | quote }}
-  MAILER_SMTP_HOST: {{ .Values.community.config.mailer.smtp.host | quote }}
-  MAILER_SMTP_PORT: {{ .Values.community.config.mailer.smtp.port | quote }}
-  MAILER_SMTP_SECURE: {{ .Values.community.config.mailer.smtp.secure | quote }}
-  MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.community.config.mailer.smtp.tlsRejectUnauthorized | quote }}
-
   # Rate Limit
   RATE_LIMIT_TTL: {{ .Values.community.config.rateLimit.ttl | quote }}
   RATE_LIMIT_MAX: {{ .Values.community.config.rateLimit.max | quote }}
-
-  # Auth Tokens (non-sensitive)
-  TOKEN_SALT_COMPLEXITY: {{ .Values.community.config.authjwt.tokenSaltComplexity | quote }}
-  MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.magicLinkTokenValidity | quote }}
-  REFRESH_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.refreshTokenValidity | quote }}
-  ACCESS_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.accessTokenValidity | quote }}
-  ALLOW_SECURE_COOKIES: {{ .Values.community.config.authjwt.allowSecureCookies | quote }}
-
+  
   # URLs and Frontend Config
   VITE_BASE_URL: {{ .Values.community.config.urls.base | quote }}
   VITE_SHORTCODE_BASE_URL: {{ .Values.community.config.urls.shortcode | quote }}
@@ -47,3 +30,38 @@ data:
   # Links
   VITE_APP_TOS_LINK: {{ .Values.community.config.links.tos | quote }}
   VITE_APP_PRIVACY_POLICY_LINK: {{ .Values.community.config.links.privacyPolicy | quote }}
+
+  # Mailer (non-sensitive)
+  MAILER_SMTP_ENABLE: {{ .Values.community.config.mailer.enable | quote }}
+  MAILER_USE_CUSTOM_CONFIGS: {{ .Values.community.config.mailer.useCustomConfigs | quote }}
+  MAILER_ADDRESS_FROM: {{ .Values.community.config.mailer.addressFrom | quote }}
+  MAILER_SMTP_URL: {{ .Values.community.config.mailer.smtp.url | quote }}
+  MAILER_SMTP_HOST: {{ .Values.community.config.mailer.smtp.host | quote }}
+  MAILER_SMTP_PORT: {{ .Values.community.config.mailer.smtp.port | quote }}
+  MAILER_SMTP_SECURE: {{ .Values.community.config.mailer.smtp.secure | quote }}
+  MAILER_TLS_REJECT_UNAUTHORIZED: {{ .Values.community.config.mailer.smtp.tlsRejectUnauthorized | quote }}
+
+  # Auth Tokens (non-sensitive)
+  TOKEN_SALT_COMPLEXITY: {{ .Values.community.config.authjwt.tokenSaltComplexity | quote }}
+  MAGIC_LINK_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.magicLinkTokenValidity | quote }}
+  REFRESH_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.refreshTokenValidity | quote }}
+  ACCESS_TOKEN_VALIDITY: {{ .Values.community.config.authjwt.accessTokenValidity | quote }}
+  ALLOW_SECURE_COOKIES: {{ .Values.community.config.authjwt.allowSecureCookies | quote }}
+
+  # Google Auth (non-sensitive)
+  GOOGLE_CALLBACK_URL: {{ .Values.community.config.auth.google.callbackUrl | quote }}
+  GOOGLE_SCOPE: {{ .Values.community.config.auth.google.scope | quote }}
+
+  # Github Auth (non-sensitive)
+  GITHUB_CALLBACK_URL: {{ .Values.community.config.auth.github.callbackUrl | quote }}
+  GITHUB_SCOPE: {{ .Values.community.config.auth.github.scope | quote }}
+  GITHUB_AUTHORIZATION_URL: {{ .Values.community.config.auth.github.authorizationUrl | quote }}
+  GITHUB_TOKEN_URL: {{ .Values.community.config.auth.github.tokenUrl | quote }}
+  GITHUB_USER_PROFILE_URL: {{ .Values.community.config.auth.github.userProfileUrl | quote }}
+  GITHUB_USER_EMAIL_URL: {{ .Values.community.config.auth.github.userEmailUrl | quote }}
+  IS_GITHUB_community_ENABLED: {{ .Values.community.config.auth.github.communityEnabled | quote }}
+
+  # Microsoft Auth (non-sensitive)
+  MICROSOFT_CALLBACK_URL: {{ .Values.community.config.auth.microsoft.callbackUrl | quote }}
+  MICROSOFT_SCOPE: {{ .Values.community.config.auth.microsoft.scope | quote }}
+  MICROSOFT_TENANT: {{ .Values.community.config.auth.microsoft.tenant | quote }}
