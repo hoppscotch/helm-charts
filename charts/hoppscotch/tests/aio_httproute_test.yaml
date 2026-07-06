@@ -83,7 +83,7 @@ tests:
           path: spec.hostnames[0]
           value: hoppscotch.example.com
 
-  - it: should set backendRefs to aio service
+  - it: should create default rule when rules is empty
     template: aio/httproute.yaml
     set:
       deploymentMode: aio
@@ -92,30 +92,9 @@ tests:
           enabled: true
           parentRefs:
             - name: my-gateway
-          matches:
-            - path:
-                type: PathPrefix
-                value: /
         service:
           ports:
             http: 3000
-    asserts:
-      - equal:
-          path: spec.rules[0].backendRefs[0].name
-          value: release-name-hoppscotch
-      - equal:
-          path: spec.rules[0].backendRefs[0].port
-          value: 3000
-
-  - it: should set default path match
-    template: aio/httproute.yaml
-    set:
-      deploymentMode: aio
-      aio:
-        httpRoute:
-          enabled: true
-          parentRefs:
-            - name: my-gateway
     asserts:
       - equal:
           path: spec.rules[0].matches[0].path.type
@@ -123,8 +102,14 @@ tests:
       - equal:
           path: spec.rules[0].matches[0].path.value
           value: /
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: release-name-hoppscotch
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 3000
 
-  - it: should set custom matches
+  - it: should use custom rules when specified
     template: aio/httproute.yaml
     set:
       deploymentMode: aio
@@ -133,23 +118,75 @@ tests:
           enabled: true
           parentRefs:
             - name: my-gateway
-          matches:
-            - path:
-                type: Exact
-                value: /api
-              headers:
-                - name: x-env
-                  value: staging
+          rules:
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: /api
+              backendRefs:
+                - name: backend-svc
+                  port: 3170
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: /
+              backendRefs:
+                - name: frontend-svc
+                  port: 3000
     asserts:
-      - equal:
-          path: spec.rules[0].matches[0].path.type
-          value: Exact
       - equal:
           path: spec.rules[0].matches[0].path.value
           value: /api
       - equal:
-          path: spec.rules[0].matches[0].headers[0].name
-          value: x-env
+          path: spec.rules[0].backendRefs[0].name
+          value: backend-svc
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 3170
+      - equal:
+          path: spec.rules[1].matches[0].path.value
+          value: /
+      - equal:
+          path: spec.rules[1].backendRefs[0].name
+          value: frontend-svc
+      - equal:
+          path: spec.rules[1].backendRefs[0].port
+          value: 3000
+
+  - it: should support traffic splitting with weights
+    template: aio/httproute.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          rules:
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: /
+              backendRefs:
+                - name: stable
+                  port: 80
+                  weight: 90
+                - name: canary
+                  port: 80
+                  weight: 10
+    asserts:
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: stable
+      - equal:
+          path: spec.rules[0].backendRefs[0].weight
+          value: 90
+      - equal:
+          path: spec.rules[0].backendRefs[1].name
+          value: canary
+      - equal:
+          path: spec.rules[0].backendRefs[1].weight
+          value: 10
 
   - it: should include annotations when specified
     template: aio/httproute.yaml

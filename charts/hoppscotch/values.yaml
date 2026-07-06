@@ -626,15 +626,26 @@ aio:
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch AIO Container Parameters
     annotations: {}
-    # -- Match conditions for the HTTPRoute (e.g. path, headers, query params)
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
     # @section -- Hoppscotch AIO Container Parameters
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
-    # -- Extra rules for the HTTPRoute
-    # @section -- Hoppscotch AIO Container Parameters
-    extraRules: []
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /api
+    #     backendRefs:
+    #       - name: api-service
+    #         port: 3000
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch
@@ -986,15 +997,19 @@ frontend:
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Frontend Container Parameters
     annotations: {}
-    # -- Match conditions for the HTTPRoute (e.g. path, headers, query params)
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
     # @section -- Hoppscotch Frontend Container Parameters
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
-    # -- Extra rules for the HTTPRoute
-    # @section -- Hoppscotch Frontend Container Parameters
-    extraRules: []
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch
@@ -1346,15 +1361,19 @@ backend:
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Backend Container Parameters
     annotations: {}
-    # -- Match conditions for the HTTPRoute (e.g. path, headers, query params)
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
     # @section -- Hoppscotch Backend Container Parameters
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
-    # -- Extra rules for the HTTPRoute
-    # @section -- Hoppscotch Backend Container Parameters
-    extraRules: []
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch
@@ -1706,15 +1725,19 @@ admin:
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Admin Container Parameters
     annotations: {}
-    # -- Match conditions for the HTTPRoute (e.g. path, headers, query params)
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
     # @section -- Hoppscotch Admin Container Parameters
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
-    # -- Extra rules for the HTTPRoute
-    # @section -- Hoppscotch Admin Container Parameters
-    extraRules: []
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch

@@ -26,12 +26,15 @@ spec:
     {{- toYaml .Values.admin.httpRoute.hostnames | nindent 4 }}
   {{- end }}
   rules:
+    {{- if .Values.admin.httpRoute.rules }}
+    {{- toYaml .Values.admin.httpRoute.rules | nindent 4 }}
+    {{- else }}
     - matches:
-        {{- toYaml .Values.admin.httpRoute.matches | nindent 8 }}
+        - path:
+            type: PathPrefix
+            value: /
       backendRefs:
         - name: {{ include "hoppscotch.fullname" . }}-admin
           port: {{ .Values.admin.service.ports.http }}
-    {{- if .Values.admin.httpRoute.extraRules }}
-    {{- toYaml .Values.admin.httpRoute.extraRules | nindent 4 }}
     {{- end }}
 {{- end }}
