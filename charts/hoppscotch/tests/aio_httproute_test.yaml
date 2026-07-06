@@ -92,6 +92,10 @@ tests:
           enabled: true
           parentRefs:
             - name: my-gateway
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
         service:
           ports:
             http: 3000
@@ -102,6 +106,50 @@ tests:
       - equal:
           path: spec.rules[0].backendRefs[0].port
           value: 3000
+
+  - it: should set default path match
+    template: aio/httproute.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
+
+  - it: should set custom matches
+    template: aio/httproute.yaml
+    set:
+      deploymentMode: aio
+      aio:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          matches:
+            - path:
+                type: Exact
+                value: /api
+              headers:
+                - name: x-env
+                  value: staging
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: Exact
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /api
+      - equal:
+          path: spec.rules[0].matches[0].headers[0].name
+          value: x-env
 
   - it: should include annotations when specified
     template: aio/httproute.yaml

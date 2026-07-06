@@ -92,6 +92,10 @@ tests:
           enabled: true
           parentRefs:
             - name: my-gateway
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
         service:
           ports:
             http: 3000
@@ -102,6 +106,23 @@ tests:
       - equal:
           path: spec.rules[0].backendRefs[0].port
           value: 3000
+
+  - it: should set default path match
+    template: frontend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
 
   - it: should include annotations when specified
     template: frontend/httproute.yaml
