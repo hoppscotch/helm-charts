@@ -1,0 +1,120 @@
+suite: Admin HTTPRoute
+templates:
+  - admin/deployment.yaml
+  - admin/httproute.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
+tests:
+  - it: should generate HTTPRoute when deployment mode is distributed and httpRoute is enabled
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+              namespace: default
+    asserts:
+      - containsDocument:
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+      - equal:
+          path: metadata.name
+          value: release-name-hoppscotch-admin
+
+  - it: should not generate HTTPRoute when deployment mode is distributed and httpRoute is disabled
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not generate HTTPRoute when deployment mode is not distributed
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: aio
+      admin:
+        httpRoute:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set parentRefs when specified
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+              namespace: default
+              sectionName: https
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: my-gateway
+      - equal:
+          path: spec.parentRefs[0].namespace
+          value: default
+      - equal:
+          path: spec.parentRefs[0].sectionName
+          value: https
+
+  - it: should set hostnames when specified
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          hostnames:
+            - admin.example.com
+    asserts:
+      - equal:
+          path: spec.hostnames[0]
+          value: admin.example.com
+
+  - it: should set backendRefs to admin service
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+        service:
+          ports:
+            http: 3100
+    asserts:
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: release-name-hoppscotch-admin
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 3100
+
+  - it: should include annotations when specified
+    template: admin/httproute.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          annotations:
+            example.com/custom: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations["example.com/custom"]
+          value: "true"

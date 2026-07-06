@@ -1,0 +1,35 @@
+{{- if and (eq .Values.deploymentMode "distributed") .Values.admin.httpRoute.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "hoppscotch.fullname" . }}-admin
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-admin
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.admin.httpRoute.annotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.admin.httpRoute.annotations }}
+    {{- toYaml .Values.admin.httpRoute.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.admin.httpRoute.parentRefs }}
+  parentRefs:
+    {{- toYaml .Values.admin.httpRoute.parentRefs | nindent 4 }}
+  {{- end }}
+  {{- if .Values.admin.httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml .Values.admin.httpRoute.hostnames | nindent 4 }}
+  {{- end }}
+  rules:
+    - backendRefs:
+        - name: {{ include "hoppscotch.fullname" . }}-admin
+          port: {{ .Values.admin.service.ports.http }}
+    {{- if .Values.admin.httpRoute.extraRules }}
+    {{- toYaml .Values.admin.httpRoute.extraRules | nindent 4 }}
+    {{- end }}
+{{- end }}
