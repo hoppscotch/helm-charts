@@ -78,6 +78,16 @@ Usage: {{ include "hoppscotch.ingressBaseUrl" .Values.aio.ingress }}
 {{- end -}}
 
 {{/*
+Generate base URL from HTTPRoute resource (uses the first hostname in the list)
+Usage: {{ include "hoppscotch.httpRouteBaseUrl" .Values.aio.httpRoute }}
+*/}}
+{{- define "hoppscotch.httpRouteBaseUrl" -}}
+  {{- if and .enabled .hostnames -}}
+    {{- urlJoin (dict "scheme" (.tls | ternary "https" "http") "host" (first .hostnames)) -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Return common labels for all resources.
 */}}
 {{- define "hoppscotch.labels" -}}

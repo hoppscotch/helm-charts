@@ -1,0 +1,141 @@
+suite: Backend HTTPRoute
+templates:
+  - backend/deployment.yaml
+  - backend/httproute.yaml
+  - config/configmap.yaml
+  - config/secret.yaml
+tests:
+  - it: should generate HTTPRoute when deployment mode is distributed and httpRoute is enabled
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+              namespace: default
+    asserts:
+      - containsDocument:
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+      - equal:
+          path: metadata.name
+          value: release-name-hoppscotch-backend
+
+  - it: should not generate HTTPRoute when deployment mode is distributed and httpRoute is disabled
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not generate HTTPRoute when deployment mode is not distributed
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: aio
+      backend:
+        httpRoute:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should set parentRefs when specified
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+              namespace: default
+              sectionName: https
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: my-gateway
+      - equal:
+          path: spec.parentRefs[0].namespace
+          value: default
+      - equal:
+          path: spec.parentRefs[0].sectionName
+          value: https
+
+  - it: should set hostnames when specified
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          hostnames:
+            - api.example.com
+    asserts:
+      - equal:
+          path: spec.hostnames[0]
+          value: api.example.com
+
+  - it: should set backendRefs to backend service
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
+        service:
+          ports:
+            http: 3170
+    asserts:
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: release-name-hoppscotch-backend
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 3170
+
+  - it: should set default path match
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
+
+  - it: should include annotations when specified
+    template: backend/httproute.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        httpRoute:
+          enabled: true
+          parentRefs:
+            - name: my-gateway
+          annotations:
+            example.com/custom: "true"
+    asserts:
+      - equal:
+          path: metadata.annotations["example.com/custom"]
+          value: "true"

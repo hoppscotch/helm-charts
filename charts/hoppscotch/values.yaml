@@ -613,6 +613,43 @@ aio:
     # @section -- Hoppscotch AIO Container Parameters
     extraRules: []
 
+  httpRoute:
+    # -- Enable Gateway API HTTPRoute for Hoppscotch
+    # @section -- Hoppscotch AIO Container Parameters
+    enabled: false
+    # -- Gateway API parentRefs for the HTTPRoute
+    # @section -- Hoppscotch AIO Container Parameters
+    parentRefs: []
+    # -- Hostnames for the HTTPRoute
+    # @section -- Hoppscotch AIO Container Parameters
+    hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch AIO Container Parameters
+    tls: true
+    # -- Annotations for the HTTPRoute
+    # @section -- Hoppscotch AIO Container Parameters
+    annotations: {}
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
+    # @section -- Hoppscotch AIO Container Parameters
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /api
+    #     backendRefs:
+    #       - name: api-service
+    #         port: 3000
+    rules: []
+
   persistence:
     # -- Enable persistent storage for Hoppscotch
     # @section -- Hoppscotch AIO Container Parameters
@@ -949,6 +986,36 @@ frontend:
     # -- Extra ingress rules
     # @section -- Hoppscotch Frontend Container Parameters
     extraRules: []
+
+  httpRoute:
+    # -- Enable Gateway API HTTPRoute for Hoppscotch
+    # @section -- Hoppscotch Frontend Container Parameters
+    enabled: false
+    # -- Gateway API parentRefs for the HTTPRoute
+    # @section -- Hoppscotch Frontend Container Parameters
+    parentRefs: []
+    # -- Hostnames for the HTTPRoute
+    # @section -- Hoppscotch Frontend Container Parameters
+    hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Frontend Container Parameters
+    tls: true
+    # -- Annotations for the HTTPRoute
+    # @section -- Hoppscotch Frontend Container Parameters
+    annotations: {}
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
+    # @section -- Hoppscotch Frontend Container Parameters
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch
@@ -1287,6 +1354,36 @@ backend:
     # @section -- Hoppscotch Backend Container Parameters
     extraRules: []
 
+  httpRoute:
+    # -- Enable Gateway API HTTPRoute for Hoppscotch
+    # @section -- Hoppscotch Backend Container Parameters
+    enabled: false
+    # -- Gateway API parentRefs for the HTTPRoute
+    # @section -- Hoppscotch Backend Container Parameters
+    parentRefs: []
+    # -- Hostnames for the HTTPRoute
+    # @section -- Hoppscotch Backend Container Parameters
+    hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Backend Container Parameters
+    tls: true
+    # -- Annotations for the HTTPRoute
+    # @section -- Hoppscotch Backend Container Parameters
+    annotations: {}
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
+    # @section -- Hoppscotch Backend Container Parameters
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
+
   persistence:
     # -- Enable persistent storage for Hoppscotch
     # @section -- Hoppscotch Backend Container Parameters
@@ -1623,6 +1720,36 @@ admin:
     # -- Extra ingress rules
     # @section -- Hoppscotch Admin Container Parameters
     extraRules: []
+
+  httpRoute:
+    # -- Enable Gateway API HTTPRoute for Hoppscotch
+    # @section -- Hoppscotch Admin Container Parameters
+    enabled: false
+    # -- Gateway API parentRefs for the HTTPRoute
+    # @section -- Hoppscotch Admin Container Parameters
+    parentRefs: []
+    # -- Hostnames for the HTTPRoute
+    # @section -- Hoppscotch Admin Container Parameters
+    hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Admin Container Parameters
+    tls: true
+    # -- Annotations for the HTTPRoute
+    # @section -- Hoppscotch Admin Container Parameters
+    annotations: {}
+    # -- Routing rules for the HTTPRoute. Each rule contains matches and backendRefs.
+    # If empty, a default rule routing all traffic to the component service is created.
+    # @section -- Hoppscotch Admin Container Parameters
+    # Example:
+    # rules:
+    #   - matches:
+    #       - path:
+    #           type: PathPrefix
+    #           value: /
+    #     backendRefs:
+    #       - name: my-service
+    #         port: 8080
+    rules: []
 
   persistence:
     # -- Enable persistent storage for Hoppscotch

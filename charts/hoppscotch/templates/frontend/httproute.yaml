@@ -1,0 +1,40 @@
+{{- if and (eq .Values.deploymentMode "distributed") .Values.frontend.httpRoute.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "hoppscotch.fullname" . }}-frontend
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-frontend
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.frontend.httpRoute.annotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.frontend.httpRoute.annotations }}
+    {{- toYaml .Values.frontend.httpRoute.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.frontend.httpRoute.parentRefs }}
+  parentRefs:
+    {{- toYaml .Values.frontend.httpRoute.parentRefs | nindent 4 }}
+  {{- end }}
+  {{- if .Values.frontend.httpRoute.hostnames }}
+  hostnames:
+    {{- toYaml .Values.frontend.httpRoute.hostnames | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- if .Values.frontend.httpRoute.rules }}
+    {{- toYaml .Values.frontend.httpRoute.rules | nindent 4 }}
+    {{- else }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "hoppscotch.fullname" . }}-frontend
+          port: {{ .Values.frontend.service.ports.http }}
+    {{- end }}
+{{- end }}
