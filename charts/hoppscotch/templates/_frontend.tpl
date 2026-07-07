@@ -6,9 +6,13 @@ Frontend base URL based on deployment mode and ingress configuration
     {{- .Values.hoppscotch.frontend.baseUrl -}}
   {{- else -}}
     {{- if eq .Values.deploymentMode "aio" -}}
-      {{- include "hoppscotch.ingressBaseUrl" .Values.aio.ingress -}}
+      {{- $url := (include "hoppscotch.ingressBaseUrl" .Values.aio.ingress) -}}
+      {{- if not $url -}}{{- $url = (include "hoppscotch.httpRouteBaseUrl" .Values.aio.httpRoute) -}}{{- end -}}
+      {{- $url -}}
     {{- else if eq .Values.deploymentMode "distributed" -}}
-      {{- include "hoppscotch.ingressBaseUrl" .Values.frontend.ingress -}}
+      {{- $url := (include "hoppscotch.ingressBaseUrl" .Values.frontend.ingress) -}}
+      {{- if not $url -}}{{- $url = (include "hoppscotch.httpRouteBaseUrl" .Values.frontend.httpRoute) -}}{{- end -}}
+      {{- $url -}}
     {{- end -}}
   {{- end -}}
 {{- end -}}

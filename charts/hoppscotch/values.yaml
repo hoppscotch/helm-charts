@@ -623,6 +623,9 @@ aio:
     # -- Hostnames for the HTTPRoute
     # @section -- Hoppscotch AIO Container Parameters
     hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch AIO Container Parameters
+    tls: true
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch AIO Container Parameters
     annotations: {}
@@ -994,6 +997,9 @@ frontend:
     # -- Hostnames for the HTTPRoute
     # @section -- Hoppscotch Frontend Container Parameters
     hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Frontend Container Parameters
+    tls: true
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Frontend Container Parameters
     annotations: {}
@@ -1358,6 +1364,9 @@ backend:
     # -- Hostnames for the HTTPRoute
     # @section -- Hoppscotch Backend Container Parameters
     hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Backend Container Parameters
+    tls: true
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Backend Container Parameters
     annotations: {}
@@ -1722,6 +1731,9 @@ admin:
     # -- Hostnames for the HTTPRoute
     # @section -- Hoppscotch Admin Container Parameters
     hostnames: []
+    # -- Assume TLS is terminated at the Gateway (used for URL generation)
+    # @section -- Hoppscotch Admin Container Parameters
+    tls: true
     # -- Annotations for the HTTPRoute
     # @section -- Hoppscotch Admin Container Parameters
     annotations: {}
