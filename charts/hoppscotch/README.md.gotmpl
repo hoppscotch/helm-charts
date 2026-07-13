@@ -415,6 +415,138 @@ When adaptation is active, the chart removes `runAsUser`, `runAsGroup` and `fsGr
 OpenShift cluster is detected (via the `security.openshift.io/v1` API), so the same values file works
 unchanged on plain Kubernetes.
 
+#### Installation walkthrough
+
+These steps deploy Hoppscotch on a project that uses the default `restricted-v2` SCC — no cluster
+administrator or elevated SCC required. Both `aio` and `distributed` modes are supported.
+
+1. **Use OpenShift-compatible images.** `restricted-v2` runs the pod as a random non-root UID that cannot
+   bind privileged ports (below `1024`) or write into a root-owned image filesystem. Recent Hoppscotch
+   images serve on an unprivileged port via the `HOPP_ALTERNATE_PORT` environment variable and keep their
+   application directory group-writable, satisfying both requirements. Older images may need a workaround —
+   see [Container image requirements](#container-image-requirements).
+
+2. **Enable OpenShift compatibility** so `runAsUser`, `runAsGroup` and `fsGroup` are dropped and the
+   platform assigns IDs from the namespace range:
+
+   ```yaml
+   global:
+     compatibility:
+       openshift:
+         adaptSecurityContext: auto
+   ```
+
+3. **Serve on unprivileged ports.** On `restricted-v2` a component cannot bind privileged port `80`.
+   `HOPP_ALTERNATE_PORT` relocates a component's port-`80` listener to an unprivileged port **of your choice**
+   (it is configurable, not a fixed value — `3080` is only an example). Set it **only** for images that would
+   otherwise bind port `80`, and point that component's `containerPorts.http`, `service.ports.http` and
+   `route.targetPort` at the same value. Images that already serve on an unprivileged port ignore it — see the
+   distributed `frontend` below.
+
+   All-in-one (subpath mode binds port `80`, so relocate it):
+
+   ```yaml
+   deploymentMode: aio
+   aio:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   ```
+
+   Distributed — the `frontend`, `backend` and `admin` images all bind port `80`, so relocate each of them
+   with `HOPP_ALTERNATE_PORT`:
+
+   ```yaml
+   deploymentMode: distributed
+   frontend:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   backend:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   admin:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   ```
+
+4. **Set the public URLs.** Routes do not auto-populate the config URLs, so set them to the Route hostnames,
+   which follow `<service-name>-<namespace>.<router-domain>`. Get the router domain with:
+
+   ```bash
+   oc whoami --show-console | sed 's#https://console-openshift-console\.##'
+   ```
+
+   In `aio` mode a single host serves the frontend (`/`), backend (`/backend`) and admin (`/admin`) via
+   subpaths. In `distributed` mode point `hoppscotch.frontend.*` at the separate frontend, backend and admin
+   Route hosts and set `hoppscotch.backend.redirectUrl` / `hoppscotch.backend.whitelistedOrigins` to match.
+   See [Auto-Generating Config URLs](#auto-generating-config-urls) for the full list of keys.
+
+5. **Install:**
+
+   ```bash
+   helm upgrade --install hoppscotch hoppscotch/hoppscotch \
+     --namespace hoppscotch --create-namespace \
+     -f values.yaml
+   ```
+
+6. **Verify:**
+
+   ```bash
+   oc get pods -n hoppscotch     # migrations Completed; components Running
+   oc get route -n hoppscotch    # one Route (aio) or three (distributed)
+   ```
+
+   Browse to the frontend Route to confirm the UI loads. The backend health endpoint is `/ping`
+   (`/backend/ping` in `aio` subpath mode).
+
 #### Exposing services with OpenShift Routes
 
 In addition to standard `Ingress`, the chart can create native OpenShift
@@ -442,10 +574,12 @@ Route offline with `helm template`, pass `--api-versions route.openshift.io/v1` 
 
 #### Port binding considerations
 
-In AIO subpath mode (default), the container serves on privileged port `80`. OpenShift's `restricted-v2`
-SCC runs containers as a non-root user that cannot bind ports below `1024`. If the container image cannot
-bind port `80` as non-root, use AIO multiport mode (or `distributed` mode), whose services listen on
-unprivileged ports (`3000`, `3100`, `3170`, `3200`):
+`restricted-v2` forbids binding privileged ports (below `1024`), so any component that would otherwise serve
+on port `80` must be relocated to an unprivileged port with `HOPP_ALTERNATE_PORT`. Step 3 of the
+[installation walkthrough](#installation-walkthrough) covers the per-component settings.
+
+If an image cannot relocate its port, an alternative is AIO **multiport** mode, whose services listen on
+unprivileged ports (`3000`, `3100`, `3170`, `3200`) directly:
 
 ```yaml
 deploymentMode: aio
@@ -460,29 +594,21 @@ aio:
 
 #### Container image requirements
 
-Under `restricted-v2` the container also runs with a random UID that does not own the image filesystem. At
-startup the all-in-one image writes a `build.env` file into its application directory (`/usr/src/app`); when
-that path is not writable by the assigned UID the pod fails with `EACCES: permission denied, open 'build.env'`.
-Stock Hoppscotch images are not yet arbitrary-UID-safe, so on `restricted-v2` use one of the following:
+Under `restricted-v2` the container runs with a random non-root UID that does not own the image filesystem and
+cannot bind privileged ports. Hoppscotch images with non-root container support keep their application directory group-writable and can
+serve on the port set by `HOPP_ALTERNATE_PORT`, so they run on `restricted-v2` without the `anyuid` SCC or a
+rebuilt image — **use these images (or newer).** You still relocate the privileged port with
+`HOPP_ALTERNATE_PORT` as shown in step 3 of the [installation walkthrough](#installation-walkthrough).
 
-- Grant the release ServiceAccount the `anyuid` SCC (requires a cluster administrator), which runs the
-  container as the image's own user:
+Older images that are not arbitrary-UID-safe write a `build.env` file into their application directory
+(`/usr/src/app`) at startup and fail with `EACCES: permission denied, open 'build.env'`, and they still bind
+privileged port `80`. To run such an image, grant the release ServiceAccount the `anyuid` SCC (requires a
+cluster administrator), which runs the container as the image's own user so it can both write its files and
+bind port `80`:
 
-  ```bash
-  oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
-  ```
-
-- Or build a thin derived image that makes the application directory writable by the root group (GID `0`),
-  which the UID assigned by OpenShift always belongs to:
-
-  ```dockerfile
-  FROM hoppscotch/hoppscotch:latest
-  USER root
-  RUN chgrp -R 0 /usr/src/app && chmod -R g=u /usr/src/app
-  ```
-
-  Point `aio.image` (or the distributed component images) at the result. The long-term fix is for the upstream
-  images to apply the same adjustment, after which no workaround is needed.
+```bash
+oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
+```
 
 ## Parameters
 
