@@ -44,19 +44,31 @@
 
 🔄 **High Availability:** Built-in redundancy and failover capabilities.
 
+### **Available Charts**
+
+| Chart | Description |
+| ----- | ----------- |
+| [`hoppscotch`](charts/hoppscotch) | **Recommended.** Unified chart (Community + Enterprise, AIO or distributed) — used by the guides below |
+| [`shc`](charts/shc) | Community edition chart — maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
+| [`she`](charts/she) | Enterprise edition chart — maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
+
+> For deployment modes, configuration and the full parameters list, see the **[chart README](charts/hoppscotch/README.md)** — it is the authoritative install guide. The guides below are provider-specific quick starts.
+>
+> Migrating an existing `shc` or `she` deployment? Follow the **[migration guide](MIGRATION.md)**.
+
 ### **Installation Guides**
 
 <details>
 <summary><b>Digital Ocean Installation</b></summary>
 
-## Prerequisites
+**Prerequisites**
 
-- Digital Ocean account with administrative access
-- kubectl CLI tool
-- Helm 3.x installed
-- doctl installed
+- Access to a DOKS cluster (kubeconfig via `doctl` or the console)
+- Cluster permissions to create the chart's resources (cluster-admin only if you also install an ingress controller)
+- kubectl and Helm 3.x
+- doctl (to fetch the kubeconfig)
 
-## Quick Install
+**Quick Install**
 
 ```bash
 # Configure access
@@ -68,27 +80,27 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 # Add chart repository
 helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 
-# Deploy application
-## Community
-helm install [RELEASE_NAME] hoppscotch/hoppscotch-community -f [path-to-values-file]
-
-## Enterprise
-helm install [RELEASE_NAME] hoppscotch/hoppscotch-enterprise -f [path-to-values-file]
+# Deploy application (edition is selected in your values file)
+helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
+
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+>
+> - **Load balancer / ingress:** use NGINX ingress (`aio.ingress.*`) or a DigitalOcean LB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/do-loadbalancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
 
 </details>
 
 <details>
 <summary><b>GCP Installation</b></summary>
 
-## Prerequisites
+**Prerequisites**
 
-- Google Cloud account with GKE access
-- gcloud CLI configured
-- kubectl CLI tool
-- Helm 3.x installed
+- Access to a GKE cluster (kubeconfig via `gcloud`)
+- Cluster permissions to create the chart's resources (cluster-admin only if you also install an ingress controller)
+- kubectl and Helm 3.x
+- gcloud CLI (to fetch the kubeconfig)
 
-## Quick Install
+**Quick Install**
 
 ```bash
 # Configure cluster access
@@ -100,13 +112,105 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 # Add chart repository
 helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 
-# Deploy application
-## Community
-helm install [RELEASE_NAME] hoppscotch/hoppscotch-community -f [path-to-values-file]
-
-## Enterprise
-helm install [RELEASE_NAME] hoppscotch/hoppscotch-enterprise -f [path-to-values-file]
+# Deploy application (edition is selected in your values file)
+helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
+
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+>
+> - **Load balancer / ingress:** use the GKE ingress (`aio.ingress.ingressClassName: gce` + `aio.ingress.annotations`) or a Google Cloud LB via `aio.service.type: LoadBalancer` with `networking.gke.io/*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
+
+</details>
+
+<details>
+<summary><b>AWS EKS Installation</b></summary>
+
+**Prerequisites**
+
+- Access to an EKS cluster (kubeconfig via `aws eks update-kubeconfig`)
+- Cluster permissions to create the chart's resources (cluster-admin only if you also install an ingress/ALB controller)
+- kubectl and Helm 3.x
+- AWS CLI (to fetch the kubeconfig)
+
+**Quick Install**
+
+```bash
+# Configure cluster access
+aws eks update-kubeconfig --name cluster-name --region region
+
+# (Optional) Install NGINX Ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/aws/deploy.yaml
+
+# Add chart repository
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+
+# Deploy application (edition is selected in your values file)
+helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
+```
+
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+>
+> - **Load balancer / ingress:** use an ALB (`aio.ingress.ingressClassName: alb` + `alb.ingress.kubernetes.io/*`, AWS Load Balancer Controller required) or an NLB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/aws-load-balancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
+
+</details>
+
+<details>
+<summary><b>Azure AKS Installation</b></summary>
+
+**Prerequisites**
+
+- Access to an AKS cluster (kubeconfig via `az aks get-credentials`)
+- Cluster permissions to create the chart's resources (cluster-admin only if you also install an ingress controller)
+- kubectl and Helm 3.x
+- Azure CLI (to fetch the kubeconfig)
+
+**Quick Install**
+
+```bash
+# Configure cluster access
+az aks get-credentials --resource-group resource-group --name cluster-name
+
+# (Optional) Install NGINX Ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+
+# Add chart repository
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+
+# Deploy application (edition is selected in your values file)
+helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
+```
+
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+>
+> - **Load balancer / ingress:** use Application Gateway ingress (`aio.ingress.ingressClassName: azure-application-gateway` + `appgw.ingress.kubernetes.io/*`) or an Azure LB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/azure-load-balancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
+
+</details>
+
+<details>
+<summary><b>OpenShift Installation</b></summary>
+
+**Prerequisites**
+
+- OpenShift 4.x cluster (works on the default `restricted-v2` SCC — no cluster-admin required)
+- oc CLI logged in to your cluster
+- Helm 3.x installed
+
+**Quick Install**
+
+```bash
+# Add chart repository
+helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
+
+# Deploy on OpenShift (adapts securityContext for restricted-v2 and exposes a Route)
+helm upgrade --install [RELEASE_NAME] hoppscotch/hoppscotch \
+  --namespace hoppscotch --create-namespace \
+  -f [path-to-values-file]
+```
+
+On OpenShift, enable `global.compatibility.openshift.adaptSecurityContext` and expose the app with a Route
+instead of an Ingress. See the chart's [Deploying on OpenShift](charts/hoppscotch/README.md#deploying-on-openshift)
+guide for the full walkthrough — `restricted-v2` requirements, `HOPP_ALTERNATE_PORT`, and both `aio` and
+`distributed` modes.
 
 </details>
 
