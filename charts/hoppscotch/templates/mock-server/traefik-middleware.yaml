@@ -1,0 +1,27 @@
+{{- if and .Values.mockServer.ingress.enabled (eq .Values.mockServer.ingress.controllerType "traefik") }}
+{{- $fullname := include "hoppscotch.fullname" . }}
+{{- $pathPrefix := include "hoppscotch.mockServer.pathPrefix" . }}
+{{/*
+NOTE: Traefik's replacePathRegex middleware can rewrite the request path but cannot extract
+the mock-id from the Host header (subdomain). When using traefik or alb as the ingress
+controller, the backend application must resolve the mock-id from the Host header itself.
+For full subdomain-to-path rewriting (including mock-id extraction), use nginx as the
+controllerType, which handles this via server-snippet and configuration-snippet annotations.
+*/}}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ $fullname }}-mock-rewrite
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-mock-server
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  replacePathRegex:
+    regex: "^/(.*)"
+    replacement: "{{ $pathPrefix }}/$1"
+{{- end }}

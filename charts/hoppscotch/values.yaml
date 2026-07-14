@@ -1908,6 +1908,47 @@ defaultInitContainers:
     # @section -- Default Init Containers Parameters
     extraEnvVarsSecret: ""
 
+# @section -- Mock Server Parameters
+
+mockServer:
+  ingress:
+    # -- Enable wildcard ingress for the mock server
+    # @section -- Mock Server Parameters
+    enabled: false
+    # -- Ingress controller type (nginx, traefik, or alb)
+    # @section -- Mock Server Parameters
+    controllerType: nginx
+    # -- Ingress class name
+    # @section -- Mock Server Parameters
+    ingressClassName: ""
+    # -- Wildcard hostname for mock server ingress (wildcard will be *.<hostname>)
+    # @section -- Mock Server Parameters
+    hostname: mock.hoppscotch.local
+    # -- Ingress path
+    # @section -- Mock Server Parameters
+    path: /
+    # -- Ingress path type
+    # @section -- Mock Server Parameters
+    pathType: ImplementationSpecific
+    # -- Additional annotations for the mock server ingress
+    # @section -- Mock Server Parameters
+    annotations: {}
+    # -- Enable TLS for mock server ingress
+    # @section -- Mock Server Parameters
+    tls: false
+    # -- Create self-signed TLS certificates for mock server ingress
+    # @section -- Mock Server Parameters
+    selfSigned: false
+    # -- Existing TLS secret name for mock server ingress (auto-generated if empty)
+    # @section -- Mock Server Parameters
+    tlsSecret: ""
+    # -- Extra TLS configurations for mock server ingress
+    # @section -- Mock Server Parameters
+    extraTls: []
+    # -- Extra ingress rules for mock server ingress
+    # @section -- Mock Server Parameters
+    extraRules: []
+
 # @section -- Other Parameters
 
 serviceAccount:

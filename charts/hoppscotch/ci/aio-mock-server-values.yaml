@@ -1,0 +1,24 @@
+deploymentMode: aio
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.hoppscotch.local
+    ingressClassName: nginx
+    tls: true
+    selfSigned: true
+aio:
+  readinessProbe:
+    initialDelaySeconds: 15
+  ingress:
+    enabled: true
+    hostname: hoppscotch.local
+postgresql:
+  enabled: true
+  auth:
+    username: hoppscotch
+    password: hoppscotch
+    database: hoppscotch
+  primary:
+    persistence:
+      enabled: false

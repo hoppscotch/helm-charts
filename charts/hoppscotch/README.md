@@ -1,7 +1,7 @@
 # Hoppscotch Helm Chart
 
-![Version: 0.3.9](https://img.shields.io/badge/Version-0.3.9-informational?style=flat-square)
-![AppVersion: 2026.5.0](https://img.shields.io/badge/AppVersion-2026.5.0-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square)
+![AppVersion: 2026.6.0](https://img.shields.io/badge/AppVersion-2026.6.0-informational?style=flat-square)
 
 Hoppscotch is a lightweight, web-based API development suite. It was built from the ground up with ease of use and
 accessibility in mind providing all the functionality needed for developers with minimalist, unobtrusive UI.
@@ -609,6 +609,138 @@ container as the image's own user so it can both write its files and bind port `
 oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
 ```
 
+### Mock Server Wildcard Ingress
+
+Hoppscotch's mock server is served by the backend under `/mock/<mock-id>/<path>` (and via
+`/backend/mock/<mock-id>/<path>` when using AIO subpath access). The mock server wildcard ingress feature enables
+subdomain-based access so that requests to `<mock-id>.mock.example.com/<path>` are transparently routed to the
+appropriate backend path for your deployment mode.
+
+The mock server ingress is **independent of the deployment mode**; it works with both `aio` and `distributed` modes. It
+is disabled by default and has zero impact on existing deployments.
+
+#### Enabling Mock Server Ingress
+
+To enable the mock server wildcard ingress, set the following in your values file:
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx # nginx | traefik | alb
+    hostname: mock.example.com
+    ingressClassName: nginx
+```
+
+This creates an Ingress resource with the wildcard host `*.mock.example.com` that routes all subdomain traffic to the
+Hoppscotch backend service.
+
+#### Supported Ingress Controllers
+
+The `controllerType` toggle selects the ingress controller and configures the appropriate annotations automatically. An
+unsupported value will cause the template to fail with a descriptive error message.
+
+##### nginx
+
+When `controllerType: nginx`, the chart adds nginx-specific annotations that (when snippet annotations are enabled on
+your nginx ingress controller):
+
+1. Extract the `mock-id` from the subdomain using a server-snippet regex capture group
+2. Rewrite the request path to include the mock-id and the correct backend path prefix
+
+> **Important**: The nginx option relies on `nginx.ingress.kubernetes.io/server-snippet` and
+> `nginx.ingress.kubernetes.io/configuration-snippet` annotations. Many ingress-nginx deployments disable snippet
+> annotations by default for security reasons (via `allow-snippet-annotations: "false"` in the controller config). You
+> must enable snippet annotations on your ingress-nginx controller for the mock-id extraction to work. Without them, the
+> rewrite will not function correctly.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+```
+
+This is the recommended controller type as it provides full subdomain-to-path rewriting including mock-id extraction
+entirely at the ingress layer.
+
+##### traefik
+
+When `controllerType: traefik`, the chart creates an Ingress resource with a Traefik router middleware annotation and
+also creates a `Middleware` CRD (`traefik.io/v1alpha1`) that rewrites the request path.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: traefik
+    hostname: mock.example.com
+    ingressClassName: traefik
+```
+
+> **Note**: Traefik's `replacePathRegex` middleware can rewrite the request path but cannot extract the mock-id from the
+> Host header (subdomain). When using Traefik, the backend application must resolve the mock-id from the `Host` header
+> itself.
+
+##### alb (AWS Load Balancer)
+
+When `controllerType: alb`, the chart adds AWS ALB annotations for internet-facing load balancer configuration.
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: alb
+    hostname: mock.example.com
+```
+
+> **Note**: AWS ALB does not support subdomain-to-path rewriting natively. When using ALB, the backend application must
+> resolve the mock-id from the `Host` header itself.
+
+#### Path Prefix Behavior
+
+The path prefix used for URL rewriting depends on the deployment mode and subpath access setting:
+
+| Deployment Mode | `enableSubpathBasedAccess` | Service Port | Path Prefix     |
+| --------------- | -------------------------- | ------------ | --------------- |
+| `aio`           | `true` (default)           | 80           | `/backend/mock` |
+| `aio`           | `false`                    | 3170         | `/mock`         |
+| `distributed`   | N/A                        | 80           | `/mock`         |
+
+#### TLS Configuration
+
+To enable TLS with a self-signed certificate:
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+    tls: true
+    selfSigned: true
+```
+
+To use an existing TLS secret (e.g., from cert-manager):
+
+```yaml
+mockServer:
+  ingress:
+    enabled: true
+    controllerType: nginx
+    hostname: mock.example.com
+    ingressClassName: nginx
+    tls: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tlsSecret: mock-example-com-wildcard-tls
+```
+
+The TLS secret covers the wildcard host `*.mock.example.com`.
+
 ## Parameters
 
 <!-- markdownlint-disable MD013 MD034 -->
@@ -1209,6 +1341,23 @@ oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
 | defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                  |
 | defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers |
 | defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers        |
+
+### Mock Server Parameters
+
+| Key                                 | Type   | Default                    | Description                                                                |
+| ----------------------------------- | ------ | -------------------------- | -------------------------------------------------------------------------- |
+| mockServer.ingress.enabled          | bool   | `false`                    | Enable wildcard ingress for the mock server                                |
+| mockServer.ingress.controllerType   | string | `"nginx"`                  | Ingress controller type (nginx, traefik, or alb)                           |
+| mockServer.ingress.ingressClassName | string | `""`                       | Ingress class name                                                         |
+| mockServer.ingress.hostname         | string | `"mock.hoppscotch.local"`  | Wildcard hostname for mock server ingress (wildcard will be \*.<hostname>) |
+| mockServer.ingress.path             | string | `"/"`                      | Ingress path                                                               |
+| mockServer.ingress.pathType         | string | `"ImplementationSpecific"` | Ingress path type                                                          |
+| mockServer.ingress.annotations      | object | `{}`                       | Additional annotations for the mock server ingress                         |
+| mockServer.ingress.tls              | bool   | `false`                    | Enable TLS for mock server ingress                                         |
+| mockServer.ingress.selfSigned       | bool   | `false`                    | Create self-signed TLS certificates for mock server ingress                |
+| mockServer.ingress.tlsSecret        | string | `""`                       | Existing TLS secret name for mock server ingress (auto-generated if empty) |
+| mockServer.ingress.extraTls         | list   | `[]`                       | Extra TLS configurations for mock server ingress                           |
+| mockServer.ingress.extraRules       | list   | `[]`                       | Extra ingress rules for mock server ingress                                |
 
 ### Other Parameters
 
