@@ -417,13 +417,13 @@ unchanged on plain Kubernetes.
 
 #### Installation walkthrough
 
-These steps deploy Hoppscotch on a project that uses the default `restricted-v2` SCC — no cluster
+These steps deploy Hoppscotch on a project that uses the default `restricted-v2` SCC. No cluster
 administrator or elevated SCC required. Both `aio` and `distributed` modes are supported.
 
 1. **Use OpenShift-compatible images.** `restricted-v2` runs the pod as a random non-root UID that cannot
    bind privileged ports (below `1024`) or write into a root-owned image filesystem. Recent Hoppscotch
    images serve on an unprivileged port via the `HOPP_ALTERNATE_PORT` environment variable and keep their
-   application directory group-writable, satisfying both requirements. Older images may need a workaround —
+   application directory group-writable, satisfying both requirements. Older images may need a workaround;
    see [Container image requirements](#container-image-requirements).
 
 2. **Enable OpenShift compatibility** so `runAsUser`, `runAsGroup` and `fsGroup` are dropped and the
@@ -438,9 +438,9 @@ administrator or elevated SCC required. Both `aio` and `distributed` modes are s
 
 3. **Serve on unprivileged ports.** On `restricted-v2` a component cannot bind privileged port `80`.
    `HOPP_ALTERNATE_PORT` relocates a component's port-`80` listener to an unprivileged port **of your choice**
-   (it is configurable, not a fixed value — `3080` is only an example). Set it **only** for images that would
+   (it is configurable, not a fixed value; `3080` is only an example). Set it **only** for images that would
    otherwise bind port `80`, and point that component's `containerPorts.http`, `service.ports.http` and
-   `route.targetPort` at the same value. Images that already serve on an unprivileged port ignore it — see the
+   `route.targetPort` at the same value. Images that already serve on an unprivileged port ignore it; see the
    distributed `frontend` below.
 
    All-in-one (subpath mode binds port `80`, so relocate it):
@@ -462,7 +462,7 @@ administrator or elevated SCC required. Both `aio` and `distributed` modes are s
          insecureEdgeTerminationPolicy: Redirect
    ```
 
-   Distributed — the `frontend`, `backend` and `admin` images all bind port `80`, so relocate each of them
+   In distributed mode, the `frontend`, `backend` and `admin` images all bind port `80`, so relocate each of them
    with `HOPP_ALTERNATE_PORT`:
 
    ```yaml
@@ -597,7 +597,7 @@ aio:
 Under `restricted-v2` the container runs with a random non-root UID that does not own the image filesystem and
 cannot bind privileged ports. Hoppscotch images with non-root container support keep their application directory group-writable and can
 serve on the port set by `HOPP_ALTERNATE_PORT`, so they run on `restricted-v2` without the `anyuid` SCC or a
-rebuilt image — **use these images (or newer).** You still relocate the privileged port with
+rebuilt image. **Use these images (or newer).** You still relocate the privileged port with
 `HOPP_ALTERNATE_PORT` as shown in step 3 of the [installation walkthrough](#installation-walkthrough).
 
 Older images that are not arbitrary-UID-safe write a `build.env` file into their application directory

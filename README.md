@@ -48,11 +48,11 @@
 
 | Chart | Description |
 | ----- | ----------- |
-| [`hoppscotch`](charts/hoppscotch) | **Recommended.** Unified chart (Community + Enterprise, AIO or distributed) — used by the guides below |
-| [`shc`](charts/shc) | Community edition chart — maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
-| [`she`](charts/she) | Enterprise edition chart — maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
+| [`hoppscotch`](charts/hoppscotch) | **Recommended.** Unified chart (Community + Enterprise, AIO or distributed); used by the guides below |
+| [`shc`](charts/shc) | Community edition chart, maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
+| [`she`](charts/she) | Enterprise edition chart, maintained for backward compatibility, superseded by [`hoppscotch`](charts/hoppscotch) |
 
-> For deployment modes, configuration and the full parameters list, see the **[chart README](charts/hoppscotch/README.md)** — it is the authoritative install guide. The guides below are provider-specific quick starts.
+> For deployment modes, configuration and the full parameters list, see the **[chart README](charts/hoppscotch/README.md)** . It is the authoritative install guide. The guides below are provider-specific quick starts.
 >
 > Migrating an existing `shc` or `she` deployment? Follow the **[migration guide](MIGRATION.md)**.
 
@@ -84,7 +84,7 @@ helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
 
-> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file. See the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
 >
 > - **Load balancer / ingress:** use NGINX ingress (`aio.ingress.*`) or a DigitalOcean LB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/do-loadbalancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
 
@@ -116,7 +116,7 @@ helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
 
-> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file. See the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
 >
 > - **Load balancer / ingress:** use the GKE ingress (`aio.ingress.ingressClassName: gce` + `aio.ingress.annotations`) or a Google Cloud LB via `aio.service.type: LoadBalancer` with `networking.gke.io/*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
 
@@ -148,7 +148,7 @@ helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
 
-> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file. See the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
 >
 > - **Load balancer / ingress:** use an ALB (`aio.ingress.ingressClassName: alb` + `alb.ingress.kubernetes.io/*`, AWS Load Balancer Controller required) or an NLB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/aws-load-balancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
 
@@ -180,7 +180,7 @@ helm repo add hoppscotch https://hoppscotch.github.io/helm-charts
 helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 ```
 
-> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file — see the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
+> Configuration (deployment mode, database, ingress/TLS, etc.) is set in your values file. See the [chart README](charts/hoppscotch/README.md) for the full guide and all parameters.
 >
 > - **Load balancer / ingress:** use Application Gateway ingress (`aio.ingress.ingressClassName: azure-application-gateway` + `appgw.ingress.kubernetes.io/*`) or an Azure LB via `aio.service.type: LoadBalancer` with `service.beta.kubernetes.io/azure-load-balancer-*` under `aio.service.annotations`. In `distributed` mode the same keys exist per component.
 
@@ -191,7 +191,7 @@ helm install [RELEASE_NAME] hoppscotch/hoppscotch -f [path-to-values-file]
 
 **Prerequisites**
 
-- OpenShift 4.x cluster (works on the default `restricted-v2` SCC — no cluster-admin required)
+- OpenShift 4.x cluster (works on the default `restricted-v2` SCC; no cluster-admin required)
 - oc CLI logged in to your cluster
 - Helm 3.x installed
 
@@ -209,7 +209,7 @@ helm upgrade --install [RELEASE_NAME] hoppscotch/hoppscotch \
 
 On OpenShift, enable `global.compatibility.openshift.adaptSecurityContext` and expose the app with a Route
 instead of an Ingress. See the chart's [Deploying on OpenShift](charts/hoppscotch/README.md#deploying-on-openshift)
-guide for the full walkthrough — `restricted-v2` requirements, `HOPP_ALTERNATE_PORT`, and both `aio` and
+guide for the full walkthrough: `restricted-v2` requirements, `HOPP_ALTERNATE_PORT`, and both `aio` and
 `distributed` modes.
 
 </details>
