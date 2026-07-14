@@ -47,7 +47,7 @@ Return true if the securityContext sections should be adapted for OpenShift base
 Usage: {{ include "hoppscotch.compatibility.shouldAdaptSecurityContext" . }}
 */}}
 {{- define "hoppscotch.compatibility.shouldAdaptSecurityContext" -}}
-  {{- $mode := dig "compatibility" "openshift" "adaptSecurityContext" "disabled" .Values.global -}}
+  {{- $mode := dig "compatibility" "openshift" "adaptSecurityContext" "auto" .Values.global -}}
   {{- if eq $mode "force" -}}
     {{- true -}}
   {{- else if and (eq $mode "auto") (include "hoppscotch.compatibility.isOpenshift" .) -}}

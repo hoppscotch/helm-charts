@@ -1,6 +1,9 @@
 suite: OpenShift Security Context Adaptation
 templates:
   - aio/deployment.yaml
+  - frontend/deployment.yaml
+  - backend/deployment.yaml
+  - admin/deployment.yaml
   - config/configmap.yaml
   - config/secret.yaml
 tests:
@@ -137,4 +140,139 @@ tests:
           value: 1000
       - equal:
           path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+
+  - it: should strip runAsUser, runAsGroup and fsGroup on the frontend deployment when force
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      frontend:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.runAsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should keep runAsUser, runAsGroup and fsGroup on the frontend deployment on plain Kubernetes
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1000
+
+  - it: should strip runAsUser, runAsGroup and fsGroup on the backend deployment when force
+    template: backend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      backend:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.runAsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should keep runAsUser, runAsGroup and fsGroup on the backend deployment on plain Kubernetes
+    template: backend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      backend:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1000
+
+  - it: should strip runAsUser, runAsGroup and fsGroup on the admin deployment when force
+    template: admin/deployment.yaml
+    set:
+      deploymentMode: distributed
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      admin:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.runAsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should keep runAsUser, runAsGroup and fsGroup on the admin deployment on plain Kubernetes
+    template: admin/deployment.yaml
+    set:
+      deploymentMode: distributed
+      admin:
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
           value: 1000
