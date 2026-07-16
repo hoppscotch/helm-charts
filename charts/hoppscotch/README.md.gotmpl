@@ -421,10 +421,10 @@ These steps deploy Hoppscotch on a project that uses the default `restricted-v2`
 administrator or elevated SCC required. Both `aio` and `distributed` modes are supported.
 
 1. **Use OpenShift-compatible images.** `restricted-v2` runs the pod as a random non-root UID that cannot
-   bind privileged ports (below `1024`) or write into a root-owned image filesystem. Recent Hoppscotch
-   images serve on an unprivileged port via the `HOPP_ALTERNATE_PORT` environment variable and keep their
-   application directory group-writable, satisfying both requirements. Older images may need a workaround;
-   see [Container image requirements](#container-image-requirements).
+   bind privileged ports (below `1024`) or write into a root-owned image filesystem. Hoppscotch images from
+   app version `2026.6.1` onwards serve on an unprivileged port via the `HOPP_ALTERNATE_PORT` environment
+   variable and keep their application directory group-writable, satisfying both requirements. Images older
+   than `2026.6.1` may need a workaround; see [Container image requirements](#container-image-requirements).
 
 2. **Enable OpenShift compatibility** so `runAsUser`, `runAsGroup` and `fsGroup` are dropped and the
    platform assigns IDs from the namespace range:
@@ -595,14 +595,15 @@ aio:
 #### Container image requirements
 
 Under `restricted-v2` the container runs with a random non-root UID that does not own the image filesystem and
-cannot bind privileged ports. Hoppscotch images with non-root container support keep their application directory group-writable and can
-serve on the port set by `HOPP_ALTERNATE_PORT`, so they run on `restricted-v2` without the `anyuid` SCC or a
-rebuilt image. **Use these images (or newer).** You still relocate the privileged port with
-`HOPP_ALTERNATE_PORT` as shown in step 3 of the [installation walkthrough](#installation-walkthrough).
+cannot bind privileged ports. Hoppscotch added non-root container support in **app version `2026.6.1`**, so
+images at `2026.6.1` or newer keep their application directory group-writable and can serve on the port set by
+`HOPP_ALTERNATE_PORT`. They run on `restricted-v2` without the `anyuid` SCC or a rebuilt image. **Use
+`2026.6.1` or newer**, and still relocate the privileged port with `HOPP_ALTERNATE_PORT` as shown in step 3 of
+the [installation walkthrough](#installation-walkthrough).
 
-Older images that are not arbitrary-UID-safe write a `build.env` file into their application directory
-(`/usr/src/app`) at startup and fail with `EACCES: permission denied, open 'build.env'`, and they still bind
-privileged port `80`. To run such an image, grant the release ServiceAccount the `anyuid` SCC (requires a
+Images older than `2026.6.1` are not arbitrary-UID-safe: they write a `build.env` file into their application
+directory (`/usr/src/app`) at startup and fail with `EACCES: permission denied, open 'build.env'`, and they
+still bind privileged port `80`. To run such an image, grant the release ServiceAccount the `anyuid` SCC (requires a
 cluster administrator), which runs the container as the image's own user so it can both write its files and
 bind port `80`:
 
