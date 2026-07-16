@@ -153,13 +153,13 @@ aio:
     repository: hoppscotch/hoppscotch-enterprise
 frontend:
   image:
-    repository: hoppscotch/hoppscotch-frontend-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-frontend
 backend:
   image:
-    repository: hoppscotch/hoppscotch-backend-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-backend
 admin:
   image:
-    repository: hoppscotch/hoppscotch-admin-enterprise
+    repository: hoppscotch/hoppscotch-enterprise-admin
 ```
 
 ### Auto-Generating Config URLs
@@ -525,8 +525,31 @@ administrator or elevated SCC required. Both `aio` and `distributed` modes are s
    ```
 
    In `aio` mode a single host serves the frontend (`/`), backend (`/backend`) and admin (`/admin`) via
-   subpaths. In `distributed` mode point `hoppscotch.frontend.*` at the separate frontend, backend and admin
-   Route hosts and set `hoppscotch.backend.redirectUrl` / `hoppscotch.backend.whitelistedOrigins` to match.
+   subpaths, so no extra URL configuration is needed.
+
+   In `distributed` mode the frontend and admin are browser apps that call the backend directly, so you
+   **must** set these URLs explicitly. Otherwise the UI loads but shows _"Failed to connect to the backend
+   server"_. Point `hoppscotch.frontend.*` at the frontend/backend/admin Route hosts, and set the backend's
+   `redirectUrl` and `whitelistedOrigins` (for CORS) to match (hosts follow
+   `<service-name>-<namespace>.<router-domain>`):
+
+   ```yaml
+   hoppscotch:
+     frontend:
+       baseUrl: "https://hoppscotch-frontend-<namespace>.<router-domain>"
+       shortcodeBaseUrl: "https://hoppscotch-frontend-<namespace>.<router-domain>"
+       adminUrl: "https://hoppscotch-admin-<namespace>.<router-domain>"
+       backendApiUrl: "https://hoppscotch-backend-<namespace>.<router-domain>/v1"
+       backendGqlUrl: "https://hoppscotch-backend-<namespace>.<router-domain>/graphql"
+       backendWsUrl: "wss://hoppscotch-backend-<namespace>.<router-domain>/graphql"
+     backend:
+       redirectUrl: "https://hoppscotch-frontend-<namespace>.<router-domain>"
+       whitelistedOrigins:
+         - "https://hoppscotch-frontend-<namespace>.<router-domain>"
+         - "https://hoppscotch-admin-<namespace>.<router-domain>"
+         - "https://hoppscotch-backend-<namespace>.<router-domain>"
+   ```
+
    See [Auto-Generating Config URLs](#auto-generating-config-urls) for the full list of keys.
 
 5. **Install:**
