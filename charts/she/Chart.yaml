@@ -2,5 +2,5 @@ apiVersion: v2
 name: hoppscotch-enterprise
 description: A Helm chart for Hoppscotch Enterprise Edition
 type: application
-version: 0.2.10
-appVersion: "2026.6.0"
+version: 0.2.11
+appVersion: "2026.6.1"
