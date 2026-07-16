@@ -1,0 +1,38 @@
+{{- if and (eq .Values.deploymentMode "aio") .Values.aio.route.enabled (.Capabilities.APIVersions.Has "route.openshift.io/v1") }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "hoppscotch.aio.serviceName" . }}
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.aio.route.annotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.aio.route.annotations }}
+    {{- toYaml .Values.aio.route.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.aio.route.host }}
+  host: {{ .Values.aio.route.host | quote }}
+  {{- end }}
+  {{- if .Values.aio.route.path }}
+  path: {{ .Values.aio.route.path | quote }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "hoppscotch.aio.serviceName" . }}
+    weight: 100
+  port:
+    targetPort: {{ .Values.aio.route.targetPort }}
+  {{- if .Values.aio.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.aio.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.aio.route.tls.insecureEdgeTerminationPolicy }}
+  {{- end }}
+  wildcardPolicy: {{ .Values.aio.route.wildcardPolicy }}
+{{- end }}

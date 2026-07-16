@@ -1,7 +1,7 @@
 # Hoppscotch Helm Chart
 
-![Version: 0.2.6](https://img.shields.io/badge/Version-0.2.6-informational?style=flat-square)
-![AppVersion: 2025.12.1](https://img.shields.io/badge/AppVersion-2025.12.1-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square)
+![AppVersion: 2026.6.1](https://img.shields.io/badge/AppVersion-2026.6.1-informational?style=flat-square)
 
 Hoppscotch is a lightweight, web-based API development suite. It was built from the ground up with ease of use and
 accessibility in mind providing all the functionality needed for developers with minimalist, unobtrusive UI.
@@ -394,14 +394,231 @@ for the migrations job to complete.
 Instead the migration job is triggered by appending the release revision number to the job name to ensure that it is
 unique for each release. This allows the job to be run multiple times without conflicts.
 
+### Deploying on OpenShift
+
+The chart is compatible with both vanilla Kubernetes and
+[Red Hat OpenShift](https://www.redhat.com/en/technologies/cloud-computing/openshift). On OpenShift, the `restricted-v2`
+Security Context Constraint (SCC) assigns a random UID/GID and `fsGroup` from the namespace's allowed range and forbids
+hardcoding them. To make the chart and its Bitnami dependencies (PostgreSQL, Redis, ClickHouse) compatible, set the
+OpenShift compatibility mode:
+
+```yaml
+global:
+  compatibility:
+    openshift:
+      # auto: adapt only when an OpenShift cluster is detected (default)
+      # force: always adapt
+      # disabled: never adapt
+      adaptSecurityContext: auto
+```
+
+When adaptation is active, the chart removes `runAsUser`, `runAsGroup` and `fsGroup` from every `securityContext` so the
+platform can assign the allowed IDs. The default `auto` value only adapts when an OpenShift cluster is detected (via the
+`security.openshift.io/v1` API), so the same values file works unchanged on plain Kubernetes.
+
+#### Installation walkthrough
+
+These steps deploy Hoppscotch on a project that uses the default `restricted-v2` SCC. No cluster administrator or
+elevated SCC required. Both `aio` and `distributed` modes are supported.
+
+1. **Use OpenShift-compatible images.** `restricted-v2` runs the pod as a random non-root UID that cannot bind
+   privileged ports (below `1024`) or write into a root-owned image filesystem. Hoppscotch images from app version
+   `2026.6.1` onwards serve on an unprivileged port via the `HOPP_ALTERNATE_PORT` environment variable and keep their
+   application directory group-writable, satisfying both requirements. Images older than `2026.6.1` may need a
+   workaround; see [Container image requirements](#container-image-requirements).
+
+2. **Enable OpenShift compatibility** so `runAsUser`, `runAsGroup` and `fsGroup` are dropped and the platform assigns
+   IDs from the namespace range:
+
+   ```yaml
+   global:
+     compatibility:
+       openshift:
+         adaptSecurityContext: auto
+   ```
+
+3. **Serve on unprivileged ports.** On `restricted-v2` a component cannot bind privileged port `80`.
+   `HOPP_ALTERNATE_PORT` relocates a component's port-`80` listener to an unprivileged port **of your choice** (it is
+   configurable, not a fixed value; `3080` is only an example). Set it **only** for images that would otherwise bind
+   port `80`, and point that component's `containerPorts.http`, `service.ports.http` and `route.targetPort` at the same
+   value. Images that already serve on an unprivileged port ignore it; see the distributed `frontend` below.
+
+   All-in-one (subpath mode binds port `80`, so relocate it):
+
+   ```yaml
+   deploymentMode: aio
+   aio:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   ```
+
+   In distributed mode, the `frontend`, `backend` and `admin` images all bind port `80`, so relocate each of them with
+   `HOPP_ALTERNATE_PORT`:
+
+   ```yaml
+   deploymentMode: distributed
+   frontend:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   backend:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   admin:
+     extraEnvVars:
+       - name: HOPP_ALTERNATE_PORT
+         value: "3080"
+     containerPorts:
+       http: 3080
+     service:
+       ports:
+         http: 3080
+     route:
+       enabled: true
+       targetPort: http
+       tls:
+         enabled: true
+         termination: edge
+         insecureEdgeTerminationPolicy: Redirect
+   ```
+
+4. **Set the public URLs.** Routes do not auto-populate the config URLs, so set them to the Route hostnames, which
+   follow `<service-name>-<namespace>.<router-domain>`. Get the router domain with:
+
+   ```bash
+   oc whoami --show-console | sed 's#https://console-openshift-console\.##'
+   ```
+
+   In `aio` mode a single host serves the frontend (`/`), backend (`/backend`) and admin (`/admin`) via subpaths. In
+   `distributed` mode point `hoppscotch.frontend.*` at the separate frontend, backend and admin Route hosts and set
+   `hoppscotch.backend.redirectUrl` / `hoppscotch.backend.whitelistedOrigins` to match. See
+   [Auto-Generating Config URLs](#auto-generating-config-urls) for the full list of keys.
+
+5. **Install:**
+
+   ```bash
+   helm upgrade --install hoppscotch hoppscotch/hoppscotch \
+     --namespace hoppscotch --create-namespace \
+     -f values.yaml
+   ```
+
+6. **Verify:**
+
+   ```bash
+   oc get pods -n hoppscotch     # migrations Completed; components Running
+   oc get route -n hoppscotch    # one Route (aio) or three (distributed)
+   ```
+
+   Browse to the frontend Route to confirm the UI loads. The backend health endpoint is `/ping` (`/backend/ping` in
+   `aio` subpath mode).
+
+#### Exposing services with OpenShift Routes
+
+In addition to standard `Ingress`, the chart can create native OpenShift
+[Route](https://docs.openshift.com/container-platform/latest/networking/routes/route-configuration.html) resources.
+Routes are an alternative to ingress and are disabled by default:
+
+```yaml
+deploymentMode: aio
+aio:
+  route:
+    enabled: true
+    host: "" # auto-assigned by OpenShift when empty
+    targetPort: http
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+```
+
+In `distributed` mode, configure `frontend.route`, `backend.route` and `admin.route` instead.
+
+Routes are only rendered on clusters that expose the `route.openshift.io/v1` API, so enabling them in a values file
+shared with plain Kubernetes is a no-op there rather than a failed install. When previewing a Route offline with
+`helm template`, pass `--api-versions route.openshift.io/v1` so it renders.
+
+#### Port binding considerations
+
+`restricted-v2` forbids binding privileged ports (below `1024`), so any component that would otherwise serve on port
+`80` must be relocated to an unprivileged port with `HOPP_ALTERNATE_PORT`. Step 3 of the
+[installation walkthrough](#installation-walkthrough) covers the per-component settings.
+
+If an image cannot relocate its port, an alternative is AIO **multiport** mode, whose services listen on unprivileged
+ports (`3000`, `3100`, `3170`, `3200`) directly:
+
+```yaml
+deploymentMode: aio
+hoppscotch:
+  frontend:
+    enableSubpathBasedAccess: false
+aio:
+  route:
+    enabled: true
+    targetPort: http-frontend
+```
+
+#### Container image requirements
+
+Under `restricted-v2` the container runs with a random non-root UID that does not own the image filesystem and cannot
+bind privileged ports. Hoppscotch added non-root container support in **app version `2026.6.1`**, so images at
+`2026.6.1` or newer keep their application directory group-writable and can serve on the port set by
+`HOPP_ALTERNATE_PORT`. They run on `restricted-v2` without the `anyuid` SCC or a rebuilt image. **Use `2026.6.1` or
+newer**, and still relocate the privileged port with `HOPP_ALTERNATE_PORT` as shown in step 3 of the
+[installation walkthrough](#installation-walkthrough).
+
+Images older than `2026.6.1` are not arbitrary-UID-safe: they write a `build.env` file into their application directory
+(`/usr/src/app`) at startup and fail with `EACCES: permission denied, open 'build.env'`, and they still bind privileged
+port `80`. To run such an image, grant the release ServiceAccount the `anyuid` SCC (requires a cluster administrator),
+which runs the container as the image's own user so it can both write its files and bind port `80`:
+
+```bash
+oc adm policy add-scc-to-user anyuid -z <serviceAccountName> -n <namespace>
+```
+
 ### Mock Server Wildcard Ingress
 
-Hoppscotch's mock server is served by the backend under `/mock/<mock-id>/<path>` (and via `/backend/mock/<mock-id>/<path>`
-when using AIO subpath access). The mock server wildcard ingress feature enables subdomain-based access so that requests
-to `<mock-id>.mock.example.com/<path>` are transparently routed to the appropriate backend path for your deployment mode.
+Hoppscotch's mock server is served by the backend under `/mock/<mock-id>/<path>` (and via
+`/backend/mock/<mock-id>/<path>` when using AIO subpath access). The mock server wildcard ingress feature enables
+subdomain-based access so that requests to `<mock-id>.mock.example.com/<path>` are transparently routed to the
+appropriate backend path for your deployment mode.
 
-The mock server ingress is **independent of the deployment mode** — it works with both `aio` and `distributed` modes.
-It is disabled by default and has zero impact on existing deployments.
+The mock server ingress is **independent of the deployment mode**; it works with both `aio` and `distributed` modes. It
+is disabled by default and has zero impact on existing deployments.
 
 #### Enabling Mock Server Ingress
 
@@ -411,7 +628,7 @@ To enable the mock server wildcard ingress, set the following in your values fil
 mockServer:
   ingress:
     enabled: true
-    controllerType: nginx  # nginx | traefik | alb
+    controllerType: nginx # nginx | traefik | alb
     hostname: mock.example.com
     ingressClassName: nginx
 ```
@@ -421,7 +638,8 @@ Hoppscotch backend service.
 
 #### Supported Ingress Controllers
 
-The `controllerType` toggle selects the ingress controller and configures the appropriate annotations automatically.
+The `controllerType` toggle selects the ingress controller and configures the appropriate annotations automatically. An
+unsupported value will cause the template to fail with a descriptive error message.
 
 ##### nginx
 
@@ -433,9 +651,9 @@ your nginx ingress controller):
 
 > **Important**: The nginx option relies on `nginx.ingress.kubernetes.io/server-snippet` and
 > `nginx.ingress.kubernetes.io/configuration-snippet` annotations. Many ingress-nginx deployments disable snippet
-> annotations by default for security reasons (via `allow-snippet-annotations: "false"` in the controller config).
-> You must enable snippet annotations on your ingress-nginx controller for the mock-id extraction to work. Without
-> them, the rewrite will not function correctly.
+> annotations by default for security reasons (via `allow-snippet-annotations: "false"` in the controller config). You
+> must enable snippet annotations on your ingress-nginx controller for the mock-id extraction to work. Without them, the
+> rewrite will not function correctly.
 
 ```yaml
 mockServer:
@@ -463,9 +681,9 @@ mockServer:
     ingressClassName: traefik
 ```
 
-> **Note**: Traefik's `replacePathRegex` middleware can rewrite the request path but cannot extract the mock-id from
-> the Host header (subdomain). When using Traefik, the backend application must resolve the mock-id from the `Host`
-> header itself.
+> **Note**: Traefik's `replacePathRegex` middleware can rewrite the request path but cannot extract the mock-id from the
+> Host header (subdomain). When using Traefik, the backend application must resolve the mock-id from the `Host` header
+> itself.
 
 ##### alb (AWS Load Balancer)
 
@@ -479,18 +697,18 @@ mockServer:
     hostname: mock.example.com
 ```
 
-> **Note**: AWS ALB does not support subdomain-to-path rewriting natively. When using ALB, the backend application
-> must resolve the mock-id from the `Host` header itself.
+> **Note**: AWS ALB does not support subdomain-to-path rewriting natively. When using ALB, the backend application must
+> resolve the mock-id from the `Host` header itself.
 
 #### Path Prefix Behavior
 
 The path prefix used for URL rewriting depends on the deployment mode and subpath access setting:
 
-| Deployment Mode | `enableSubpathBasedAccess` | Service Port | Path Prefix    |
-| --------------- | -------------------------- | ------------ | -------------- |
+| Deployment Mode | `enableSubpathBasedAccess` | Service Port | Path Prefix     |
+| --------------- | -------------------------- | ------------ | --------------- |
 | `aio`           | `true` (default)           | 80           | `/backend/mock` |
-| `aio`           | `false`                    | 3170         | `/mock`        |
-| `distributed`   | N/A                        | 80           | `/mock`        |
+| `aio`           | `false`                    | 3170         | `/mock`         |
+| `distributed`   | N/A                        | 80           | `/mock`         |
 
 #### TLS Configuration
 
@@ -530,12 +748,13 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 
 ### Global Parameters
 
-| Key                                 | Type   | Default | Description                                         |
-| ----------------------------------- | ------ | ------- | --------------------------------------------------- |
-| global.imageRegistry                | string | `""`    | Global Docker image registry                        |
-| global.imagePullSecrets             | list   | `[]`    | Global Docker registry secret names as an array     |
-| global.defaultStorageClass          | string | `""`    | Global default storage class for persistent volumes |
-| global.security.allowInsecureImages | bool   | `false` | Allows skipping image verification                  |
+| Key                                                 | Type   | Default  | Description                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| global.imageRegistry                                | string | `""`     | Global Docker image registry                                                                                                                                                                                                                                                                                                                                        |
+| global.imagePullSecrets                             | list   | `[]`     | Global Docker registry secret names as an array                                                                                                                                                                                                                                                                                                                     |
+| global.defaultStorageClass                          | string | `""`     | Global default storage class for persistent volumes                                                                                                                                                                                                                                                                                                                 |
+| global.security.allowInsecureImages                 | bool   | `false`  | Allows skipping image verification                                                                                                                                                                                                                                                                                                                                  |
+| global.compatibility.openshift.adaptSecurityContext | string | `"auto"` | Adapt the securityContext sections of Hoppscotch and its dependencies to be compatible with OpenShift restricted-v2 SCC: removes `runAsUser`, `runAsGroup` and `fsGroup` so the platform assigns IDs from the namespace's allowed range. Possible values: `auto` (apply only if an OpenShift cluster is detected), `force` (always apply), `disabled` (never apply) |
 
 ### Common Parameters
 
@@ -724,6 +943,15 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | aio.ingress.extraTls                              | list   | `[]`                       | Extra TLS configurations for ingress                                                                                        |
 | aio.ingress.secrets                               | list   | `[]`                       | TLS secrets for ingress                                                                                                     |
 | aio.ingress.extraRules                            | list   | `[]`                       | Extra ingress rules                                                                                                         |
+| aio.route.enabled                                 | bool   | `false`                    | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| aio.route.host                                    | string | `""`                       | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| aio.route.path                                    | string | `""`                       | Route path                                                                                                                  |
+| aio.route.targetPort                              | string | `"http"`                   | Service target port name or number the Route forwards to                                                                    |
+| aio.route.wildcardPolicy                          | string | `"None"`                   | Route wildcard policy (None or Subdomain)                                                                                   |
+| aio.route.annotations                             | object | `{}`                       | Route annotations                                                                                                           |
+| aio.route.tls.enabled                             | bool   | `true`                     | Enable TLS for the Route                                                                                                    |
+| aio.route.tls.termination                         | string | `"edge"`                   | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| aio.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`               | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | aio.persistence.enabled                           | bool   | `false`                    | Enable persistent storage for Hoppscotch                                                                                    |
 | aio.persistence.storageClass                      | string | `""`                       | Storage class for persistent volume                                                                                         |
 | aio.persistence.accessModes                       | list   | `["ReadWriteOnce"]`        | Access modes for persistent volume                                                                                          |
@@ -827,6 +1055,15 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | frontend.ingress.extraTls                              | list   | `[]`                               | Extra TLS configurations for ingress                                                                                        |
 | frontend.ingress.secrets                               | list   | `[]`                               | TLS secrets for ingress                                                                                                     |
 | frontend.ingress.extraRules                            | list   | `[]`                               | Extra ingress rules                                                                                                         |
+| frontend.route.enabled                                 | bool   | `false`                            | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| frontend.route.host                                    | string | `""`                               | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| frontend.route.path                                    | string | `""`                               | Route path                                                                                                                  |
+| frontend.route.targetPort                              | string | `"http"`                           | Service target port name or number the Route forwards to                                                                    |
+| frontend.route.wildcardPolicy                          | string | `"None"`                           | Route wildcard policy (None or Subdomain)                                                                                   |
+| frontend.route.annotations                             | object | `{}`                               | Route annotations                                                                                                           |
+| frontend.route.tls.enabled                             | bool   | `true`                             | Enable TLS for the Route                                                                                                    |
+| frontend.route.tls.termination                         | string | `"edge"`                           | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| frontend.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                       | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | frontend.persistence.enabled                           | bool   | `false`                            | Enable persistent storage for Hoppscotch                                                                                    |
 | frontend.persistence.storageClass                      | string | `""`                               | Storage class for persistent volume                                                                                         |
 | frontend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`                | Access modes for persistent volume                                                                                          |
@@ -930,6 +1167,15 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | backend.ingress.extraTls                              | list   | `[]`                              | Extra TLS configurations for ingress                                                                                        |
 | backend.ingress.secrets                               | list   | `[]`                              | TLS secrets for ingress                                                                                                     |
 | backend.ingress.extraRules                            | list   | `[]`                              | Extra ingress rules                                                                                                         |
+| backend.route.enabled                                 | bool   | `false`                           | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| backend.route.host                                    | string | `""`                              | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| backend.route.path                                    | string | `""`                              | Route path                                                                                                                  |
+| backend.route.targetPort                              | string | `"http"`                          | Service target port name or number the Route forwards to                                                                    |
+| backend.route.wildcardPolicy                          | string | `"None"`                          | Route wildcard policy (None or Subdomain)                                                                                   |
+| backend.route.annotations                             | object | `{}`                              | Route annotations                                                                                                           |
+| backend.route.tls.enabled                             | bool   | `true`                            | Enable TLS for the Route                                                                                                    |
+| backend.route.tls.termination                         | string | `"edge"`                          | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| backend.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                      | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | backend.persistence.enabled                           | bool   | `false`                           | Enable persistent storage for Hoppscotch                                                                                    |
 | backend.persistence.storageClass                      | string | `""`                              | Storage class for persistent volume                                                                                         |
 | backend.persistence.accessModes                       | list   | `["ReadWriteOnce"]`               | Access modes for persistent volume                                                                                          |
@@ -1033,6 +1279,15 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | admin.ingress.extraTls                              | list   | `[]`                            | Extra TLS configurations for ingress                                                                                        |
 | admin.ingress.secrets                               | list   | `[]`                            | TLS secrets for ingress                                                                                                     |
 | admin.ingress.extraRules                            | list   | `[]`                            | Extra ingress rules                                                                                                         |
+| admin.route.enabled                                 | bool   | `false`                         | Enable OpenShift Route for Hoppscotch (OpenShift only, alternative to ingress)                                              |
+| admin.route.host                                    | string | `""`                            | Route hostname (auto-assigned by OpenShift when left empty)                                                                 |
+| admin.route.path                                    | string | `""`                            | Route path                                                                                                                  |
+| admin.route.targetPort                              | string | `"http"`                        | Service target port name or number the Route forwards to                                                                    |
+| admin.route.wildcardPolicy                          | string | `"None"`                        | Route wildcard policy (None or Subdomain)                                                                                   |
+| admin.route.annotations                             | object | `{}`                            | Route annotations                                                                                                           |
+| admin.route.tls.enabled                             | bool   | `true`                          | Enable TLS for the Route                                                                                                    |
+| admin.route.tls.termination                         | string | `"edge"`                        | TLS termination type (edge, passthrough or reencrypt)                                                                       |
+| admin.route.tls.insecureEdgeTerminationPolicy       | string | `"Redirect"`                    | Insecure traffic policy (None, Allow or Redirect)                                                                           |
 | admin.persistence.enabled                           | bool   | `false`                         | Enable persistent storage for Hoppscotch                                                                                    |
 | admin.persistence.storageClass                      | string | `""`                            | Storage class for persistent volume                                                                                         |
 | admin.persistence.accessModes                       | list   | `["ReadWriteOnce"]`             | Access modes for persistent volume                                                                                          |
@@ -1087,6 +1342,23 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                  |
 | defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers |
 | defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers        |
+
+### Mock Server Parameters
+
+| Key                                 | Type   | Default                    | Description                                                                |
+| ----------------------------------- | ------ | -------------------------- | -------------------------------------------------------------------------- |
+| mockServer.ingress.enabled          | bool   | `false`                    | Enable wildcard ingress for the mock server                                |
+| mockServer.ingress.controllerType   | string | `"nginx"`                  | Ingress controller type (nginx, traefik, or alb)                           |
+| mockServer.ingress.ingressClassName | string | `""`                       | Ingress class name                                                         |
+| mockServer.ingress.hostname         | string | `"mock.hoppscotch.local"`  | Wildcard hostname for mock server ingress (wildcard will be \*.<hostname>) |
+| mockServer.ingress.path             | string | `"/"`                      | Ingress path                                                               |
+| mockServer.ingress.pathType         | string | `"ImplementationSpecific"` | Ingress path type                                                          |
+| mockServer.ingress.annotations      | object | `{}`                       | Additional annotations for the mock server ingress                         |
+| mockServer.ingress.tls              | bool   | `false`                    | Enable TLS for mock server ingress                                         |
+| mockServer.ingress.selfSigned       | bool   | `false`                    | Create self-signed TLS certificates for mock server ingress                |
+| mockServer.ingress.tlsSecret        | string | `""`                       | Existing TLS secret name for mock server ingress (auto-generated if empty) |
+| mockServer.ingress.extraTls         | list   | `[]`                       | Extra TLS configurations for mock server ingress                           |
+| mockServer.ingress.extraRules       | list   | `[]`                       | Extra ingress rules for mock server ingress                                |
 
 ### Other Parameters
 

@@ -1,0 +1,38 @@
+{{- if and (eq .Values.deploymentMode "distributed") .Values.backend.route.enabled (.Capabilities.APIVersions.Has "route.openshift.io/v1") }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "hoppscotch.backend.serviceName" . }}
+  namespace: {{ include "hoppscotch.namespace" . | quote }}
+  labels:
+    app.kubernetes.io/component: hoppscotch-backend
+    {{- include "hoppscotch.labels" . | nindent 4 }}
+  {{- if or .Values.commonAnnotations .Values.backend.route.annotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.backend.route.annotations }}
+    {{- toYaml .Values.backend.route.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.backend.route.host }}
+  host: {{ .Values.backend.route.host | quote }}
+  {{- end }}
+  {{- if .Values.backend.route.path }}
+  path: {{ .Values.backend.route.path | quote }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "hoppscotch.backend.serviceName" . }}
+    weight: 100
+  port:
+    targetPort: {{ .Values.backend.route.targetPort }}
+  {{- if .Values.backend.route.tls.enabled }}
+  tls:
+    termination: {{ .Values.backend.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.backend.route.tls.insecureEdgeTerminationPolicy }}
+  {{- end }}
+  wildcardPolicy: {{ .Values.backend.route.wildcardPolicy }}
+{{- end }}
