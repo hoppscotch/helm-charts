@@ -5,6 +5,11 @@ Default init container that waits for the database to be ready.
 - name: wait-for-db
   image: {{ include "hoppscotch.images.image" (dict "component" .Values.defaultInitContainers.waitForDatabase "context" .) }}
   imagePullPolicy: {{ .Values.defaultInitContainers.waitForDatabase.image.pullPolicy }}
+  {{- $resources := include "hoppscotch.resources" (dict "preset" .Values.defaultInitContainers.waitForDatabase.resourcesPreset "resources" .Values.defaultInitContainers.waitForDatabase.resources) }}
+  {{- if $resources }}
+  resources:
+    {{- $resources | nindent 4 }}
+  {{- end }}
   command:
     - /bin/sh
   args:
@@ -34,6 +39,11 @@ Default init container that waits for the database migrations to be complete.
 - name: wait-for-migrations
   image: {{ include "hoppscotch.backend.image" . }}
   imagePullPolicy: {{ include "hoppscotch.backend.imagePullPolicy" . }}
+  {{- $resources := include "hoppscotch.resources" (dict "preset" .Values.defaultInitContainers.waitForMigrations.resourcesPreset "resources" .Values.defaultInitContainers.waitForMigrations.resources) }}
+  {{- if $resources }}
+  resources:
+    {{- $resources | nindent 4 }}
+  {{- end }}
   command:
     - /bin/sh
   args:

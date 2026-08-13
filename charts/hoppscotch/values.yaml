@@ -1893,6 +1893,13 @@ defaultInitContainers:
     # @section -- Default Init Containers Parameters
     extraEnvVarsSecret: ""
 
+    # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
+    # @section -- Default Init Containers Parameters
+    resourcesPreset: nano
+    # -- Set container resources for the wait-for-database init container (overrides resourcesPreset)
+    # @section -- Default Init Containers Parameters
+    resources: {}
+
   waitForMigrations:
     # -- Enable init container that waits for migrations to complete
     # @section -- Default Init Containers Parameters
@@ -1907,6 +1914,13 @@ defaultInitContainers:
     # -- Name of existing Secret containing extra environment variables to be added to wait for migrations containers
     # @section -- Default Init Containers Parameters
     extraEnvVarsSecret: ""
+
+    # -- Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge)
+    # @section -- Default Init Containers Parameters
+    resourcesPreset: small
+    # -- Set container resources for the wait-for-migrations init container (overrides resourcesPreset)
+    # @section -- Default Init Containers Parameters
+    resources: {}
 
 # @section -- Mock Server Parameters
 
