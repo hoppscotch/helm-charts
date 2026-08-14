@@ -3,6 +3,35 @@ entries:
   hoppscotch:
   - apiVersion: v2
     appVersion: 2026.7.0
+    created: "2026-08-14T12:01:51.455991984Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.x.x
+    - condition: redis.enabled
+      name: redis
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 22.x.x
+    - condition: clickhouse.enabled
+      name: clickhouse
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 9.x.x
+    description: Hoppscotch is a lightweight, web-based API development suite. It
+      was built from the ground up with ease of use and accessibility in mind providing
+      all the functionality needed for developers with minimalist, unobtrusive UI.
+    digest: 939430e43510e54b4b106f2a924fb6557066599d96c578b5ce5b53eb5ea8861f
+    home: https://docs.hoppscotch.io
+    icon: https://avatars.githubusercontent.com/u/56705483?s=200&v=4
+    name: hoppscotch
+    sources:
+    - https://github.com/hoppscotch/helm-charts/tree/main/charts/hoppscotch
+    type: application
+    urls:
+    - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-0.6.0/hoppscotch-0.6.0.tgz
+    version: 0.6.0
+  - apiVersion: v2
+    appVersion: 2026.7.0
     created: "2026-07-30T21:01:52.351789065Z"
     dependencies:
     - condition: postgresql.enabled
@@ -1139,4 +1168,4 @@ entries:
     urls:
     - https://github.com/hoppscotch/helm-charts/releases/download/hoppscotch-enterprise-0.1.0/hoppscotch-enterprise-0.1.0.tgz
     version: 0.1.0
-generated: "2026-07-30T21:01:52.806510728Z"
+generated: "2026-08-14T12:01:51.456240548Z"
