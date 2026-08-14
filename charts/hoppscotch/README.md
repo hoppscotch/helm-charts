@@ -1,7 +1,7 @@
 # Hoppscotch Helm Chart
 
-![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square)
-![AppVersion: 2026.6.1](https://img.shields.io/badge/AppVersion-2026.6.1-informational?style=flat-square)
+![Version: 0.5.2](https://img.shields.io/badge/Version-0.5.2-informational?style=flat-square)
+![AppVersion: 2026.7.0](https://img.shields.io/badge/AppVersion-2026.7.0-informational?style=flat-square)
 
 Hoppscotch is a lightweight, web-based API development suite. It was built from the ground up with ease of use and
 accessibility in mind providing all the functionality needed for developers with minimalist, unobtrusive UI.
@@ -1351,19 +1351,23 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 
 ### Default Init Containers Parameters
 
-| Key                                                        | Type   | Default          | Description                                                                                                         |
-| ---------------------------------------------------------- | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| defaultInitContainers.waitForDatabase.enabled              | bool   | `true`           | Enable init container that waits for database to be ready                                                           |
-| defaultInitContainers.waitForDatabase.image.repository     | string | `"postgres"`     | Wait for database image repository                                                                                  |
-| defaultInitContainers.waitForDatabase.image.pullPolicy     | string | `"IfNotPresent"` | Wait for database image pull policy                                                                                 |
-| defaultInitContainers.waitForDatabase.image.tag            | string | `"16-alpine"`    | Wait for database image tag                                                                                         |
-| defaultInitContainers.waitForDatabase.extraEnvVars         | list   | `[]`             | Array of extra environment variables to be added to wait for database containers                                    |
-| defaultInitContainers.waitForDatabase.extraEnvVarsCM       | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for database containers   |
-| defaultInitContainers.waitForDatabase.extraEnvVarsSecret   | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for database containers          |
-| defaultInitContainers.waitForMigrations.enabled            | bool   | `true`           | Enable init container that waits for migrations to complete                                                         |
-| defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                  |
-| defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers |
-| defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers        |
+| Key                                                        | Type   | Default          | Description                                                                                                                 |
+| ---------------------------------------------------------- | ------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| defaultInitContainers.waitForDatabase.enabled              | bool   | `true`           | Enable init container that waits for database to be ready                                                                   |
+| defaultInitContainers.waitForDatabase.image.repository     | string | `"postgres"`     | Wait for database image repository                                                                                          |
+| defaultInitContainers.waitForDatabase.image.pullPolicy     | string | `"IfNotPresent"` | Wait for database image pull policy                                                                                         |
+| defaultInitContainers.waitForDatabase.image.tag            | string | `"16-alpine"`    | Wait for database image tag                                                                                                 |
+| defaultInitContainers.waitForDatabase.extraEnvVars         | list   | `[]`             | Array of extra environment variables to be added to wait for database containers                                            |
+| defaultInitContainers.waitForDatabase.extraEnvVarsCM       | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for database containers           |
+| defaultInitContainers.waitForDatabase.extraEnvVarsSecret   | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for database containers                  |
+| defaultInitContainers.waitForDatabase.resourcesPreset      | string | `"nano"`         | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| defaultInitContainers.waitForDatabase.resources            | object | `{}`             | Set container resources for the wait-for-database init container (overrides resourcesPreset)                                |
+| defaultInitContainers.waitForMigrations.enabled            | bool   | `true`           | Enable init container that waits for migrations to complete                                                                 |
+| defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                          |
+| defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers         |
+| defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers                |
+| defaultInitContainers.waitForMigrations.resourcesPreset    | string | `"small"`        | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
+| defaultInitContainers.waitForMigrations.resources          | object | `{}`             | Set container resources for the wait-for-migrations init container (overrides resourcesPreset)                              |
 
 ### Mock Server Parameters
 

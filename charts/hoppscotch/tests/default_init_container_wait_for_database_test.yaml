@@ -244,3 +244,46 @@ tests:
               - secretRef:
                   name: env-vars-secret
           any: true
+
+  - it: should set default resources from the nano preset
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-db
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.requests.cpu
+          value: 100m
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.limits.memory
+          value: 192Mi
+
+  - it: should override init container resources when explicitly set
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: true
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-db
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.requests.cpu
+          value: 25m
+      - equal:
+          path: spec.template.spec.initContainers[0].resources.limits.memory
+          value: 64Mi
