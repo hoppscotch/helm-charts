@@ -59,7 +59,7 @@ spec:
       secretName: {{ printf "%s-tls" .Values.frontend.ingress.hostname }}
     {{- end }}
     {{- if .Values.frontend.ingress.extraTls }}
-    {{- .Values.frontend.ingress.extraTls | nindent 4 }}
+    {{- toYaml .Values.frontend.ingress.extraTls | nindent 4 }}
     {{- end }}
   {{- end }}
 {{- end }}
