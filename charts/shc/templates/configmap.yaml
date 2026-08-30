@@ -40,6 +40,10 @@ data:
   REDIRECT_URL: {{ .Values.community.config.urls.redirect | quote }}
   WHITELISTED_ORIGINS: {{ .Values.community.config.urls.whitelistedOrigins | quote }}
 
+  # Google Auth (non-sensitive)
+  GOOGLE_CALLBACK_URL: {{ .Values.community.config.auth.google.callbackUrl | quote }}
+  GOOGLE_SCOPE: {{ .Values.community.config.auth.google.scope | quote }}
+
   # community Config
   VITE_ALLOWED_AUTH_PROVIDERS: {{ .Values.community.config.auth.allowedProviders | quote }}
   ENABLE_SUBPATH_BASED_ACCESS: {{ .Values.community.config.community.enableSubpathBasedAccess | quote }}
