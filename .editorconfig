@@ -3,11 +3,33 @@ root = true
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
 indent_style = space
+indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
 
 [Makefile]
-indent_size = 4
 indent_style = tab
+indent_size = 4
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.sh]
+indent_style = space
+indent_size = 2
+end_of_line = lf
