@@ -37,7 +37,7 @@ spec:
   loadBalancerIP: {{ .Values.aio.service.loadBalancerIP }}
   {{- end }}
   ports:
-  {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess }}
+  {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" }}
     - name: http
       port: {{ .Values.aio.service.ports.http }}
       {{- if not (eq .Values.aio.service.ports.http .Values.aio.containerPorts.http) }}

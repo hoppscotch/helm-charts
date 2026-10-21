@@ -1024,3 +1024,266 @@ tests:
       - equal:
           path: data.CLICKHOUSE_HOST
           value: external-clickhouse:1234
+
+  - it: should enable subpath based access when deployment mode is distributed and subpath based access is enabled
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.ENABLE_SUBPATH_BASED_ACCESS
+          value: "true"
+
+  - it: should serve backend and admin from the frontend hostname when distributed subpath based access is enabled
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+      frontend:
+        ingress:
+          enabled: true
+          hostname: hoppscotch.example.com
+          tls: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: https://hoppscotch.example.com
+      - equal:
+          path: data.VITE_ADMIN_URL
+          value: https://hoppscotch.example.com/admin
+      - equal:
+          path: data.VITE_BACKEND_API_URL
+          value: https://hoppscotch.example.com/backend/v1
+      - equal:
+          path: data.VITE_BACKEND_GQL_URL
+          value: https://hoppscotch.example.com/backend/graphql
+      - equal:
+          path: data.VITE_BACKEND_WS_URL
+          value: wss://hoppscotch.example.com/backend/graphql
+      - equal:
+          path: data.REDIRECT_URL
+          value: https://hoppscotch.example.com
+      - equal:
+          path: data.WHITELISTED_ORIGINS
+          value: https://hoppscotch.example.com,app://hoppscotch_example_com,http://app.hoppscotch_example_com
+
+  - it:
+      should keep the frontend hostname when distributed subpath based access is enabled and component ingresses carry
+      rewrite paths
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+      frontend:
+        ingress:
+          enabled: true
+          hostname: hoppscotch.example.com
+          tls: true
+      backend:
+        ingress:
+          enabled: true
+          hostname: hoppscotch.example.com
+          path: /backend(/|$)(.*)
+          pathType: ImplementationSpecific
+          tls: true
+      admin:
+        ingress:
+          enabled: true
+          hostname: hoppscotch.example.com
+          path: /admin
+          tls: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_ADMIN_URL
+          value: https://hoppscotch.example.com/admin
+      - equal:
+          path: data.VITE_BACKEND_API_URL
+          value: https://hoppscotch.example.com/backend/v1
+
+  - it:
+      should fall back to the component ingress when distributed subpath based access is enabled without a frontend
+      hostname
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+      frontend:
+        ingress:
+          enabled: false
+      backend:
+        ingress:
+          enabled: true
+          hostname: backend.example.com
+          tls: true
+      admin:
+        ingress:
+          enabled: true
+          hostname: admin.example.com
+          tls: true
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_ADMIN_URL
+          value: https://admin.example.com
+      - equal:
+          path: data.VITE_BACKEND_API_URL
+          value: https://backend.example.com/v1
+
+  - it: should generate URLs from routes when deployment mode is distributed and the ingress is disabled
+    set:
+      deploymentMode: distributed
+      frontend:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: hoppscotch.example.com
+      backend:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: backend.example.com
+      admin:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: admin.example.com
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: https://hoppscotch.example.com
+      - equal:
+          path: data.VITE_ADMIN_URL
+          value: https://admin.example.com
+      - equal:
+          path: data.VITE_BACKEND_API_URL
+          value: https://backend.example.com/v1
+      - equal:
+          path: data.REDIRECT_URL
+          value: https://hoppscotch.example.com
+      - equal:
+          path: data.OIDC_CALLBACK_URL
+          value: https://backend.example.com/v1/auth/oidc/callback
+
+  - it: should generate URLs from routes when deployment mode is aio and the ingress is disabled
+    set:
+      deploymentMode: aio
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccess: true
+      aio:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: hoppscotch.example.com
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: https://hoppscotch.example.com
+      - equal:
+          path: data.VITE_ADMIN_URL
+          value: https://hoppscotch.example.com/admin
+      - equal:
+          path: data.VITE_BACKEND_API_URL
+          value: https://hoppscotch.example.com/backend/v1
+
+  - it: should generate an http route URL when route TLS is disabled
+    set:
+      deploymentMode: distributed
+      frontend:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: hoppscotch.example.com
+          tls:
+            enabled: false
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: http://hoppscotch.example.com
+
+  - it: should include the route path in generated URLs
+    set:
+      deploymentMode: distributed
+      frontend:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: hoppscotch.example.com
+          path: /hoppscotch/
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: https://hoppscotch.example.com/hoppscotch
+
+  - it: should not generate URLs from routes when the route host is auto-assigned
+    set:
+      deploymentMode: distributed
+      frontend:
+        ingress:
+          enabled: false
+        route:
+          enabled: true
+          host: ""
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: ""
+      - equal:
+          path: data.REDIRECT_URL
+          value: ""
+
+  - it: should prefer the ingress over the route when both are enabled
+    set:
+      deploymentMode: distributed
+      frontend:
+        ingress:
+          enabled: true
+          hostname: ingress.example.com
+          tls: true
+        route:
+          enabled: true
+          host: route.example.com
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: ConfigMap
+      - equal:
+          path: data.VITE_BASE_URL
+          value: https://ingress.example.com

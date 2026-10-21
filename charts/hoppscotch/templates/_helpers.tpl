@@ -117,6 +117,30 @@ Usage: {{ include "hoppscotch.ingressBaseUrl" .Values.aio.ingress }}
 {{- end -}}
 
 {{/*
+Generate base URL from an OpenShift Route resource. Returns an empty string when the Route is disabled or when its
+hostname is auto-assigned by the cluster (`host` left empty), since that hostname is not known at render time.
+Usage: {{ include "hoppscotch.routeBaseUrl" .Values.aio.route }}
+*/}}
+{{- define "hoppscotch.routeBaseUrl" -}}
+  {{- if and .enabled .host -}}
+    {{- urlJoin (dict "scheme" (.tls.enabled | ternary "https" "http") "host" .host "path" (.path | trimSuffix "/")) -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Generate base URL from the ingress resource, falling back to the OpenShift Route when the ingress is disabled. Returns
+an empty string when neither exposes a usable hostname.
+Usage: {{ include "hoppscotch.baseUrl" (dict "ingress" .Values.aio.ingress "route" .Values.aio.route) }}
+*/}}
+{{- define "hoppscotch.baseUrl" -}}
+  {{- $baseUrl := include "hoppscotch.ingressBaseUrl" .ingress -}}
+  {{- if eq $baseUrl "" -}}
+    {{- $baseUrl = include "hoppscotch.routeBaseUrl" .route -}}
+  {{- end -}}
+  {{- $baseUrl -}}
+{{- end -}}
+
+{{/*
 Return common labels for all resources.
 */}}
 {{- define "hoppscotch.labels" -}}
@@ -262,6 +286,22 @@ Return the service account name to use.
 {{- end -}}
 
 {{/*
+Return whether subpath based access is enabled for the active deployment mode, as the string "true" or "false". Each
+deployment mode has its own setting so that enabling subpath access for `aio` (the default) never changes the behaviour
+of a `distributed` release.
+Usage: {{ if eq (include "hoppscotch.subpathBasedAccess" .) "true" }}
+*/}}
+{{- define "hoppscotch.subpathBasedAccess" -}}
+  {{- $enabled := false -}}
+  {{- if eq .Values.deploymentMode "aio" -}}
+    {{- $enabled = .Values.hoppscotch.frontend.enableSubpathBasedAccess -}}
+  {{- else if eq .Values.deploymentMode "distributed" -}}
+    {{- $enabled = .Values.hoppscotch.frontend.enableSubpathBasedAccessInDistributedMode -}}
+  {{- end -}}
+  {{- $enabled | toString -}}
+{{- end -}}
+
+{{/*
 Return the mock server service name based on deployment mode.
 In aio mode, the AIO service is used. In distributed mode, the backend service is used.
 */}}
@@ -281,7 +321,7 @@ Return the mock server service port based on deployment mode and subpath access 
 */}}
 {{- define "hoppscotch.mockServer.servicePort" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess -}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
       {{- .Values.aio.service.ports.http -}}
     {{- else -}}
       {{- .Values.aio.service.ports.backend -}}
@@ -298,7 +338,7 @@ Return the mock server path prefix used for URL rewriting.
 - distributed                          → /mock (direct backend access)
 */}}
 {{- define "hoppscotch.mockServer.pathPrefix" -}}
-  {{- if and (eq .Values.deploymentMode "aio") .Values.hoppscotch.frontend.enableSubpathBasedAccess -}}
+  {{- if and (eq .Values.deploymentMode "aio") (eq (include "hoppscotch.subpathBasedAccess" .) "true") -}}
     {{- "/backend/mock" -}}
   {{- else -}}
     {{- "/mock" -}}

@@ -60,6 +60,11 @@ spec:
             - name: http
               containerPort: {{ .Values.frontend.containerPorts.http }}
               protocol: TCP
+            {{- if ne (include "hoppscotch.subpathBasedAccess" .) "true" }}
+            - name: http-desktop
+              containerPort: {{ .Values.frontend.containerPorts.desktop }}
+              protocol: TCP
+            {{- end }}
           {{- if .Values.frontend.customLivenessProbe }}
           livenessProbe:
             {{- toYaml .Values.frontend.customLivenessProbe | nindent 12 }}

@@ -3,7 +3,7 @@ Admin service base URL based on deployment and access mode
 */}}
 {{- define "hoppscotch.tests.adminServiceBaseUrl" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
       {{- printf "http://%s.%s.svc.%s:%d/admin" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.http | int) -}}
     {{- else -}}
       {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.admin | int) -}}
@@ -18,7 +18,7 @@ Backend service base URL based on deployment and access mode
 */}}
 {{- define "hoppscotch.tests.backendServiceBaseUrl" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
       {{- printf "http://%s.%s.svc.%s:%d/backend" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.http | int) -}}
     {{- else -}}
       {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.backend | int) -}}
@@ -33,7 +33,7 @@ Frontend service base URL based on deployment and access mode
 */}}
 {{- define "hoppscotch.tests.frontendServiceBaseUrl" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
       {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.http | int) -}}
     {{- else -}}
       {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.frontend | int) -}}
@@ -48,12 +48,16 @@ Frontend web app server service base URL based on deployment and access mode
 */}}
 {{- define "hoppscotch.tests.frontendWebAppServerServiceBaseUrl" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
       {{- printf "http://%s.%s.svc.%s:%d/desktop-app-server" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.http | int) -}}
     {{- else -}}
       {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.aio.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.aio.service.ports.desktop | int) -}}
     {{- end -}}
   {{- else -}}
-    {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.frontend.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.frontend.service.ports.http | int) -}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
+      {{- printf "http://%s.%s.svc.%s:%d/desktop-app-server" (include "hoppscotch.frontend.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.frontend.service.ports.http | int) -}}
+    {{- else -}}
+      {{- printf "http://%s.%s.svc.%s:%d" (include "hoppscotch.frontend.serviceName" .) (include "hoppscotch.namespace" .) .Values.clusterDomain (.Values.frontend.service.ports.desktop | int) -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}

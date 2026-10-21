@@ -3,10 +3,18 @@ Generate backend base URL based on deployment mode and ingress configuration
 */}}
 {{- define "hoppscotch.backend.baseUrl" -}}
   {{- if eq .Values.deploymentMode "aio" -}}
-    {{- $baseUrl := (include "hoppscotch.ingressBaseUrl" .Values.aio.ingress) -}}
-    {{- .Values.hoppscotch.frontend.enableSubpathBasedAccess | ternary (printf "%s/backend" $baseUrl) $baseUrl -}}
+    {{- $baseUrl := (include "hoppscotch.baseUrl" (dict "ingress" .Values.aio.ingress "route" .Values.aio.route)) -}}
+    {{- eq (include "hoppscotch.subpathBasedAccess" .) "true" | ternary (printf "%s/backend" $baseUrl) $baseUrl -}}
   {{- else if eq .Values.deploymentMode "distributed" -}}
-    {{- include "hoppscotch.ingressBaseUrl" .Values.backend.ingress -}}
+    {{- $frontendBaseUrl := "" -}}
+    {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" -}}
+      {{- $frontendBaseUrl = (include "hoppscotch.baseUrl" (dict "ingress" .Values.frontend.ingress "route" .Values.frontend.route)) -}}
+    {{- end -}}
+    {{- if ne $frontendBaseUrl "" -}}
+      {{- printf "%s/backend" $frontendBaseUrl -}}
+    {{- else -}}
+      {{- include "hoppscotch.baseUrl" (dict "ingress" .Values.backend.ingress "route" .Values.backend.route) -}}
+    {{- end -}}
   {{- end -}}
 {{- end -}}
 

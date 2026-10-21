@@ -315,3 +315,93 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
+
+  - it: should expose the web app server container port when subpath based access is disabled
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 3200
+            protocol: TCP
+
+  - it: should not expose the web app server container port when subpath based access is enabled
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 3200
+            protocol: TCP
+
+  - it: should set the web app server container port when specified
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        containerPorts:
+          desktop: 8200
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 8200
+            protocol: TCP
+
+  - it: should expose the web app server container port when subpath based access is disabled
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 3200
+            protocol: TCP
+
+  - it: should not expose the web app server container port when subpath based access is enabled
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 3200
+            protocol: TCP
+
+  - it: should set the web app server container port when specified
+    template: frontend/deployment.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        containerPorts:
+          desktop: 8200
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            name: http-desktop
+            containerPort: 8200
+            protocol: TCP
