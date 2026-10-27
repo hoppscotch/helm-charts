@@ -1348,6 +1348,8 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | migrations.tolerations               | list   | `[]`      | Tolerations for Hoppscotch pods assignment                                                                                  |
 | migrations.affinity                  | object | `{}`      | Affinity for Hoppscotch pods assignment                                                                                     |
 | migrations.topologySpreadConstraints | list   | `[]`      | Topology spread constraints for Hoppscotch pods assignment                                                                  |
+| migrations.podSecurityContext        | object | `{}`      | Security context for Hoppscotch migrations pods                                                                             |
+| migrations.securityContext           | object | `{}`      | Security context for Hoppscotch migrations containers                                                                       |
 
 ### Default Init Containers Parameters
 
@@ -1362,12 +1364,14 @@ The TLS secret covers the wildcard host `*.mock.example.com`.
 | defaultInitContainers.waitForDatabase.extraEnvVarsSecret   | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for database containers                  |
 | defaultInitContainers.waitForDatabase.resourcesPreset      | string | `"nano"`         | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
 | defaultInitContainers.waitForDatabase.resources            | object | `{}`             | Set container resources for the wait-for-database init container (overrides resourcesPreset)                                |
+| defaultInitContainers.waitForDatabase.securityContext      | object | `{}`             | Security context for the wait-for-database init container                                                                   |
 | defaultInitContainers.waitForMigrations.enabled            | bool   | `true`           | Enable init container that waits for migrations to complete                                                                 |
 | defaultInitContainers.waitForMigrations.extraEnvVars       | list   | `[]`             | Array of extra environment variables to be added to wait for migrations containers                                          |
 | defaultInitContainers.waitForMigrations.extraEnvVarsCM     | string | `""`             | Name of the existing ConfigMap containing extra environment variables to be added to wait for migrations containers         |
 | defaultInitContainers.waitForMigrations.extraEnvVarsSecret | string | `""`             | Name of existing Secret containing extra environment variables to be added to wait for migrations containers                |
 | defaultInitContainers.waitForMigrations.resourcesPreset    | string | `"small"`        | Set container resources according to one common preset (allowed values: nano, micro, small, medium, large, xlarge, 2xlarge) |
 | defaultInitContainers.waitForMigrations.resources          | object | `{}`             | Set container resources for the wait-for-migrations init container (overrides resourcesPreset)                              |
+| defaultInitContainers.waitForMigrations.securityContext    | object | `{}`             | Security context for the wait-for-migrations init container                                                                 |
 
 ### Mock Server Parameters
 
