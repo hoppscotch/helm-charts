@@ -1864,6 +1864,13 @@ migrations:
   # @section -- Hoppscotch Migrations Container Parameters
   topologySpreadConstraints: []
 
+  # -- Security context for Hoppscotch migrations pods
+  # @section -- Hoppscotch Migrations Container Parameters
+  podSecurityContext: {}
+  # -- Security context for Hoppscotch migrations containers
+  # @section -- Hoppscotch Migrations Container Parameters
+  securityContext: {}
+
 # @section -- Default Init Containers Parameters
 
 defaultInitContainers:
@@ -1900,6 +1907,10 @@ defaultInitContainers:
     # @section -- Default Init Containers Parameters
     resources: {}
 
+    # -- Security context for the wait-for-database init container
+    # @section -- Default Init Containers Parameters
+    securityContext: {}
+
   waitForMigrations:
     # -- Enable init container that waits for migrations to complete
     # @section -- Default Init Containers Parameters
@@ -1921,6 +1932,10 @@ defaultInitContainers:
     # -- Set container resources for the wait-for-migrations init container (overrides resourcesPreset)
     # @section -- Default Init Containers Parameters
     resources: {}
+
+    # -- Security context for the wait-for-migrations init container
+    # @section -- Default Init Containers Parameters
+    securityContext: {}
 
 # @section -- Mock Server Parameters
 

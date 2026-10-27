@@ -4,6 +4,7 @@ templates:
   - frontend/deployment.yaml
   - backend/deployment.yaml
   - admin/deployment.yaml
+  - migrations/job.yaml
   - config/configmap.yaml
   - config/secret.yaml
 tests:
@@ -276,3 +277,57 @@ tests:
       - equal:
           path: spec.template.spec.securityContext.runAsGroup
           value: 1000
+
+  - it: should strip runAsUser, runAsGroup and fsGroup on the migrations job when adaptSecurityContext is force
+    template: migrations/job.yaml
+    set:
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      migrations:
+        enabled: true
+        podSecurityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+        securityContext:
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext.fsGroup
+      - notExists:
+          path: spec.template.spec.securityContext.runAsUser
+      - notExists:
+          path: spec.template.spec.securityContext.runAsGroup
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+
+  - it: should strip runAsUser on default init containers when adaptSecurityContext is force
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      global:
+        compatibility:
+          openshift:
+            adaptSecurityContext: force
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: true
+          securityContext:
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers[0].securityContext.runAsUser
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.allowPrivilegeEscalation
+          value: false

@@ -261,3 +261,82 @@ tests:
               labelSelector:
                 matchLabels:
                   app: hoppscotch
+
+  - it: should set pod security context when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        podSecurityContext:
+          fsGroup: 1001
+          runAsUser: 1001
+          runAsGroup: 1001
+          runAsNonRoot: true
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1001
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1001
+      - equal:
+          path: spec.template.spec.securityContext.runAsGroup
+          value: 1001
+      - equal:
+          path: spec.template.spec.securityContext.runAsNonRoot
+          value: true
+
+  - it: should set container security context when specified
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsNonRoot
+          value: true
+
+  - it: should not render security context when none is configured
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - notExists:
+          path: spec.template.spec.securityContext
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext
+
+  - it: should not generate init container when waitForDatabase is disabled
+    template: migrations/job.yaml
+    set:
+      migrations:
+        enabled: true
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: false
+    asserts:
+      - containsDocument:
+          apiVersion: batch/v1
+          kind: Job
+      - notExists:
+          path: spec.template.spec.initContainers
