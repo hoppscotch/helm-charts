@@ -15,11 +15,7 @@ data:
   ALLOW_AUDIT_LOGS: {{ or .Values.hoppscotch.backend.allowAuditLogs .Values.hoppscotch.backend.clickhouse.allowAuditLogs | quote }}
   ALLOW_SECURE_COOKIES: {{ .Values.hoppscotch.backend.allowSecureCookies | quote }}
   CLICKHOUSE_HOST: {{ include "hoppscotch.secret.clickhouseHost" . | quote }}
-  {{- if eq .Values.deploymentMode "aio" }}
-  ENABLE_SUBPATH_BASED_ACCESS: {{ .Values.hoppscotch.frontend.enableSubpathBasedAccess | quote }}
-  {{- else }}
-  ENABLE_SUBPATH_BASED_ACCESS: "false"
-  {{- end }}
+  ENABLE_SUBPATH_BASED_ACCESS: {{ include "hoppscotch.subpathBasedAccess" . | quote }}
   GITHUB_AUTHORIZATION_URL: {{ .Values.hoppscotch.backend.auth.githubEnterprise.authorizationUrl | quote }}
   GITHUB_CALLBACK_URL: {{ include "hoppscotch.backend.githubCallbackUrl" . | quote }}
   GITHUB_SCOPE: {{ .Values.hoppscotch.backend.auth.github.scope | join "," | quote }}

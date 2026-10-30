@@ -24,3 +24,68 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: should expose the web app server port when subpath based access is disabled
+    template: frontend/service.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: false
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: http-desktop
+            port: 3200
+            protocol: TCP
+
+  - it: should not expose the web app server port when subpath based access is enabled
+    template: frontend/service.yaml
+    set:
+      deploymentMode: distributed
+      hoppscotch:
+        frontend:
+          enableSubpathBasedAccessInDistributedMode: true
+    asserts:
+      - notContains:
+          path: spec.ports
+          content:
+            name: http-desktop
+            port: 3200
+            protocol: TCP
+
+  - it: should set the web app server target port when service and container ports differ
+    template: frontend/service.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        service:
+          ports:
+            desktop: 8200
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: http-desktop
+            port: 8200
+            targetPort: 3200
+            protocol: TCP
+
+  - it: should set the web app server node port when service type is NodePort
+    template: frontend/service.yaml
+    set:
+      deploymentMode: distributed
+      frontend:
+        service:
+          type: NodePort
+          nodePorts:
+            desktop: 32200
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: http-desktop
+            port: 3200
+            protocol: TCP
+            nodePort: 32200

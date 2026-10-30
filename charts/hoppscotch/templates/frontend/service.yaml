@@ -46,6 +46,17 @@ spec:
       {{- if and (or (eq .Values.frontend.service.type "NodePort") (eq .Values.frontend.service.type "LoadBalancer")) (not (empty .Values.frontend.service.nodePorts.http)) }}
       nodePort: {{ .Values.frontend.service.nodePorts.http }}
       {{- end }}
+    {{- if ne (include "hoppscotch.subpathBasedAccess" .) "true" }}
+    - name: http-desktop
+      port: {{ .Values.frontend.service.ports.desktop }}
+      {{- if not (eq .Values.frontend.service.ports.desktop .Values.frontend.containerPorts.desktop) }}
+      targetPort: {{ .Values.frontend.containerPorts.desktop }}
+      {{- end }}
+      protocol: TCP
+      {{- if and (or (eq .Values.frontend.service.type "NodePort") (eq .Values.frontend.service.type "LoadBalancer")) (not (empty .Values.frontend.service.nodePorts.desktop)) }}
+      nodePort: {{ .Values.frontend.service.nodePorts.desktop }}
+      {{- end }}
+    {{- end }}
     {{- if .Values.frontend.service.extraPorts }}
     {{- toYaml .Values.frontend.service.extraPorts | nindent 4 }}
     {{- end }}

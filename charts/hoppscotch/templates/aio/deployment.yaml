@@ -57,7 +57,7 @@ spec:
           image: {{ include "hoppscotch.image" (dict "component" .Values.aio "context" .) }}
           imagePullPolicy: {{ .Values.aio.image.pullPolicy }}
           ports:
-          {{- if .Values.hoppscotch.frontend.enableSubpathBasedAccess }}
+          {{- if eq (include "hoppscotch.subpathBasedAccess" .) "true" }}
             - name: http
               containerPort: {{ .Values.aio.containerPorts.http }}
               protocol: TCP
@@ -85,8 +85,8 @@ spec:
           {{- else if .Values.aio.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.hoppscotch.frontend.enableSubpathBasedAccess | ternary "/backend/ping" "/ping" }}
-              port: {{ .Values.hoppscotch.frontend.enableSubpathBasedAccess | ternary "http" 3170 }}
+              path: {{ eq (include "hoppscotch.subpathBasedAccess" .) "true" | ternary "/backend/ping" "/ping" }}
+              port: {{ eq (include "hoppscotch.subpathBasedAccess" .) "true" | ternary "http" 3170 }}
             initialDelaySeconds: {{ .Values.aio.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.aio.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.aio.readinessProbe.timeoutSeconds }}

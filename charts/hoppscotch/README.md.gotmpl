@@ -121,7 +121,12 @@ values file:
 deploymentMode: distributed
 ```
 
-Services can be accessed on the following ports:
+Distributed mode supports the same two access modes as AIO.
+
+##### Multiport Access
+
+This is the default. Each container is reached on its own service, and the frontend's web app server is exposed on
+its own port:
 
 | Mode        | Access    | Container | Service  | Ports    | Path |
 | ----------- | --------- | --------- | -------- | -------- | ---- |
@@ -130,7 +135,50 @@ Services can be accessed on the following ports:
 | Distributed | Multiport | Backend   | Backend  | 80, 3170 | /    |
 | Distributed | Multiport | Admin     | Admin    | 80, 3100 | /    |
 
-Note: Only multiport access is supported in distributed mode.
+##### Subpath Access
+
+Subpath access serves every component from a single hostname, which is what the
+[desktop app](https://docs.hoppscotch.io/documentation/self-host/enterprise-edition/install-and-build) requires. It
+is disabled by default, since enabling it changes the URLs the frontend and admin apps are built with:
+
+```yaml
+deploymentMode: distributed
+hoppscotch:
+  frontend:
+    enableSubpathBasedAccessInDistributedMode: true
+```
+
+| Mode        | Access  | Container | Service  | Ports | Path                |
+| ----------- | ------- | --------- | -------- | ----- | ------------------- |
+| Distributed | Subpath | Frontend  | Frontend | 80    | /                   |
+| Distributed | Subpath | Frontend  | Desktop  | 80    | /desktop-app-server |
+| Distributed | Subpath | Backend   | Backend  | 80    | /backend            |
+| Distributed | Subpath | Admin     | Admin    | 80    | /admin              |
+
+The config URLs are then built from the **frontend** hostname (`frontend.ingress` or `frontend.route`) with the
+`/backend` and `/admin` prefixes appended, so the `backend` and `admin` ingresses only need to route traffic on that
+same hostname — their own hostname and path are ignored for URL generation.
+
+Unlike the admin container, the backend container does not strip its own `/backend` prefix, so the ingress
+controller or Route must rewrite the path. With ingress-nginx:
+
+```yaml
+backend:
+  ingress:
+    enabled: true
+    hostname: hoppscotch.example.com
+    path: /backend(/|$)(.*)
+    pathType: ImplementationSpecific
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+admin:
+  ingress:
+    enabled: true
+    hostname: hoppscotch.example.com
+    path: /admin
+```
+
+A complete example is in [`ci/distributed-subpath-values.yaml`](ci/distributed-subpath-values.yaml).
 
 ### Enterprise Edition
 
@@ -165,7 +213,9 @@ admin:
 ### Auto-Generating Config URLs
 
 The chart automatically sets configuration URLs for the frontend, backend, and admin services based on the deployment
-mode and ingress configuration.
+mode and ingress configuration. When the ingress is disabled, the URLs are derived from the OpenShift Route instead,
+as long as its `host` is set explicitly (see
+[Exposing services with OpenShift Routes](#exposing-services-with-openshift-routes)).
 
 ```yaml
 deploymentMode: aio
@@ -202,7 +252,7 @@ hoppscotch:
         callbackUrl: https://hoppscotch.example.com/backend/v1/auth/saml/callback
 ```
 
-If deployment ingress is not enabled, then no URLs will be auto-generated.
+If neither the ingress nor a Route with an explicit `host` is enabled, then no URLs will be auto-generated.
 
 ```yaml
 deploymentMode: aio
@@ -517,8 +567,10 @@ administrator or elevated SCC required. Both `aio` and `distributed` modes are s
          insecureEdgeTerminationPolicy: Redirect
    ```
 
-4. **Set the public URLs.** Routes do not auto-populate the config URLs, so set them to the Route hostnames,
-   which follow `<service-name>-<namespace>.<router-domain>`. Get the router domain with:
+4. **Set the public URLs.** The chart derives the config URLs from a Route only when its `host` is set explicitly;
+   when `host` is left empty OpenShift assigns the hostname after installation, which Helm cannot know at render
+   time. Either set `host` on each Route, or set the URLs below manually. Route hostnames follow
+   `<service-name>-<namespace>.<router-domain>`. Get the router domain with:
 
    ```bash
    oc whoami --show-console | sed 's#https://console-openshift-console\.##'
@@ -527,9 +579,10 @@ administrator or elevated SCC required. Both `aio` and `distributed` modes are s
    In `aio` mode a single host serves the frontend (`/`), backend (`/backend`) and admin (`/admin`) via
    subpaths, so no extra URL configuration is needed.
 
-   In `distributed` mode the frontend and admin are browser apps that call the backend directly, so you
-   **must** set these URLs explicitly. Otherwise the UI loads but shows _"Failed to connect to the backend
-   server"_. Point `hoppscotch.frontend.*` at the frontend/backend/admin Route hosts, and set the backend's
+   In `distributed` mode the frontend and admin are browser apps that call the backend directly, so unless every
+   Route has an explicit `host`, you **must** set these URLs. Otherwise the UI loads but shows _"Failed to connect
+   to the backend server"_. Point `hoppscotch.frontend.*` at the frontend/backend/admin Route hosts, and set the
+   backend's
    `redirectUrl` and `whitelistedOrigins` (for CORS) to match (hosts follow
    `<service-name>-<namespace>.<router-domain>`):
 

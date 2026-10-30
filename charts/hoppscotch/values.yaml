@@ -85,9 +85,16 @@ hoppscotch:
     # @section -- Hoppscotch Application Parameters
     appPrivacyPolicyLink: ""
 
-    # -- Enable subpath based access (required for desktop app support)
+    # -- Enable subpath based access in `aio` deployment mode (required for desktop app support)
     # @section -- Hoppscotch Application Parameters
     enableSubpathBasedAccess: true
+
+    # -- Enable subpath based access in `distributed` deployment mode (required for desktop app support). Serves the
+    # frontend, its web app server, the backend and the admin dashboard from a single hostname as `/`,
+    # `/desktop-app-server`, `/backend` and `/admin`. The backend container does not strip the `/backend` prefix itself,
+    # so the ingress controller or Route must rewrite it.
+    # @section -- Hoppscotch Application Parameters
+    enableSubpathBasedAccessInDistributedMode: false
 
     # -- Enable local proxy server for routing API requests (requires subpath access). Enterprise Edition required.
     # @section -- Hoppscotch Application Parameters
@@ -748,6 +755,9 @@ frontend:
     # -- Hoppscotch HTTPS container port
     # @section -- Hoppscotch Frontend Container Parameters
     https: 443
+    # -- Hoppscotch web app server container port (used by the desktop app when subpath based access is disabled)
+    # @section -- Hoppscotch Frontend Container Parameters
+    desktop: 3200
 
   readinessProbe:
     # -- Enable readiness probe
@@ -880,6 +890,9 @@ frontend:
       # -- Service HTTPS port
       # @section -- Hoppscotch Frontend Container Parameters
       https: 443
+      # -- Web app server service port (when subpath based access is disabled)
+      # @section -- Hoppscotch Frontend Container Parameters
+      desktop: 3200
     # -- Static cluster IP address (optional)
     # @section -- Hoppscotch Frontend Container Parameters
     clusterIP: ""
@@ -890,6 +903,9 @@ frontend:
       # -- NodePort for HTTPS (when service type is NodePort)
       # @section -- Hoppscotch Frontend Container Parameters
       https: ""
+      # -- NodePort for the web app server (when service type is NodePort and subpath based access is disabled)
+      # @section -- Hoppscotch Frontend Container Parameters
+      desktop: ""
     # -- Load balancer IP address (when service type is LoadBalancer)
     # @section -- Hoppscotch Frontend Container Parameters
     loadBalancerIP: ""

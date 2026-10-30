@@ -1,0 +1,46 @@
+deploymentMode: distributed
+hoppscotch:
+  frontend:
+    enableSubpathBasedAccessInDistributedMode: true
+frontend:
+  ingress:
+    enabled: true
+    hostname: hoppscotch.local
+    tls: true
+    selfSigned: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+backend:
+  readinessProbe:
+    initialDelaySeconds: 15
+  ingress:
+    enabled: true
+    hostname: hoppscotch.local
+    path: /backend(/|$)(.*)
+    pathType: ImplementationSpecific
+    tls: true
+    selfSigned: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+admin:
+  ingress:
+    enabled: true
+    hostname: hoppscotch.local
+    path: /admin
+    tls: true
+    selfSigned: true
+    ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+postgresql:
+  enabled: true
+  auth:
+    username: hoppscotch
+    password: hoppscotch
+    database: hoppscotch
+  primary:
+    persistence:
+      enabled: false
