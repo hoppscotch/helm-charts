@@ -234,3 +234,42 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].resources.limits.memory
           value: 64Mi
+
+  - it: should set security context when specified
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: false
+        waitForMigrations:
+          enabled: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-migrations
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.allowPrivilegeEscalation
+          value: false
+      - equal:
+          path: spec.template.spec.initContainers[0].securityContext.runAsNonRoot
+          value: true
+
+  - it: should not render security context when none is configured
+    template: aio/deployment.yaml
+    set:
+      deploymentMode: aio
+      defaultInitContainers:
+        waitForDatabase:
+          enabled: false
+        waitForMigrations:
+          enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: wait-for-migrations
+      - notExists:
+          path: spec.template.spec.initContainers[0].securityContext

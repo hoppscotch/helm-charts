@@ -22,13 +22,22 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ include "hoppscotch.serviceAccountName" . }}
       restartPolicy: OnFailure
-      {{- if or .Values.defaultInitContainers.waitForDatabase }}
+      {{- with (include "hoppscotch.compatibility.renderSecurityContext" (dict "secContext" .Values.migrations.podSecurityContext "context" $)) }}
+      securityContext:
+        {{- . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.defaultInitContainers.waitForDatabase.enabled }}
       initContainers:
         {{- include "hoppscotch.defaultInitContainers.waitForDatabase" . | nindent 8 }}
       {{- end }}
       containers:
         - name: hoppscotch-migrations
+          {{- with (include "hoppscotch.compatibility.renderSecurityContext" (dict "secContext" .Values.migrations.securityContext "context" $)) }}
+          securityContext:
+            {{- . | nindent 12 }}
+          {{- end }}
           image: {{ include "hoppscotch.backend.image" . }}
           imagePullPolicy: {{ include "hoppscotch.backend.imagePullPolicy" . }}
           command:
